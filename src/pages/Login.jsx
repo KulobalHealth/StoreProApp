@@ -208,7 +208,7 @@ const Login = () => {
           {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
-              © 2024 Awosel. All rights reserved.
+              © 2026 StorePro. All rights reserved.
             </p>
           </div>
         </div>
