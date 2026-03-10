@@ -168,8 +168,12 @@ export async function receiveReceipt(body) {
 }
 
 // ---- Sales ----
-export async function listSales() {
-  return fetchApi('GET', '/sales')
+export async function listSales(query = {}) {
+  const params = new URLSearchParams()
+  if (query.branch_id) params.set('branch_id', query.branch_id)
+  if (query.date) params.set('date', query.date)
+  const qs = params.toString()
+  return fetchApi('GET', '/sales' + (qs ? '?' + qs : ''))
 }
 
 export async function createSale(body) {

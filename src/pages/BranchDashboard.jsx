@@ -41,29 +41,27 @@ const BranchDashboard = () => {
 
   const fetchDashboardData = async () => {
     const branchId = getSessionBranchId()
+    if (!branchId) return
 
-    // Fetch all data in parallel
+    // Today's date for the sales query
+    const todayStr = new Date().toISOString().split('T')[0]
+
+    // Fetch all data in parallel — sales scoped to branch + today
     const promises = [
-      listSales().catch(() => null),
-      branchId ? listProductsByBranch(branchId).catch(() => null) : Promise.resolve(null),
-      branchId ? listEmployees(branchId).catch(() => null) : Promise.resolve(null),
-      branchId ? listSuppliers(branchId).catch(() => null) : Promise.resolve(null),
-      branchId ? listCustomers(branchId).catch(() => null) : Promise.resolve(null),
+      listSales({ branch_id: branchId, date: todayStr }).catch(() => null),
+      listProductsByBranch(branchId).catch(() => null),
+      listEmployees(branchId).catch(() => null),
+      listSuppliers(branchId).catch(() => null),
+      listCustomers(branchId).catch(() => null),
     ]
 
     try {
       const [salesRes, productsRes, staffRes, suppliersRes, customersRes] = await Promise.all(promises)
 
-      // Sales
+      // Sales — already filtered by branch + date from the API
       const salesPayload = salesRes?.data || salesRes
-      const salesList = salesPayload?.sales || []
-      const today = new Date()
-      const todayStr = today.toISOString().split('T')[0]
-      const filtered = salesList.filter(s => {
-        const saleDate = new Date(s.created_at || s.date).toISOString().split('T')[0]
-        return saleDate === todayStr
-      })
-      setTodaySales(filtered)
+      const salesList = salesPayload?.sales || (Array.isArray(salesPayload) ? salesPayload : [])
+      setTodaySales(salesList)
 
       // Products
       const products = Array.isArray(productsRes) ? productsRes : (productsRes?.data || [])

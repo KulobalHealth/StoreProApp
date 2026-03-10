@@ -22,6 +22,7 @@ import {
   User,
 } from 'lucide-react'
 import { listSales } from '../api/awoselDb.js'
+import { getSessionBranchId } from '../utils/branch'
 
 const SalesHistory = () => {
   const [sales, setSales] = useState([])
@@ -37,67 +38,78 @@ const SalesHistory = () => {
   const [paymentFilter, setPaymentFilter] = useState('all')
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
-  const PAGE_SIZE = 20
+  const PAGE_SIZE = 10
 
-  // All sales fetched from API (unfiltered)
-  const [allSales, setAllSales] = useState([])
+  /**
+   * Build the date string to send to the API based on the active filter.
+   * The backend endpoint is: /sales?branch_id=<uuid>&date=<YYYY-MM-DD>
+   * For filters that cover a range (month, year, all) we fetch each day the
+   * user picks; for "all" we omit the date param entirely.
+   */
+  const getQueryDate = () => {
+    if (filter === 'today') return new Date().toISOString().slice(0, 10)
+    if (filter === 'date') return date
+    // For month / year / all we omit date so the backend returns everything,
+    // and we do a lightweight client-side filter on the result.
+    return undefined
+  }
 
   const fetchSales = () => {
+    const branchId = getSessionBranchId()
+    if (!branchId) {
+      setError('No branch selected. Please select a branch first.')
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError('')
-    listSales()
+    const queryDate = getQueryDate()
+    const query = { branch_id: branchId }
+    if (queryDate) query.date = queryDate
+    listSales(query)
       .then(res => {
         const payload = res?.data || res
-        const salesList = payload?.sales || []
-        setAllSales(salesList)
+        let salesList = payload?.sales || (Array.isArray(payload) ? payload : [])
+
+        // Client-side filter for month / year ranges (API returned all branch sales)
+        if (filter === 'month') {
+          salesList = salesList.filter(s => {
+            if (!s.created_at) return false
+            const d = new Date(s.created_at)
+            return d.getFullYear() === Number(year) && (d.getMonth() + 1) === Number(month)
+          })
+        } else if (filter === 'year') {
+          salesList = salesList.filter(s => {
+            if (!s.created_at) return false
+            return new Date(s.created_at).getFullYear() === Number(year)
+          })
+        }
+
+        setSales(salesList)
+
+        // Build summary
+        const totalAmount = salesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0)
+        const totalProfit = salesList.reduce((sum, s) => sum + (Number(s.total_profit) || 0), 0)
+        const methods = {}
+        salesList.forEach(s => {
+          const m = s.payment_method || 'Other'
+          methods[m] = (methods[m] || 0) + (Number(s.total) || 0)
+        })
+        setSummary({ total_amount: totalAmount, total_profit: totalProfit, sale_count: salesList.length, payment_methods: methods })
+        setCurrentPage(1)
       })
       .catch(err => {
         setError(err.message || 'Could not load sales')
-        setAllSales([])
+        setSales([])
       })
       .finally(() => setLoading(false))
   }
 
-  // Fetch once on mount
+  // Re-fetch whenever the filter criteria change
   useEffect(() => {
     fetchSales()
-  }, [])
-
-  // Client-side date filtering + summary calculation
-  useEffect(() => {
-    let filtered = [...allSales]
-    if (filter === 'today') {
-      const todayStr = new Date().toISOString().slice(0, 10)
-      filtered = filtered.filter(s => s.created_at && s.created_at.slice(0, 10) === todayStr)
-    } else if (filter === 'date') {
-      filtered = filtered.filter(s => s.created_at && s.created_at.slice(0, 10) === date)
-    } else if (filter === 'month') {
-      filtered = filtered.filter(s => {
-        if (!s.created_at) return false
-        const d = new Date(s.created_at)
-        return d.getFullYear() === Number(year) && (d.getMonth() + 1) === Number(month)
-      })
-    } else if (filter === 'year') {
-      filtered = filtered.filter(s => {
-        if (!s.created_at) return false
-        return new Date(s.created_at).getFullYear() === Number(year)
-      })
-    }
-    // else 'all' — no filter
-
-    setSales(filtered)
-
-    // Build summary from filtered sales
-    const totalAmount = filtered.reduce((sum, s) => sum + (Number(s.total) || 0), 0)
-    const totalProfit = filtered.reduce((sum, s) => sum + (Number(s.total_profit) || 0), 0)
-    const methods = {}
-    filtered.forEach(s => {
-      const m = s.payment_method || 'Other'
-      methods[m] = (methods[m] || 0) + (Number(s.total) || 0)
-    })
-    setSummary({ total_amount: totalAmount, total_profit: totalProfit, sale_count: filtered.length, payment_methods: methods })
-    setCurrentPage(1)
-  }, [allSales, filter, date, month, year])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, date, month, year])
 
   const paymentEntries = Object.entries(summary.payment_methods || {}).filter(([, v]) => v > 0)
 

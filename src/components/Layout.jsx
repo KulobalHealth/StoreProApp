@@ -19,6 +19,7 @@ import {
 import { useNavigationHistory } from '../contexts/NavigationHistory'
 import { useAuth } from '../contexts/AuthContext'
 import Footer from './Footer'
+import AppGuide from './AppGuide'
 import logo from '../logo.png'
 
 const Layout = () => {
@@ -220,6 +221,9 @@ const Layout = () => {
         </div>
         <Footer />
       </main>
+
+      {/* In-App Feature Guide */}
+      <AppGuide userRole={user?.role || 'admin'} />
     </div>
   )
 }
