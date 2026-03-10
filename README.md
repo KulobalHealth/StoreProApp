@@ -65,6 +65,22 @@ Preview the production build:
 npm run preview
 ```
 
+## Deploy to Vercel
+
+This project is ready for Vercel. A `vercel.json` is included to enable SPA routing.
+
+### Recommended settings
+
+- Framework Preset: `Vite`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+### Deploy
+
+1. Push the repo to GitHub.
+2. Import the repository in Vercel.
+3. Keep the defaults above and deploy.
+
 ## Project Structure
 
 ```
