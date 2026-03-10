@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator - awosel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            margin: 10px;
+            display: block;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0284c7;
+        }
+        .preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>awosel Icon Generator</h1>
+        <p>Generate app icons for Tauri from the awosel logo</p>
+        
+        <div class="controls">
+            <button onclick="generateAllIcons()">Generate All Icons</button>
+            <button onclick="downloadIcon(32)">Download 32x32</button>
+            <button onclick="downloadIcon(128)">Download 128x128</button>
+            <button onclick="downloadIcon(256)">Download 256x256</button>
+        </div>
+        
+        <div class="preview">
+            <div>
+                <h3>32x32</h3>
+                <canvas id="canvas32" width="32" height="32"></canvas>
+            </div>
+            <div>
+                <h3>128x128</h3>
+                <canvas id="canvas128" width="128" height="128"></canvas>
+            </div>
+            <div>
+                <h3>256x256</h3>
+                <canvas id="canvas256" width="256" height="256"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function drawLogo(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Yellow background
+            ctx.fillStyle = '#FFD700'; // Bright yellow
+            ctx.fillRect(0, 0, size, size);
+            
+            // Calculate scaling
+            const scale = size / 256;
+            const padding = size * 0.15;
+            const textY = size * 0.4;
+            const curveY = size * 0.65;
+            
+            // Draw text "awosel"
+            ctx.fillStyle = '#000000';
+            ctx.font = `bold ${size * 0.25}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('awosel', size / 2, textY);
+            
+            // Draw curved arrow/smile line
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = size * 0.08;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            const startX = padding;
+            const endX = size - padding;
+            const midX = size / 2;
+            const curveHeight = size * 0.15;
+            
+            ctx.beginPath();
+            // Start with upward hook on left
+            ctx.moveTo(startX, curveY);
+            ctx.quadraticCurveTo(startX - size * 0.05, curveY - size * 0.05, startX, curveY - size * 0.08);
+            
+            // Main curve (smile/arrow shape)
+            ctx.quadraticCurveTo(midX, curveY + curveHeight, endX, curveY);
+            
+            // End with upward hook on right
+            ctx.quadraticCurveTo(endX + size * 0.05, curveY - size * 0.05, endX, curveY - size * 0.08);
+            
+            ctx.stroke();
+        }
+        
+        function generateAllIcons() {
+            drawLogo(document.getElementById('canvas32'), 32);
+            drawLogo(document.getElementById('canvas128'), 128);
+            drawLogo(document.getElementById('canvas256'), 256);
+        }
+        
+        function downloadIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            drawLogo(canvas, size);
+            
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}x${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        // Generate on load
+        window.onload = generateAllIcons;
+    </script>
+</body>
+</html>
+
