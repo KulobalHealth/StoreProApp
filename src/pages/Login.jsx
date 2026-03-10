@@ -20,7 +20,17 @@ const Login = () => {
       try {
         const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
         const role = (savedUser.role || '').toLowerCase()
-        if (role === 'manager') {
+        if (role === 'sales') {
+          // Sales users go straight to POS — auto-set branch if available
+          if (savedUser.branch_id && !localStorage.getItem('awosel_active_branch')) {
+            localStorage.setItem('awosel_active_branch', JSON.stringify({
+              uuid: savedUser.branch_id,
+              id: savedUser.branch_id,
+              name: savedUser.branch_name || 'My Branch',
+            }))
+          }
+          navigate('/pos', { replace: true })
+        } else if (role === 'manager') {
           navigate('/branch-dashboard', { replace: true })
         } else {
           navigate('/dashboard', { replace: true })
@@ -67,7 +77,17 @@ const Login = () => {
         try {
           const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
           const role = (savedUser.role || '').toLowerCase()
-          if (role === 'manager') {
+          if (role === 'sales') {
+            // Sales users go straight to POS
+            if (savedUser.branch_id) {
+              localStorage.setItem('awosel_active_branch', JSON.stringify({
+                uuid: savedUser.branch_id,
+                id: savedUser.branch_id,
+                name: savedUser.branch_name || 'My Branch',
+              }))
+            }
+            navigate('/pos', { replace: true })
+          } else if (role === 'manager') {
             // Manager goes directly to their assigned branch dashboard
             if (savedUser.branch_id) {
               // Auto-set the manager's assigned branch as active

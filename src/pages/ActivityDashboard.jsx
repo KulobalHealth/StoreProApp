@@ -20,9 +20,21 @@ const ActivityDashboard = () => {
   const [form, setForm] = useState({ name: '', location: '' })
   const [error, setError] = useState('')
 
-  // If Manager role, auto-redirect to their assigned branch
+  // If Sales role, go straight to POS; if Manager, go to their branch
   useEffect(() => {
     const role = (user?.role || '').toLowerCase()
+    if (role === 'sales') {
+      // Sales users should never be here — auto-set branch and go to POS
+      if (user?.branch_id && !localStorage.getItem('awosel_active_branch')) {
+        localStorage.setItem('awosel_active_branch', JSON.stringify({
+          uuid: user.branch_id,
+          id: user.branch_id,
+          name: user.branch_name || 'My Branch',
+        }))
+      }
+      navigate('/pos', { replace: true })
+      return
+    }
     if (role === 'manager') {
       // Manager shouldn't pick branches — go to their assigned branch dashboard
       const existingBranch = localStorage.getItem('awosel_active_branch')

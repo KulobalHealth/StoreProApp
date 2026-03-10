@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const AuthContext = createContext(null)
 
-const SESSION_TIMEOUT = 4 * 60 * 60 * 1000 // 4 hours in milliseconds
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 const ACTIVITY_CHECK_INTERVAL = 60 * 1000 // Check every minute
 
 export const AuthProvider = ({ children }) => {

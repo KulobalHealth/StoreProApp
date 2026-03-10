@@ -114,7 +114,13 @@ const POS = () => {
         setProductsFromApi(mapped)
       })
       .catch(err => {
-        setProductsError(err.message || 'Could not load products')
+        const msg = err.message || 'Could not load products'
+        // If backend blocks sales role, show a helpful message
+        if (msg.toLowerCase().includes('access denied') || msg.toLowerCase().includes('required role')) {
+          setProductsError('Your account does not have permission to load products. Please ask an admin to grant POS access to the "sales" role on the backend.')
+        } else {
+          setProductsError(msg)
+        }
         setAllProducts([])
         setProductsFromApi([])
       })
