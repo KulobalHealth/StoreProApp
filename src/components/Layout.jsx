@@ -53,10 +53,11 @@ const Layout = () => {
 
   const userRole = (user?.role || '').toLowerCase()
   const isManager = userRole === 'manager'
+  const isSales = userRole === 'sales'
 
   const allMenuItems = [
     { path: '/branch-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/pos', icon: ShoppingCart, label: 'POS / Checkout' },
+    { path: '/pos', icon: ShoppingCart, label: 'POS / Checkout', salesAllowed: true },
     { path: '/sales', icon: Receipt, label: 'Sales History', adminOnly: true },
     { path: '/inventory', icon: Package, label: 'Inventory' },
     { path: '/customers', icon: UserCircle, label: 'Customers' },
@@ -65,10 +66,13 @@ const Layout = () => {
     { path: '/settings', icon: Settings, label: 'Settings' },
   ]
 
+  // Sales users can only see POS
   // Managers cannot access admin-only pages (e.g. Sales History)
-  const menuItems = isManager
-    ? allMenuItems.filter(item => !item.adminOnly)
-    : allMenuItems
+  const menuItems = isSales
+    ? allMenuItems.filter(item => item.salesAllowed)
+    : isManager
+      ? allMenuItems.filter(item => !item.adminOnly)
+      : allMenuItems
 
   const isActive = (path) => location.pathname === path
 
@@ -142,7 +146,7 @@ const Layout = () => {
                 </div>
               )}
             </div>
-            {sidebarOpen && !isManager && (
+            {sidebarOpen && !isManager && !isSales && (
               <button
                 onClick={() => navigate('/dashboard')}
                 className="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700 font-medium w-full"

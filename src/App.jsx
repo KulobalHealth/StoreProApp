@@ -20,12 +20,22 @@ import Customers from './pages/Customers'
 import SalesHistory from './pages/SalesHistory'
 
 // Role guard — blocks specific roles from accessing a route
-const RoleGuard = ({ blockedRoles = [], children }) => {
+const RoleGuard = ({ blockedRoles = [], allowedRoles = [], children }) => {
   try {
     const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
     const role = (savedUser.role || '').toLowerCase()
-    if (blockedRoles.map(r => r.toLowerCase()).includes(role)) {
-      return <Navigate to="/branch-dashboard" replace />
+
+    // If allowedRoles is specified, only those roles may access
+    if (allowedRoles.length > 0 && !allowedRoles.map(r => r.toLowerCase()).includes(role)) {
+      // Sales users go straight to POS; others to branch-dashboard
+      const fallback = role === 'sales' ? '/pos' : '/branch-dashboard'
+      return <Navigate to={fallback} replace />
+    }
+
+    // If blockedRoles is specified, those roles are denied
+    if (blockedRoles.length > 0 && blockedRoles.map(r => r.toLowerCase()).includes(role)) {
+      const fallback = role === 'sales' ? '/pos' : '/branch-dashboard'
+      return <Navigate to={fallback} replace />
     }
   } catch { /* allow through */ }
   return children
@@ -44,19 +54,19 @@ function App() {
               
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<ActivityDashboard />} />
+                <Route path="/dashboard" element={<RoleGuard blockedRoles={['sales']}><ActivityDashboard /></RoleGuard>} />
                 <Route path="/" element={<Layout />}>
-                  <Route path="branch-dashboard" element={<BranchDashboard />} />
+                  <Route path="branch-dashboard" element={<RoleGuard blockedRoles={['sales']}><BranchDashboard /></RoleGuard>} />
                   <Route index element={<Navigate to="/branch-dashboard" replace />} />
                   <Route path="pos" element={<POS />} />
-                  <Route path="sales" element={<RoleGuard blockedRoles={['manager']}><SalesHistory /></RoleGuard>} />
-                  <Route path="inventory" element={<Inventory />} />
-                  <Route path="purchase-orders/:id" element={<PurchaseOrderDetail />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="users" element={<Users />} />
-                  <Route path="customers" element={<Customers />} />
-                  <Route path="suppliers" element={<Suppliers />} />
-                  <Route path="suppliers/:id" element={<SupplierDetail />} />
+                  <Route path="sales" element={<RoleGuard blockedRoles={['manager', 'sales']}><SalesHistory /></RoleGuard>} />
+                  <Route path="inventory" element={<RoleGuard blockedRoles={['sales']}><Inventory /></RoleGuard>} />
+                  <Route path="purchase-orders/:id" element={<RoleGuard blockedRoles={['sales']}><PurchaseOrderDetail /></RoleGuard>} />
+                  <Route path="settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />
+                  <Route path="users" element={<RoleGuard blockedRoles={['sales']}><Users /></RoleGuard>} />
+                  <Route path="customers" element={<RoleGuard blockedRoles={['sales']}><Customers /></RoleGuard>} />
+                  <Route path="suppliers" element={<RoleGuard blockedRoles={['sales']}><Suppliers /></RoleGuard>} />
+                  <Route path="suppliers/:id" element={<RoleGuard blockedRoles={['sales']}><SupplierDetail /></RoleGuard>} />
                 </Route>
               </Route>
             </Routes>
