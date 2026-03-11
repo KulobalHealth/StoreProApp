@@ -607,6 +607,7 @@ const Inventory = () => {
     try {
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
+        console.log('Updating product:', productId, JSON.stringify(payload, null, 2))
         await updateProduct(productId, payload)
         setSuccessProduct({ ...payload, id: productId, action: 'updated' })
       } else {
@@ -619,6 +620,7 @@ const Inventory = () => {
       setEditingProduct(null)
       setShowSuccessModal(true)
     } catch (err) {
+      console.error('Save product error:', err)
       alert(err.message || 'Could not save product')
     }
   }

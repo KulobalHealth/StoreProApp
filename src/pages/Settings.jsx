@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
-import { Save, Store, Receipt, Printer, Bell, Shield, Globe, Database, Download, Upload, Clock, CheckCircle, AlertCircle, CreditCard, DollarSign, Calendar, FileText, RefreshCw, Trash2, Settings as SettingsIcon, Eye, QrCode, FileText as FileTextIcon, Mail, Phone, MapPin, Building2, User, Lock, Smartphone, Wallet, Loader2 } from 'lucide-react'
+import {
+  Save, Store, Shield, Database, Download, Upload, Clock, CheckCircle,
+  CreditCard, DollarSign, Calendar, FileText, RefreshCw,
+  Settings as SettingsIcon, Mail, Phone, MapPin, Building2, Lock,
+  Smartphone, Wallet, Loader2
+} from 'lucide-react'
 
 const TAX_RATE_KEY = 'awosel_tax_rate'
 
@@ -17,28 +22,12 @@ const getStoredTaxRate = () => {
 const Settings = () => {
   const [settings, setSettings] = useState({
     store: {
-      name: 'Awosel OS Store',
+      name: 'StorePro',
       address: '123 Main Street, Accra',
       phone: '+233 24 123 4567',
       email: 'store@awosel.com',
       taxId: 'TAX-123456',
       taxRate: getStoredTaxRate() === 0 ? '' : String(getStoredTaxRate()),
-    },
-    receipt: {
-      header: 'Thank you for shopping with us!',
-      footer: 'Visit us again!',
-      showTax: true,
-      showBarcode: true,
-      showStoreInfo: true,
-      showDate: true,
-      showCashier: true,
-      printerWidth: '80mm', // 80mm, 58mm
-      fontSize: 'normal', // small, normal, large
-    },
-    notifications: {
-      lowStock: true,
-      dailyReport: true,
-      newOrder: false,
     },
     security: {
       requirePassword: true,
@@ -47,19 +36,19 @@ const Settings = () => {
     },
     backups: {
       autoBackup: true,
-      backupFrequency: 'daily', // daily, weekly, monthly
-      backupLocation: 'local', // local, cloud
+      backupFrequency: 'daily',
+      backupLocation: 'local',
       lastBackup: '2024-01-15 10:30:00',
       nextBackup: '2024-01-16 02:00:00',
       retentionDays: '30',
     },
     billing: {
       plan: 'Professional',
-      billingCycle: 'monthly', // monthly, yearly
+      billingCycle: 'monthly',
       nextBillingDate: '2024-02-15',
       amount: 99.00,
       status: 'active',
-      paymentMethod: 'mobile_money', // credit_card, mobile_money
+      paymentMethod: 'mobile_money',
       creditCard: {
         last4: '4567',
         brand: 'Visa',
@@ -67,7 +56,7 @@ const Settings = () => {
         expiryYear: '2025',
       },
       mobileMoney: {
-        provider: 'MTN', // MTN, Vodafone, AirtelTigo
+        provider: 'MTN',
         phoneNumber: '+233 24 123 4567',
         accountName: 'John Doe',
       },
@@ -89,48 +78,34 @@ const Settings = () => {
   ])
 
   const [isCreatingBackup, setIsCreatingBackup] = useState(false)
+  const [activeTab, setActiveTab] = useState('store')
+  const [saved, setSaved] = useState(false)
 
   const handleSave = () => {
-    alert('Settings saved successfully!')
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   const handleCreateBackup = async () => {
     setIsCreatingBackup(true)
     try {
-      // Simulate backup process (2-3 seconds)
       await new Promise(resolve => setTimeout(resolve, 2500))
-      
-      // Update last backup time
       const now = new Date()
-      const formattedDate = now.toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+      const fmt = (d) => d.toLocaleString('en-GB', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
       })
-      
-      setSettings({
-        ...settings,
+      setSettings(prev => ({
+        ...prev,
         backups: {
-          ...settings.backups,
-          lastBackup: formattedDate,
-          nextBackup: new Date(now.getTime() + 24 * 60 * 60 * 1000).toLocaleString('en-GB', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          })
+          ...prev.backups,
+          lastBackup: fmt(now),
+          nextBackup: fmt(new Date(now.getTime() + 86400000))
         }
-      })
-      
-      alert('Backup created successfully!')
+      }))
+      alert('Sales Uploaded created successfully!')
     } catch (error) {
-      alert('Failed to create backup. Please try again.')
-      console.error('Backup error:', error)
+      alert('Failed to create sales upload. Please try again.')
     } finally {
       setIsCreatingBackup(false)
     }
@@ -139,65 +114,52 @@ const Settings = () => {
   const handleRestoreBackup = (backupId) => {
     if (window.confirm('Are you sure you want to restore this backup? This will replace all current data.')) {
       alert(`Restoring backup ${backupId}...`)
-      // In real app, this would trigger a restore process
     }
   }
 
   const handleDownloadBackup = (backupId) => {
     alert(`Downloading backup ${backupId}...`)
-    // In real app, this would download the backup file
   }
 
   const handleDownloadInvoice = (invoiceId) => {
     alert(`Downloading invoice ${invoiceId}...`)
-    // In real app, this would download the invoice PDF
   }
-
-  const [activeTab, setActiveTab] = useState('store')
 
   const tabs = [
-    { id: 'store', label: 'Store Info', icon: Store, color: 'blue' },
-    { id: 'receipt', label: 'Receipt', icon: Receipt, color: 'green' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'yellow' },
-    { id: 'security', label: 'Security', icon: Shield, color: 'red' },
-    { id: 'backups', label: 'Backups', icon: Database, color: 'indigo' },
-    { id: 'billing', label: 'Billing', icon: CreditCard, color: 'emerald' },
+    { id: 'store', label: 'Store Info', icon: Store },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'backups', label: 'Backups', icon: Database },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
   ]
 
-  const getTabColorClasses = (color, isActive) => {
-    const colors = {
-      blue: isActive ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-50',
-      green: isActive ? 'bg-green-600 text-white' : 'text-green-600 hover:bg-green-50',
-      yellow: isActive ? 'bg-yellow-600 text-white' : 'text-yellow-600 hover:bg-yellow-50',
-      red: isActive ? 'bg-red-600 text-white' : 'text-red-600 hover:bg-red-50',
-      indigo: isActive ? 'bg-indigo-600 text-white' : 'text-indigo-600 hover:bg-indigo-50',
-      emerald: isActive ? 'bg-emerald-600 text-white' : 'text-emerald-600 hover:bg-emerald-50',
-    }
-    return colors[color] || colors.blue
-  }
-
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <SettingsIcon size={32} className="mr-3 text-primary-600" />
-            Settings
-          </h1>
-          <p className="text-gray-600 mt-2 flex items-center">
-            <Shield size={16} className="mr-2" />
-            Configure your store settings and preferences
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center">
+                <SettingsIcon size={18} className="text-white" />
+              </div>
+              Settings
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 ml-12">Configure your store and preferences</p>
+          </div>
+          <button
+            onClick={handleSave}
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm transition-all ${
+              saved
+                ? 'bg-green-500 text-white'
+                : 'bg-primary-500 hover:bg-primary-600 text-white'
+            }`}
+          >
+            {saved ? <><CheckCircle size={16} /> Saved!</> : <><Save size={16} /> Save Changes</>}
+          </button>
         </div>
-        <button onClick={handleSave} className="btn-primary flex items-center">
-          <Save size={18} className="mr-2" />
-          Save All Changes
-        </button>
-      </div>
 
-      {/* Tabs Navigation */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
-        <div className="flex flex-wrap border-b border-gray-200">
+        {/* Tab navigation */}
+        <div className="flex gap-1 bg-white p-1 rounded-xl border border-gray-200 shadow-sm mb-6 overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
@@ -205,734 +167,272 @@ const Settings = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center px-5 py-4 font-medium text-sm transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   isActive
-                    ? getTabColorClasses(tab.color, true)
-                    : `text-gray-600 hover:text-gray-900 ${getTabColorClasses(tab.color, false)}`
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <Icon size={18} className="mr-2" />
+                <Icon size={16} />
                 {tab.label}
-                {isActive && (
-                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${
-                    tab.color === 'blue' ? 'bg-blue-600' :
-                    tab.color === 'green' ? 'bg-green-600' :
-                    tab.color === 'yellow' ? 'bg-yellow-600' :
-                    tab.color === 'red' ? 'bg-red-600' :
-                    tab.color === 'indigo' ? 'bg-indigo-600' :
-                    'bg-emerald-600'
-                  }`} />
-                )}
               </button>
             )
           })}
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {/* Store Information Tab */}
+        {/* ─── Store Info ─── */}
         {activeTab === 'store' && (
-        <div className="card">
-          <div className="flex items-center mb-6 pb-4 border-b">
-            <div className="bg-blue-600 p-2 rounded-lg mr-3">
-              <Store size={24} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Store Information</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage your store details and contact information</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Building2 size={16} className="text-gray-400 mr-2" />
-                Store Name
-              </label>
-              <input
-                type="text"
-                value={settings.store.name}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  store: { ...settings.store, name: e.target.value }
-                })}
-                className="input-field"
-                placeholder="Enter store name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <FileTextIcon size={16} className="text-gray-400 mr-2" />
-                Tax ID
-              </label>
-              <input
-                type="text"
-                value={settings.store.taxId}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  store: { ...settings.store, taxId: e.target.value }
-                })}
-                className="input-field"
-                placeholder="TAX-123456"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <DollarSign size={16} className="text-gray-400 mr-2" />
-                Tax Rate (%)
-              </label>
-              <input
-                type="number"
-                value={settings.store.taxRate}
-                onChange={(e) => {
-                  const raw = e.target.value
-                  setSettings({
-                    ...settings,
-                    store: { ...settings.store, taxRate: raw }
-                  })
-                  try {
-                    const num = raw === '' ? 0 : (parseFloat(raw) || 0)
-                    localStorage.setItem(TAX_RATE_KEY, String(num >= 0 ? num : 0))
-                  } catch (_) {}
-                }}
-                className="input-field"
-                placeholder="0"
-                min="0"
-                step="0.01"
-              />
-              <p className="text-xs text-gray-500 mt-1">Applied to POS subtotal (0 = no tax)</p>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <MapPin size={16} className="text-gray-400 mr-2" />
-                Address
-              </label>
-              <input
-                type="text"
-                value={settings.store.address}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  store: { ...settings.store, address: e.target.value }
-                })}
-                className="input-field"
-                placeholder="Store address"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Phone size={16} className="text-gray-400 mr-2" />
-                Phone
-              </label>
-              <input
-                type="text"
-                value={settings.store.phone}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  store: { ...settings.store, phone: e.target.value }
-                })}
-                className="input-field"
-                placeholder="+233 24 123 4567"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Mail size={16} className="text-gray-400 mr-2" />
-                Email
-              </label>
-              <input
-                type="email"
-                value={settings.store.email}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  store: { ...settings.store, email: e.target.value }
-                })}
-                className="input-field"
-                placeholder="store@awosel.com"
-              />
-            </div>
-          </div>
-        </div>
-        )}
-
-        {/* Receipt Settings Tab */}
-        {activeTab === 'receipt' && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b">
-            <div className="flex items-center">
-              <div className="bg-green-600 p-2 rounded-lg mr-3">
-                <Receipt size={24} className="text-white" />
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+              <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Store size={18} className="text-blue-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Receipt Settings</h2>
-                <p className="text-sm text-gray-600 mt-1">Customize receipt appearance and content</p>
+                <h2 className="text-base font-bold text-gray-900">Store Information</h2>
+                <p className="text-xs text-gray-500">Your store details and contact info</p>
               </div>
             </div>
-            <button className="btn-secondary flex items-center text-sm">
-              <Eye size={16} className="mr-2" />
-              Preview Receipt
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Receipt Content */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <FileTextIcon size={18} className="text-primary-600 mr-2" />
-                  Receipt Content
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Receipt Header Text
-                    </label>
-                    <textarea
-                      value={settings.receipt.header}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, header: e.target.value }
-                      })}
-                      className="input-field"
-                      rows="2"
-                      placeholder="Thank you for shopping with us!"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">This text appears at the top of receipts</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Receipt Footer Text
-                    </label>
-                    <textarea
-                      value={settings.receipt.footer}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, footer: e.target.value }
-                      })}
-                      className="input-field"
-                      rows="2"
-                      placeholder="Visit us again!"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">This text appears at the bottom of receipts</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Receipt Display Options */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <Eye size={18} className="text-primary-600 mr-2" />
-                  Display Options
-                </h3>
-                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center">
-                      <DollarSign size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">Show Tax on Receipt</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.receipt.showTax}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, showTax: e.target.checked }
-                      })}
-                      className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    />
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <Building2 size={14} className="text-gray-400" /> Store Name
                   </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center">
-                      <QrCode size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">Show Barcode on Receipt</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.receipt.showBarcode}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, showBarcode: e.target.checked }
-                      })}
-                      className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    />
+                  <input
+                    type="text"
+                    value={settings.store.name}
+                    onChange={e => setSettings({ ...settings, store: { ...settings.store, name: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="Enter store name"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <FileText size={14} className="text-gray-400" /> Tax ID
                   </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center">
-                      <Store size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">Show Store Information</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.receipt.showStoreInfo}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, showStoreInfo: e.target.checked }
-                      })}
-                      className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    />
-                  </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center">
-                      <Calendar size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">Show Date & Time</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.receipt.showDate}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, showDate: e.target.checked }
-                      })}
-                      className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    />
-                  </label>
-                  <label className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center">
-                      <User size={16} className="text-gray-400 mr-2" />
-                      <span className="text-sm font-medium text-gray-700">Show Cashier Name</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={settings.receipt.showCashier}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, showCashier: e.target.checked }
-                      })}
-                      className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Printer Settings */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <Printer size={18} className="text-primary-600 mr-2" />
-                  Printer Settings
-                </h3>
-                <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Printer Width
-                    </label>
-                    <select
-                      value={settings.receipt.printerWidth}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, printerWidth: e.target.value }
-                      })}
-                      className="input-field"
-                    >
-                      <option value="80mm">80mm (Standard)</option>
-                      <option value="58mm">58mm (Thermal)</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">Select your printer paper width</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Font Size
-                    </label>
-                    <select
-                      value={settings.receipt.fontSize}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        receipt: { ...settings.receipt, fontSize: e.target.value }
-                      })}
-                      className="input-field"
-                    >
-                      <option value="small">Small</option>
-                      <option value="normal">Normal</option>
-                      <option value="large">Large</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">Adjust receipt text size</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Receipt Preview */}
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <Eye size={18} className="text-primary-600 mr-2" />
-                  Receipt Preview
-                </h3>
-                <div className="bg-white border-2 border-gray-200 rounded-lg p-6 font-mono text-xs">
-                  <div className="text-center mb-4 pb-4 border-b-2 border-dashed">
-                    <p className="font-bold text-sm mb-1">{settings.store.name}</p>
-                    <p className="text-xs">{settings.store.address}</p>
-                    <p className="text-xs">{settings.store.phone}</p>
-                  </div>
-                  {settings.receipt.header && (
-                    <div className="text-center mb-4 pb-4 border-b border-dashed">
-                      <p className="text-xs">{settings.receipt.header}</p>
-                    </div>
-                  )}
-                  <div className="mb-4 pb-4 border-b border-dashed">
-                    <div className="flex justify-between mb-1">
-                      <span>Item 1</span>
-                      <span>₵10.00</span>
-                    </div>
-                    <div className="flex justify-between mb-1">
-                      <span>Item 2</span>
-                      <span>₵15.00</span>
-                    </div>
-                    {settings.receipt.showTax && (
-                      <div className="flex justify-between mt-2 pt-2 border-t">
-                        <span>Tax (12.5%)</span>
-                        <span>₵3.13</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex justify-between font-bold mb-4 pb-4 border-b-2">
-                    <span>TOTAL</span>
-                    <span>₵28.13</span>
-                  </div>
-                  {settings.receipt.showBarcode && (
-                    <div className="text-center mb-4 pb-4 border-b border-dashed">
-                      <div className="bg-gray-200 h-16 flex items-center justify-center rounded">
-                        <QrCode size={24} className="text-gray-400" />
-                      </div>
-                      <p className="text-xs mt-2">1234567890123</p>
-                    </div>
-                  )}
-                  {settings.receipt.footer && (
-                    <div className="text-center">
-                      <p className="text-xs">{settings.receipt.footer}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        )}
-
-        {/* Notifications Tab */}
-        {activeTab === 'notifications' && (
-        <div className="card">
-          <div className="flex items-center mb-6 pb-4 border-b">
-            <div className="bg-yellow-600 p-2 rounded-lg mr-3">
-              <Bell size={24} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
-              <p className="text-sm text-gray-600 mt-1">Configure system notifications and alerts</p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-              <div className="flex items-center">
-                <AlertCircle size={18} className="text-orange-500 mr-3" />
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 block">Low Stock Alerts</span>
-                  <span className="text-xs text-gray-500">Get notified when inventory is running low</span>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.notifications.lowStock}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  notifications: { ...settings.notifications, lowStock: e.target.checked }
-                })}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-              />
-            </label>
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-              <div className="flex items-center">
-                <FileText size={18} className="text-blue-500 mr-3" />
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 block">Daily Sales Report</span>
-                  <span className="text-xs text-gray-500">Receive daily sales summary via email</span>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.notifications.dailyReport}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  notifications: { ...settings.notifications, dailyReport: e.target.checked }
-                })}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-              />
-            </label>
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-              <div className="flex items-center">
-                <Bell size={18} className="text-green-500 mr-3" />
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 block">New Order Notifications</span>
-                  <span className="text-xs text-gray-500">Get notified when new orders are received</span>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.notifications.newOrder}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  notifications: { ...settings.notifications, newOrder: e.target.checked }
-                })}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-              />
-            </label>
-          </div>
-        </div>
-        )}
-
-        {/* Security Tab */}
-        {activeTab === 'security' && (
-        <div className="card">
-          <div className="flex items-center mb-6 pb-4 border-b">
-            <div className="bg-red-600 p-2 rounded-lg mr-3">
-              <Shield size={24} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Security Settings</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage security and authentication settings</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-              <div className="flex items-center">
-                <Lock size={18} className="text-red-500 mr-3" />
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 block">Require Password for Transactions</span>
-                  <span className="text-xs text-gray-500">Additional security for high-value transactions</span>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.security.requirePassword}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  security: { ...settings.security, requirePassword: e.target.checked }
-                })}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-              />
-            </label>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Clock size={16} className="text-gray-400 mr-2" />
-                Session Timeout (minutes)
-              </label>
-              <input
-                type="number"
-                value={settings.security.sessionTimeout}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  security: { ...settings.security, sessionTimeout: e.target.value }
-                })}
-                className="input-field w-32"
-                min="5"
-                max="480"
-                placeholder="30"
-              />
-              <p className="text-xs text-gray-500 mt-2">Automatically log out after inactivity period</p>
-            </div>
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-              <div className="flex items-center">
-                <Shield size={18} className="text-purple-500 mr-3" />
-                <div>
-                  <span className="text-sm font-semibold text-gray-900 block">Enable Two-Factor Authentication</span>
-                  <span className="text-xs text-gray-500">Add an extra layer of security to your account</span>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.security.twoFactorAuth}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  security: { ...settings.security, twoFactorAuth: e.target.checked }
-                })}
-                className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-              />
-            </label>
-          </div>
-        </div>
-        )}
-
-        {/* Backups Tab */}
-        {activeTab === 'backups' && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b">
-            <div className="flex items-center">
-              <div className="bg-indigo-600 p-2 rounded-lg mr-3">
-                <Database size={24} className="text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Backups</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage data backups and restore points</p>
-              </div>
-            </div>
-            <button
-              onClick={handleCreateBackup}
-              disabled={isCreatingBackup}
-              className={`btn-primary flex items-center ${isCreatingBackup ? 'opacity-75 cursor-not-allowed' : ''}`}
-            >
-              {isCreatingBackup ? (
-                <>
-                  <Loader2 size={18} className="mr-2 animate-spin" />
-                  Creating Backup...
-                </>
-              ) : (
-                <>
-                  <Database size={18} className="mr-2" />
-                  Create Backup Now
-                </>
-              )}
-            </button>
-          </div>
-          
-          <div className="space-y-6">
-            {/* Backup Settings */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-4">Backup Settings</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center mb-3">
-                    <input
-                      type="checkbox"
-                      checked={settings.backups.autoBackup}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        backups: { ...settings.backups, autoBackup: e.target.checked }
-                      })}
-                      className="mr-2"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Enable Automatic Backups</span>
-                  </label>
+                  <input
+                    type="text"
+                    value={settings.store.taxId}
+                    onChange={e => setSettings({ ...settings, store: { ...settings.store, taxId: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="TAX-123456"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Backup Frequency
-                  </label>
-                  <select
-                    value={settings.backups.backupFrequency}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      backups: { ...settings.backups, backupFrequency: e.target.value }
-                    })}
-                    className="input-field"
-                    disabled={!settings.backups.autoBackup}
-                  >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Backup Location
-                  </label>
-                  <select
-                    value={settings.backups.backupLocation}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      backups: { ...settings.backups, backupLocation: e.target.value }
-                    })}
-                    className="input-field"
-                  >
-                    <option value="local">Local Storage</option>
-                    <option value="cloud">Cloud Storage</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Retention Period (days)
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <DollarSign size={14} className="text-gray-400" /> Tax Rate (%)
                   </label>
                   <input
                     type="number"
-                    value={settings.backups.retentionDays}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      backups: { ...settings.backups, retentionDays: e.target.value }
-                    })}
-                    className="input-field"
-                    min="1"
-                    max="365"
-                    placeholder="30"
+                    value={settings.store.taxRate}
+                    onChange={e => {
+                      const raw = e.target.value
+                      setSettings({ ...settings, store: { ...settings.store, taxRate: raw } })
+                      try {
+                        const num = raw === '' ? 0 : (parseFloat(raw) || 0)
+                        localStorage.setItem(TAX_RATE_KEY, String(num >= 0 ? num : 0))
+                      } catch (_) {}
+                    }}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Applied to POS subtotal (0 = no tax)</p>
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <MapPin size={14} className="text-gray-400" /> Address
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.store.address}
+                    onChange={e => setSettings({ ...settings, store: { ...settings.store, address: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="Store address"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <Phone size={14} className="text-gray-400" /> Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.store.phone}
+                    onChange={e => setSettings({ ...settings, store: { ...settings.store, phone: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="+233 24 123 4567"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
+                    <Mail size={14} className="text-gray-400" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    value={settings.store.email}
+                    onChange={e => setSettings({ ...settings, store: { ...settings.store, email: e.target.value } })}
+                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                    placeholder="store@awosel.com"
                   />
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Backup Status */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
-                <div className="flex items-center mb-2">
-                  <Clock size={16} className="text-blue-600 mr-2" />
-                  <span className="text-sm font-medium text-gray-700">Last Backup</span>
-                </div>
-                <p className="text-lg font-semibold text-gray-900">
-                  {new Date(settings.backups.lastBackup).toLocaleString('en-GB')}
-                </p>
-                <div className="flex items-center mt-2">
-                  <CheckCircle size={14} className="text-green-600 mr-1" />
-                  <span className="text-xs text-gray-600">Success</span>
-                </div>
+        {/* ─── Security ─── */}
+        {activeTab === 'security' && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+              <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center">
+                <Shield size={18} className="text-red-600" />
               </div>
-              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-600">
-                <div className="flex items-center mb-2">
-                  <Calendar size={16} className="text-green-600 mr-2" />
-                  <span className="text-sm font-medium text-gray-700">Next Backup</span>
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Security</h2>
+                <p className="text-xs text-gray-500">Authentication and access settings</p>
+              </div>
+            </div>
+            <div className="p-6 space-y-3">
+              <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <Lock size={15} className="text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Require Password for Transactions</p>
+                    <p className="text-xs text-gray-500">Extra security for high-value transactions</p>
+                  </div>
                 </div>
-                <p className="text-lg font-semibold text-gray-900">
-                  {new Date(settings.backups.nextBackup).toLocaleString('en-GB')}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  {settings.backups.autoBackup ? 'Automatic' : 'Manual only'}
-                </p>
+                <input
+                  type="checkbox"
+                  checked={settings.security.requirePassword}
+                  onChange={e => setSettings({ ...settings, security: { ...settings.security, requirePassword: e.target.checked } })}
+                  className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
+                />
+              </label>
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <Clock size={15} className="text-gray-400" /> Session Timeout (minutes)
+                </label>
+                <input
+                  type="number"
+                  value={settings.security.sessionTimeout}
+                  onChange={e => setSettings({ ...settings, security: { ...settings.security, sessionTimeout: e.target.value } })}
+                  className="w-32 px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                  min="5"
+                  max="480"
+                  placeholder="30"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Auto-logout after inactivity</p>
+              </div>
+              <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Shield size={15} className="text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Two-Factor Authentication</p>
+                    <p className="text-xs text-gray-500">Add an extra layer of security</p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.security.twoFactorAuth}
+                  onChange={e => setSettings({ ...settings, security: { ...settings.security, twoFactorAuth: e.target.checked } })}
+                  className="w-5 h-5 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Backups ─── */}
+        {activeTab === 'backups' && (
+          <div className="space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Database size={18} className="text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">Backups</h2>
+                    <p className="text-xs text-gray-500">Data backup & restore</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCreateBackup}
+                  disabled={isCreatingBackup}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all ${
+                    isCreatingBackup ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
+                >
+                  {isCreatingBackup
+                    ? <><Loader2 size={15} className="animate-spin" /> Uploading...</>
+                    : <><Upload size={15} /> Upload Sales</>
+                  }
+                </button>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="flex items-center gap-2 text-xs font-medium text-blue-600 mb-1">
+                      <Clock size={13} /> Last Backup
+                    </div>
+                    <p className="text-sm font-bold text-gray-900">{new Date(settings.backups.lastBackup).toLocaleString('en-GB')}</p>
+                    <div className="flex items-center gap-1 mt-1 text-xs text-green-600">
+                      <CheckCircle size={12} /> Success
+                    </div>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-xl">
+                    <div className="flex items-center gap-2 text-xs font-medium text-green-600 mb-1">
+                      <Calendar size={13} /> Next Backup
+                    </div>
+                    <p className="text-sm font-bold text-gray-900">{new Date(settings.backups.nextBackup).toLocaleString('en-GB')}</p>
+                    <p className="text-xs text-gray-500 mt-1">{settings.backups.autoBackup ? 'Automatic' : 'Manual only'}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Backup History */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Backup History</h3>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-bold text-gray-900">Sales Upload History</h3>
+              </div>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Date & Time</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Size</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
+                    <tr className="bg-gray-50 text-gray-600">
+                      <th className="text-left py-3 px-5 font-medium">Date & Time</th>
+                      <th className="text-left py-3 px-5 font-medium">Type</th>
+                      <th className="text-left py-3 px-5 font-medium">Size</th>
+                      <th className="text-left py-3 px-5 font-medium">Status</th>
+                      <th className="text-center py-3 px-5 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {backupHistory.map((backup) => (
-                      <tr key={backup.id} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm text-gray-700">
-                          {new Date(backup.date).toLocaleString('en-GB')}
+                    {backupHistory.map(b => (
+                      <tr key={b.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-5 text-gray-700">{new Date(b.date).toLocaleString('en-GB')}</td>
+                        <td className="py-3 px-5">
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                            b.type === 'Automatic' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                          }`}>{b.type}</span>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            backup.type === 'Automatic' 
-                              ? 'bg-blue-100 text-blue-800' 
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {backup.type}
+                        <td className="py-3 px-5 text-gray-700">{b.size}</td>
+                        <td className="py-3 px-5">
+                          <span className="flex items-center gap-1 text-xs font-semibold text-green-700">
+                            <CheckCircle size={13} /> {b.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{backup.size}</td>
-                        <td className="py-3 px-4">
-                          <span className="flex items-center text-xs font-semibold text-green-700">
-                            <CheckCircle size={14} className="mr-1" />
-                            {backup.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex justify-center space-x-2">
-                            <button
-                              onClick={() => handleDownloadBackup(backup.id)}
-                              className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
-                              title="Download Backup"
-                            >
-                              <Download size={16} />
+                        <td className="py-3 px-5">
+                          <div className="flex justify-center gap-1">
+                            <button onClick={() => handleDownloadBackup(b.id)} className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors" title="Download">
+                              <Download size={15} />
                             </button>
-                            <button
-                              onClick={() => handleRestoreBackup(backup.id)}
-                              className="p-2 rounded-lg hover:bg-green-100 text-green-600 transition-colors"
-                              title="Restore Backup"
-                            >
-                              <RefreshCw size={16} />
+                            <button onClick={() => handleRestoreBackup(b.id)} className="p-1.5 rounded-lg hover:bg-green-100 text-green-600 transition-colors" title="Restore">
+                              <RefreshCw size={15} />
                             </button>
                           </div>
                         </td>
@@ -943,317 +443,212 @@ const Settings = () => {
               </div>
             </div>
           </div>
-        </div>
         )}
 
-        {/* Billing Tab */}
+        {/* ─── Billing ─── */}
         {activeTab === 'billing' && (
-        <div className="card">
-          <div className="flex items-center mb-6 pb-4 border-b">
-            <div className="bg-emerald-600 p-2 rounded-lg mr-3">
-              <CreditCard size={24} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Billing & Subscription</h2>
-              <p className="text-sm text-gray-600 mt-1">Manage your subscription and payment information</p>
-            </div>
-          </div>
-          
-          <div className="space-y-6">
-            {/* Current Plan */}
-            <div className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-lg border-l-4 border-blue-600">
-              <div className="flex items-center justify-between mb-4">
+          <div className="space-y-5">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+                <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center">
+                  <CreditCard size={18} className="text-emerald-600" />
+                </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{settings.billing.plan} Plan</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Billed {settings.billing.billingCycle === 'monthly' ? 'monthly' : 'annually'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-blue-700">
-                    ₵{settings.billing.amount.toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    per {settings.billing.billingCycle === 'monthly' ? 'month' : 'year'}
-                  </p>
+                  <h2 className="text-base font-bold text-gray-900">Billing & Subscription</h2>
+                  <p className="text-xs text-gray-500">Plan, payment and invoices</p>
                 </div>
               </div>
-              <div className="flex items-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  settings.billing.status === 'active' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {settings.billing.status === 'active' && <CheckCircle size={12} className="inline mr-1" />}
-                  {settings.billing.status.charAt(0).toUpperCase() + settings.billing.status.slice(1)}
-                </span>
-              </div>
-            </div>
-
-            {/* Payment Method Selection */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <Wallet size={18} className="text-primary-600 mr-2" />
-                Payment Method
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <button
-                  onClick={() => setSettings({
-                    ...settings,
-                    billing: { ...settings.billing, paymentMethod: 'credit_card' }
-                  })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    settings.billing.paymentMethod === 'credit_card'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <CreditCard size={24} className={`mr-3 ${
-                      settings.billing.paymentMethod === 'credit_card' ? 'text-blue-600' : 'text-gray-400'
-                    }`} />
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900">Credit/Debit Card</p>
-                      <p className="text-xs text-gray-500">Pay with card</p>
-                    </div>
-                    {settings.billing.paymentMethod === 'credit_card' && (
-                      <CheckCircle size={20} className="ml-auto text-blue-600" />
-                    )}
+              <div className="p-6 space-y-6">
+                {/* Plan banner */}
+                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-transparent rounded-xl border border-blue-100">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">{settings.billing.plan} Plan</h3>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      Billed {settings.billing.billingCycle === 'monthly' ? 'monthly' : 'annually'}
+                    </p>
+                    <span className={`inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      settings.billing.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {settings.billing.status === 'active' && <CheckCircle size={11} />}
+                      {settings.billing.status.charAt(0).toUpperCase() + settings.billing.status.slice(1)}
+                    </span>
                   </div>
-                </button>
-                <button
-                  onClick={() => setSettings({
-                    ...settings,
-                    billing: { ...settings.billing, paymentMethod: 'mobile_money' }
-                  })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    settings.billing.paymentMethod === 'mobile_money'
-                      ? 'border-green-600 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center">
-                    <Smartphone size={24} className={`mr-3 ${
-                      settings.billing.paymentMethod === 'mobile_money' ? 'text-green-600' : 'text-gray-400'
-                    }`} />
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900">Mobile Money</p>
-                      <p className="text-xs text-gray-500">MTN, Vodafone, AirtelTigo</p>
-                    </div>
-                    {settings.billing.paymentMethod === 'mobile_money' && (
-                      <CheckCircle size={20} className="ml-auto text-green-600" />
-                    )}
-                  </div>
-                </button>
-              </div>
-
-              {/* Payment Method Details */}
-              {settings.billing.paymentMethod === 'credit_card' ? (
-                <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-600">
-                  <div className="flex items-center mb-4">
-                    <CreditCard size={20} className="text-blue-600 mr-2" />
-                    <h4 className="font-semibold text-gray-900">Credit Card Details</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Card Number
-                      </label>
-                      <div className="flex items-center p-3 bg-white rounded-lg">
-                        <CreditCard size={16} className="text-gray-400 mr-2" />
-                        <span className="text-gray-900">
-                          •••• •••• •••• {settings.billing.creditCard.last4}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Card Brand
-                      </label>
-                      <div className="flex items-center p-3 bg-white rounded-lg">
-                        <span className="text-gray-900 font-medium">{settings.billing.creditCard.brand}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Expiry Date
-                      </label>
-                      <div className="flex items-center p-3 bg-white rounded-lg">
-                        <Calendar size={16} className="text-gray-400 mr-2" />
-                        <span className="text-gray-900">
-                          {settings.billing.creditCard.expiryMonth}/{settings.billing.creditCard.expiryYear}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-blue-700">{'\u20B5'}{settings.billing.amount.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">per {settings.billing.billingCycle === 'monthly' ? 'month' : 'year'}</p>
                   </div>
                 </div>
-              ) : (
-                <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-600">
-                  <div className="flex items-center mb-4">
-                    <Smartphone size={20} className="text-green-600 mr-2" />
-                    <h4 className="font-semibold text-gray-900">Mobile Money Details</h4>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Network Provider
-                      </label>
-                      <select
-                        value={settings.billing.mobileMoney.provider}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          billing: {
-                            ...settings.billing,
-                            mobileMoney: { ...settings.billing.mobileMoney, provider: e.target.value }
-                          }
-                        })}
-                        className="input-field"
-                      >
-                        <option value="MTN">MTN Mobile Money</option>
-                        <option value="Vodafone">Vodafone Cash</option>
-                        <option value="AirtelTigo">AirtelTigo Money</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <Phone size={16} className="text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          value={settings.billing.mobileMoney.phoneNumber}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            billing: {
-                              ...settings.billing,
-                              mobileMoney: { ...settings.billing.mobileMoney, phoneNumber: e.target.value }
-                            }
-                          })}
-                          className="input-field pl-10"
-                          placeholder="+233 24 123 4567"
-                        />
-                      </div>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Account Name
-                      </label>
-                      <input
-                        type="text"
-                        value={settings.billing.mobileMoney.accountName}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          billing: {
-                            ...settings.billing,
-                            mobileMoney: { ...settings.billing.mobileMoney, accountName: e.target.value }
-                          }
-                        })}
-                        className="input-field"
-                        placeholder="Account holder name"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
-                    <div className="flex items-start">
-                      <CheckCircle size={18} className="text-green-600 mr-2 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Mobile Money Payment Active</p>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Payments will be processed via {settings.billing.mobileMoney.provider} Mobile Money
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
 
-            {/* Next Billing Date */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                <Calendar size={16} className="text-gray-400 mr-2" />
-                Next Billing Date
-              </label>
-              <div className="flex items-center p-4 bg-gray-50 rounded-lg border-l-4 border-blue-600">
-                <Calendar size={20} className="text-blue-600 mr-3" />
+                {/* Payment method */}
                 <div>
-                  <p className="font-semibold text-gray-900">
-                    {new Date(settings.billing.nextBillingDate).toLocaleDateString('en-GB', { 
-                      day: 'numeric', 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Your next payment will be processed automatically
-                  </p>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+                    <Wallet size={16} className="text-primary-500" /> Payment Method
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                    <button
+                      onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'credit_card' } })}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                        settings.billing.paymentMethod === 'credit_card'
+                          ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <CreditCard size={20} className={settings.billing.paymentMethod === 'credit_card' ? 'text-blue-600' : 'text-gray-400'} />
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900">Credit / Debit Card</p>
+                        <p className="text-xs text-gray-500">Pay with card</p>
+                      </div>
+                      {settings.billing.paymentMethod === 'credit_card' && <CheckCircle size={18} className="ml-auto text-blue-600" />}
+                    </button>
+                    <button
+                      onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'mobile_money' } })}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                        settings.billing.paymentMethod === 'mobile_money'
+                          ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Smartphone size={20} className={settings.billing.paymentMethod === 'mobile_money' ? 'text-green-600' : 'text-gray-400'} />
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900">Mobile Money</p>
+                        <p className="text-xs text-gray-500">MTN, Vodafone, AirtelTigo</p>
+                      </div>
+                      {settings.billing.paymentMethod === 'mobile_money' && <CheckCircle size={18} className="ml-auto text-green-600" />}
+                    </button>
+                  </div>
+
+                  {settings.billing.paymentMethod === 'credit_card' ? (
+                    <div className="p-5 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <CreditCard size={16} className="text-blue-600" /> Card Details
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-white rounded-lg">
+                          <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
+                          <p className="text-sm font-medium text-gray-900">{'\u2022\u2022\u2022\u2022'} {'\u2022\u2022\u2022\u2022'} {'\u2022\u2022\u2022\u2022'} {settings.billing.creditCard.last4}</p>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg">
+                          <p className="text-xs text-gray-500 mb-0.5">Brand</p>
+                          <p className="text-sm font-medium text-gray-900">{settings.billing.creditCard.brand}</p>
+                        </div>
+                        <div className="p-3 bg-white rounded-lg">
+                          <p className="text-xs text-gray-500 mb-0.5">Expires</p>
+                          <p className="text-sm font-medium text-gray-900">{settings.billing.creditCard.expiryMonth}/{settings.billing.creditCard.expiryYear}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-5 bg-green-50 rounded-xl border border-green-100 space-y-4">
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <Smartphone size={16} className="text-green-600" /> Mobile Money Details
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Provider</label>
+                          <select
+                            value={settings.billing.mobileMoney.provider}
+                            onChange={e => setSettings({
+                              ...settings,
+                              billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, provider: e.target.value } }
+                            })}
+                            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                          >
+                            <option value="MTN">MTN Mobile Money</option>
+                            <option value="Vodafone">Vodafone Cash</option>
+                            <option value="AirtelTigo">AirtelTigo Money</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
+                          <div className="relative">
+                            <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                              type="tel"
+                              value={settings.billing.mobileMoney.phoneNumber}
+                              onChange={e => setSettings({
+                                ...settings,
+                                billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, phoneNumber: e.target.value } }
+                              })}
+                              className="w-full pl-9 pr-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                              placeholder="+233 24 123 4567"
+                            />
+                          </div>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Account Name</label>
+                          <input
+                            type="text"
+                            value={settings.billing.mobileMoney.accountName}
+                            onChange={e => setSettings({
+                              ...settings,
+                              billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, accountName: e.target.value } }
+                            })}
+                            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                            placeholder="Account holder name"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Next billing */}
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                  <Calendar size={18} className="text-blue-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Next billing: {new Date(settings.billing.nextBillingDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-gray-500">Payment processed automatically</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Billing History */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <FileText size={18} className="text-primary-600 mr-2" />
-                Billing History
-              </h3>
+            {/* Billing history */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                <FileText size={16} className="text-primary-500" />
+                <h3 className="text-sm font-bold text-gray-900">Billing History</h3>
+              </div>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700">Date</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700">Invoice #</th>
-                      <th className="text-right py-4 px-4 text-sm font-semibold text-gray-700">Amount</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700">Payment Method</th>
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="text-center py-4 px-4 text-sm font-semibold text-gray-700">Actions</th>
+                    <tr className="bg-gray-50 text-gray-600">
+                      <th className="text-left py-3 px-5 font-medium">Date</th>
+                      <th className="text-left py-3 px-5 font-medium">Invoice</th>
+                      <th className="text-right py-3 px-5 font-medium">Amount</th>
+                      <th className="text-left py-3 px-5 font-medium">Method</th>
+                      <th className="text-left py-3 px-5 font-medium">Status</th>
+                      <th className="text-center py-3 px-5 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {billingHistory.map((invoice) => (
-                      <tr key={invoice.id} className="border-b hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-4 text-sm text-gray-700">
-                          {new Date(invoice.date).toLocaleDateString('en-GB')}
+                    {billingHistory.map(inv => (
+                      <tr key={inv.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-5 text-gray-700">{new Date(inv.date).toLocaleDateString('en-GB')}</td>
+                        <td className="py-3 px-5 font-medium text-gray-900">{inv.invoice}</td>
+                        <td className="py-3 px-5 text-right font-semibold text-gray-900">{'\u20B5'}{inv.amount.toFixed(2)}</td>
+                        <td className="py-3 px-5">
+                          <div className="flex items-center gap-1.5">
+                            {inv.paymentMethod === 'mobile_money'
+                              ? <><Smartphone size={14} className="text-green-600" /><span className="text-gray-700">{inv.provider}</span></>
+                              : <><CreditCard size={14} className="text-blue-600" /><span className="text-gray-700">Card</span></>
+                            }
+                          </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-gray-900">{invoice.invoice}</td>
-                        <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                          ₵{invoice.amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </td>
-                        <td className="py-3 px-4">
-                          {invoice.paymentMethod === 'mobile_money' ? (
-                            <div className="flex items-center">
-                              <Smartphone size={16} className="text-green-600 mr-2" />
-                              <div>
-                                <span className="text-sm font-medium text-gray-900">Mobile Money</span>
-                                <p className="text-xs text-gray-500">{invoice.provider}</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center">
-                              <CreditCard size={16} className="text-blue-600 mr-2" />
-                              <span className="text-sm font-medium text-gray-900">Credit Card</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center w-fit ${
-                            invoice.status === 'paid' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-red-100 text-red-700'
+                        <td className="py-3 px-5">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            inv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                           }`}>
-                            {invoice.status === 'paid' && <CheckCircle size={12} className="mr-1" />}
-                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            {inv.status === 'paid' && <CheckCircle size={11} />}
+                            {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-5 text-center">
                           <button
-                            onClick={() => handleDownloadInvoice(invoice.invoice)}
-                            className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors mx-auto flex items-center"
-                            title="Download Invoice"
+                            onClick={() => handleDownloadInvoice(inv.invoice)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
                           >
-                            <Download size={16} className="mr-1" />
-                            <span className="text-xs">Invoice</span>
+                            <Download size={13} /> Invoice
                           </button>
                         </td>
                       </tr>
@@ -1262,35 +657,7 @@ const Settings = () => {
                 </table>
               </div>
             </div>
-
-            {/* Billing Actions */}
-            <div className="flex flex-wrap gap-3 pt-4 border-t">
-              <button className="btn-secondary flex items-center">
-                {settings.billing.paymentMethod === 'credit_card' ? (
-                  <>
-                    <CreditCard size={18} className="mr-2" />
-                    Update Card
-                  </>
-                ) : (
-                  <>
-                    <Smartphone size={18} className="mr-2" />
-                    Update Mobile Money
-                  </>
-                )}
-              </button>
-              <button className="btn-secondary flex items-center">
-                <FileText size={18} className="mr-2" />
-                View All Invoices
-              </button>
-              {settings.billing.paymentMethod === 'mobile_money' && (
-                <button className="btn-primary flex items-center">
-                  <Smartphone size={18} className="mr-2" />
-                  Pay Now with Mobile Money
-                </button>
-              )}
-            </div>
           </div>
-        </div>
         )}
       </div>
     </div>
@@ -1298,4 +665,3 @@ const Settings = () => {
 }
 
 export default Settings
-

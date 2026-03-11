@@ -85,7 +85,7 @@ export async function createProduct(body) {
 }
 
 export async function updateProduct(id, body) {
-  return fetchApi('PUT', '/products/' + id, body)
+  return fetchApi('PATCH', '/products/' + id, body)
 }
 
 export async function deleteProduct(id) {
