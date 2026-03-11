@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
 import * as XLSX from 'xlsx'
-import { Search, Plus, Edit, Trash2, AlertTriangle, Upload, Download, Package, X, Trash, CheckCircle, Check, ChevronLeft, ChevronRight, ChevronDown, ShoppingCart, FileText, Clock, CheckCircle2, ClipboardList, Scan, TrendingUp, TrendingDown, Minus, Building2, FolderOpen, Save, Filter, XCircle } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, AlertTriangle, Upload, Download, Package, X, Trash, CheckCircle, Check, ChevronLeft, ChevronRight, ChevronDown, ShoppingCart, FileText, Clock, CheckCircle2, ClipboardList, Scan, TrendingUp, TrendingDown, Minus, Building2, FolderOpen, Save, Filter, XCircle, Loader2, RotateCcw } from 'lucide-react'
 import {
   listProducts,
   listProductsByBranch,
@@ -14,6 +14,7 @@ import {
   bulkImportProducts,
   listReceipts,
   listSuppliers,
+  listSales,
   createReceipt,
   createReceiptBulk,
   addReceiptItem,
@@ -69,14 +70,19 @@ const Inventory = () => {
   const [importLoading, setImportLoading] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successProduct, setSuccessProduct] = useState(null)
+  const [productSaving, setProductSaving] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const PAGE_SIZE = 100
+  const TABLE_PAGE_SIZE = 10
+  const [tablePage, setTablePage] = useState(1)
   const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false)
   const [showPurchaseOrderList, setShowPurchaseOrderList] = useState(false)
   const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState(null)
   const [showExportModal, setShowExportModal] = useState(false)
+  const [showReturnModal, setShowReturnModal] = useState(false)
+  const [alertQueue, setAlertQueue] = useState([])
   const [exportDepartmentFilter, setExportDepartmentFilter] = useState('all')
   const [exportSaleFilter, setExportSaleFilter] = useState('all') // 'all' | 'high' | 'low'
   const [stockFilter, setStockFilter] = useState('all') // 'all' | 'high_sale' | 'low_sale' | 'out_of_stock' | 'expired'
@@ -103,6 +109,14 @@ const Inventory = () => {
   }
 
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState('all')
+
+  // Toast alert helper
+  const showAlert = (message, type = 'info') => {
+    const id = Date.now() + Math.random()
+    setAlertQueue(prev => [...prev, { id, message, type }])
+    const duration = type === 'success' ? 4000 : type === 'error' ? 6000 : 3500
+    setTimeout(() => setAlertQueue(prev => prev.filter(a => a.id !== id)), duration)
+  }
   
   // Get departments for filter dropdown
   const getDepartments = () => loadDepartments()
@@ -201,13 +215,22 @@ const Inventory = () => {
     }
   })()
 
+  // Client-side pagination: 10 items per table page
+  const totalTablePages = Math.max(1, Math.ceil(displayProducts.length / TABLE_PAGE_SIZE))
+  const paginatedProducts = displayProducts.slice((tablePage - 1) * TABLE_PAGE_SIZE, tablePage * TABLE_PAGE_SIZE)
+
+  // Reset table page when filters/search/products change
+  useEffect(() => {
+    setTablePage(1)
+  }, [stockFilter, searchTerm, selectedDepartmentFilter, products.length])
+
   const deleteProduct = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return
     try {
       await apiDeleteProduct(id)
       await fetchProducts()
     } catch (err) {
-      alert(err.message || 'Could not delete product')
+      showAlert(err.message || 'Could not delete product', 'error')
     }
   }
 
@@ -245,7 +268,7 @@ const Inventory = () => {
     const exportProducts = getFilteredExportProducts()
 
     if (exportProducts.length === 0) {
-      alert('No products match the selected filters.')
+      showAlert('No products match the selected filters.', 'warning')
       return
     }
 
@@ -473,7 +496,7 @@ const Inventory = () => {
     const isExcel = /\.(xlsx|xls)$/i.test(file.name)
     const isCsv = file.name.toLowerCase().endsWith('.csv')
     if (!isExcel && !isCsv) {
-      alert('Please select a CSV or Excel file (.csv, .xlsx, .xls)')
+      showAlert('Please select a CSV or Excel file (.csv, .xlsx, .xls)', 'warning')
       return
     }
     setImportFileType(isExcel ? 'excel' : 'csv')
@@ -483,7 +506,7 @@ const Inventory = () => {
         if (isExcel) {
           const { data, errors } = parseExcel(e.target.result)
           if (data.length === 0) {
-            alert('No rows found in the Excel sheet')
+            showAlert('No rows found in the Excel sheet', 'warning')
             return
           }
           buildImportPreview(data, errors)
@@ -493,7 +516,7 @@ const Inventory = () => {
           buildImportPreview(data, errors)
         }
       } catch (error) {
-        alert(`Error reading file: ${error.message}`)
+        showAlert(`Error reading file: ${error.message}`, 'error')
       }
     }
     if (isExcel) reader.readAsArrayBuffer(file)
@@ -505,7 +528,7 @@ const Inventory = () => {
   const handleConfirmImport = async () => {
     const validRows = importPreview.filter(p => !p.errors)
     if (validRows.length === 0) {
-      alert('No valid rows to import')
+      showAlert('No valid rows to import', 'warning')
       return
     }
 
@@ -514,7 +537,7 @@ const Inventory = () => {
     const organizationId = user?.organization_id || user?.organizationId || ''
 
     if (!branchId || !organizationId) {
-      alert('Please select an active branch before importing products.')
+      showAlert('Please select an active branch before importing products.', 'warning')
       return
     }
 
@@ -551,12 +574,12 @@ const Inventory = () => {
       const failed = data.failed ?? 0
       const created = data.created ?? products.length ?? 0
       if (failed > 0) {
-        alert(`Imported ${created} product(s). ${failed} row(s) failed (e.g. duplicate SKU). Check the list.`)
+        showAlert(`Imported ${created} product(s). ${failed} row(s) failed (e.g. duplicate SKU). Check the list.`, 'warning')
       } else {
-        alert(`Successfully imported ${products.length} product(s).`)
+        showAlert(`Successfully imported ${products.length} product(s).`, 'success')
       }
     } catch (err) {
-      alert(err.message || 'Could not import products')
+      showAlert(err.message || 'Could not import products', 'error')
     } finally {
       setImportLoading(false)
     }
@@ -605,6 +628,7 @@ const Inventory = () => {
     }
 
     try {
+      setProductSaving(true)
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
         console.log('Updating product:', productId, JSON.stringify(payload, null, 2))
@@ -621,7 +645,9 @@ const Inventory = () => {
       setShowSuccessModal(true)
     } catch (err) {
       console.error('Save product error:', err)
-      alert(err.message || 'Could not save product')
+      showAlert(err.message || 'Could not save product', 'error')
+    } finally {
+      setProductSaving(false)
     }
   }
 
@@ -676,7 +702,7 @@ const Inventory = () => {
     const items = orderData.items || []
     const paymentType = orderData.payment_type === 'credit' ? 'credit' : 'full_payment'
     if (!supplierId || items.length === 0) {
-      alert('Please select a supplier and add at least one item')
+      showAlert('Please select a supplier and add at least one item', 'warning')
       return
     }
     try {
@@ -695,9 +721,9 @@ const Inventory = () => {
       setShowPurchaseOrderModal(false)
       setSelectedPurchaseOrder(null)
       fetchPurchaseOrders()
-      alert('Purchase order saved. Receive it from the list when stock arrives.')
+      showAlert('Purchase order saved. Receive it from the list when stock arrives.', 'success')
     } catch (err) {
-      alert(err.message || 'Could not save purchase order')
+      showAlert(err.message || 'Could not save purchase order', 'error')
     }
   }
 
@@ -706,14 +732,56 @@ const Inventory = () => {
       await receiveReceipt({ id: poId, branchId: getSessionBranchId(), organizationId: getSessionOrgId() })
       fetchPurchaseOrders()
       fetchProducts()
-      alert('Purchase order received. Stock and supplier balance updated.')
+      showAlert('Purchase order received. Stock and supplier balance updated.', 'success')
     } catch (err) {
-      alert(err.message || 'Could not receive order')
+      showAlert(err.message || 'Could not receive order', 'error')
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Toast Notifications */}
+      {alertQueue.length > 0 && (
+        <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
+          {alertQueue.map((alert) => {
+            const styles = {
+              success: { bg: 'bg-green-50 border-green-200', icon: <CheckCircle size={20} className="text-green-500" />, title: 'Success', text: 'text-green-800', bar: 'bg-green-500' },
+              error: { bg: 'bg-red-50 border-red-200', icon: <XCircle size={20} className="text-red-500" />, title: 'Error', text: 'text-red-800', bar: 'bg-red-500' },
+              warning: { bg: 'bg-amber-50 border-amber-200', icon: <AlertTriangle size={20} className="text-amber-500" />, title: 'Warning', text: 'text-amber-800', bar: 'bg-amber-500' },
+              info: { bg: 'bg-blue-50 border-blue-200', icon: <Package size={20} className="text-blue-500" />, title: 'Info', text: 'text-blue-800', bar: 'bg-blue-500' },
+            }[alert.type] || { bg: 'bg-blue-50 border-blue-200', icon: <Package size={20} className="text-blue-500" />, title: 'Info', text: 'text-blue-800', bar: 'bg-blue-500' }
+            return (
+              <div key={alert.id} className={`pointer-events-auto rounded-xl border shadow-lg overflow-hidden ${styles.bg}`} style={{ animation: 'slideDown 0.35s ease-out' }}>
+                <div className="px-4 py-3 flex items-start gap-3">
+                  <div className="mt-0.5 shrink-0">{styles.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold ${styles.text}`}>{styles.title}</p>
+                    <p className={`text-sm mt-0.5 ${styles.text} opacity-90`}>{alert.message}</p>
+                  </div>
+                  <button onClick={() => setAlertQueue(prev => prev.filter(a => a.id !== alert.id))} className="shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors">
+                    <X size={16} className={styles.text} />
+                  </button>
+                </div>
+                <div className={`h-1 ${styles.bar} opacity-30`} />
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Full-page product saving overlay */}
+      {productSaving && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+            <Loader2 size={48} className="animate-spin text-primary-600" />
+            <p className="text-lg font-semibold text-gray-800">
+              {editingProduct ? 'Updating Product...' : 'Saving Product...'}
+            </p>
+            <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
@@ -765,6 +833,14 @@ const Inventory = () => {
               >
                 <Download size={16} className="text-primary-500" />
                 Export
+              </button>
+              <button
+                onClick={() => setShowReturnModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium hover:bg-orange-100 transition-colors"
+                title="Return items back to inventory"
+              >
+                <RotateCcw size={16} className="text-orange-500" />
+                Return Item
               </button>
               <button
                 onClick={() => setShowAddModal(true)}
@@ -983,8 +1059,8 @@ const Inventory = () => {
                       </div>
                     </td>
                   </tr>
-                ) : displayProducts.length > 0 ? (
-                  displayProducts.map((product, idx) => {
+                ) : paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((product, idx) => {
                     const isLowStock = product.stock <= product.minStock
                     const reorderPoint = product.reorderPoint || product.minStock
                     const needsReplenishment = product.stock <= reorderPoint
@@ -1085,24 +1161,24 @@ const Inventory = () => {
           {displayProducts.length > 0 && (
             <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
               <span className="text-sm text-gray-600">
-                Showing <span className="font-medium text-gray-900">{displayProducts.length}</span> of <span className="font-medium text-gray-900">{totalProducts}</span>{stockFilter !== 'all' && <span className="text-primary-500 font-medium"> · {stockFilter === 'high_sale' ? 'High Sale' : stockFilter === 'low_sale' ? 'Low Sale' : stockFilter === 'out_of_stock' ? 'Out of Stock' : 'Expired'}</span>}
+                Showing <span className="font-medium text-gray-900">{(tablePage - 1) * TABLE_PAGE_SIZE + 1}–{Math.min(tablePage * TABLE_PAGE_SIZE, displayProducts.length)}</span> of <span className="font-medium text-gray-900">{displayProducts.length}</span>{stockFilter !== 'all' && <span className="text-primary-500 font-medium"> · {stockFilter === 'high_sale' ? 'High Sale' : stockFilter === 'low_sale' ? 'Low Sale' : stockFilter === 'out_of_stock' ? 'Out of Stock' : 'Expired'}</span>}
               </span>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => setTablePage(prev => Math.max(1, prev - 1))}
+                  disabled={tablePage === 1}
                   className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={16} />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                {Array.from({ length: totalTablePages }, (_, i) => i + 1).map((page) => {
+                  if (page === 1 || page === totalTablePages || (page >= tablePage - 1 && page <= tablePage + 1)) {
                     return (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
+                        onClick={() => setTablePage(page)}
                         className={`min-w-[2rem] h-8 px-2 rounded-lg text-sm font-medium transition-colors ${
-                          currentPage === page
+                          tablePage === page
                             ? 'bg-primary-500 text-white'
                             : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                         }`}
@@ -1110,14 +1186,14 @@ const Inventory = () => {
                         {page}
                       </button>
                     )
-                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                  } else if (page === tablePage - 2 || page === tablePage + 2) {
                     return <span key={page} className="px-1 text-gray-400">…</span>
                   }
                   return null
                 })}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setTablePage(prev => Math.min(totalTablePages, prev + 1))}
+                  disabled={tablePage === totalTablePages}
                   className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={16} />
@@ -1386,6 +1462,7 @@ const Inventory = () => {
           onSave={handleSaveProduct}
           onClose={handleCloseModal}
           departments={getDepartments()}
+          showAlert={showAlert}
         />
       )}
 
@@ -1412,6 +1489,7 @@ const Inventory = () => {
             setShowPurchaseOrderModal(false)
             setSelectedPurchaseOrder(null)
           }}
+          showAlert={showAlert}
         />
       )}
 
@@ -1432,12 +1510,32 @@ const Inventory = () => {
         />
       )}
 
+      {/* Return Item Modal */}
+      {showReturnModal && (
+        <ReturnItemModal
+          onReturn={async (returnItems, reason, receiptNumber, returnDate) => {
+            // Update stock for each returned item
+            for (const item of returnItems) {
+              if (item.productId && item.returnQty > 0) {
+                const product = products.find(p => (p.uuid || p.id) === item.productId || String(p.id) === String(item.productId))
+                if (product) {
+                  const newStock = (Number(product.stock) || 0) + Number(item.returnQty)
+                  await updateProduct(product.uuid || product.id, { quantity: newStock })
+                }
+              }
+            }
+            await fetchProducts()
+          }}
+          onClose={() => setShowReturnModal(false)}
+        />
+      )}
+
     </div>
   )
 }
 
 // Add/Edit Product Modal Component
-const AddProductModal = ({ product, onSave, onClose, departments = [] }) => {
+const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert = () => {} }) => {
   const UNITS_OF_MEASURE = [
     { value: 'piece', label: 'Piece', abbreviation: 'pc' },
     { value: 'pack', label: 'Pack', abbreviation: 'pack' },
@@ -1601,7 +1699,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [] }) => {
 
     // Validate units
     if (formData.units.length === 0) {
-      alert('Please add at least one unit of measure')
+      showAlert('Please add at least one unit of measure', 'warning')
       return
     }
 
@@ -1648,7 +1746,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [] }) => {
   // Remove unit
   const handleRemoveUnit = (index) => {
     if (formData.units.length <= 1) {
-      alert('At least one unit is required')
+      showAlert('At least one unit is required', 'warning')
       return
     }
     setFormData(prev => ({
@@ -2212,7 +2310,7 @@ const ProductSuccessModal = ({ product, onClose }) => {
 }
 
 // Purchase Order Modal Component (saves as pending; receive from list when stock arrives)
-const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSave, onClose }) => {
+const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSave, onClose, showAlert = () => {} }) => {
   const [supplierId, setSupplierId] = useState('')
   const [supplierSearch, setSupplierSearch] = useState('')
   const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false)
@@ -2283,11 +2381,11 @@ const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSav
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!supplierId) {
-      alert('Please select a supplier')
+      showAlert('Please select a supplier', 'warning')
       return
     }
     if (items.length === 0) {
-      alert('Please add at least one item to the purchase order')
+      showAlert('Please add at least one item to the purchase order', 'warning')
       return
     }
 
@@ -2297,7 +2395,7 @@ const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSav
       unitCost: parseFloat(item.unitCost) || 0
     }))
     if (validItems.length === 0) {
-      alert('Please add valid items to the purchase order')
+      showAlert('Please add valid items to the purchase order', 'warning')
       return
     }
 
@@ -2612,6 +2710,377 @@ const PurchaseOrderListModal = ({ purchaseOrders, loading, onSelectPo, onClose, 
               })}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Return Item Modal Component
+const ReturnItemModal = ({ onReturn, onClose }) => {
+  const [receiptNumber, setReceiptNumber] = useState('')
+  const [returnDate, setReturnDate] = useState(new Date().toISOString().split('T')[0])
+  const [reason, setReason] = useState('')
+  const [returning, setReturning] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [fetching, setFetching] = useState(false)
+  const [sale, setSale] = useState(null) // fetched sale object
+  const [saleItems, setSaleItems] = useState([]) // items with returnQty & checked
+
+  const reasons = ['Customer Return', 'Damaged Goods', 'Wrong Item Sold', 'Expired Product Swap', 'Supplier Return', 'Stock Adjustment', 'Other']
+
+  // Fetch sale by receipt number + date
+  const handleFetchSale = async () => {
+    setError('')
+    if (!receiptNumber.trim()) { setError('Please enter a receipt number'); return }
+    try {
+      setFetching(true)
+      const branchId = getSessionBranchId()
+      const query = { branch_id: branchId }
+      if (returnDate) query.date = returnDate
+      const res = await listSales(query)
+      const sales = Array.isArray(res) ? res : (res?.data || res?.sales || [])
+      // Find matching sale by receipt number
+      const match = sales.find(s =>
+        (s.receipt_number || '').toLowerCase() === receiptNumber.trim().toLowerCase()
+      )
+      if (!match) {
+        setError(`No sale found with receipt number "${receiptNumber.trim()}". Try a different date.`)
+        setSale(null)
+        setSaleItems([])
+        return
+      }
+      setSale(match)
+      const items = (match.items || match.sale_items || []).map((item, i) => ({
+        index: i,
+        productId: item.product_id || item.productId || '',
+        productName: item.product_name || item.name || 'Unknown Item',
+        quantitySold: Number(item.quantity_sold || item.quantity || 0),
+        unitPrice: Number(item.unit_price || item.price || 0),
+        unit: item.unit_name || item.unit || '—',
+        returnQty: 0,
+        checked: false,
+      }))
+      setSaleItems(items)
+    } catch (err) {
+      setError(err.message || 'Failed to fetch sale')
+      setSale(null)
+      setSaleItems([])
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  const toggleItem = (index) => {
+    setSaleItems(prev => prev.map((item, i) =>
+      i === index ? { ...item, checked: !item.checked, returnQty: !item.checked ? (item.returnQty || item.quantitySold) : 0 } : item
+    ))
+  }
+
+  const updateReturnQty = (index, qty) => {
+    setSaleItems(prev => prev.map((item, i) =>
+      i === index ? { ...item, returnQty: Math.min(Math.max(0, qty), item.quantitySold) } : item
+    ))
+  }
+
+  const selectedItems = saleItems.filter(it => it.checked && it.returnQty > 0)
+  const totalReturnItems = selectedItems.reduce((s, it) => s + it.returnQty, 0)
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault()
+    setError('')
+    if (selectedItems.length === 0) { setError('Please select at least one item to return'); return }
+    if (!reason) { setError('Please select a reason for the return'); return }
+    try {
+      setReturning(true)
+      await onReturn(
+        selectedItems.map(it => ({ productId: it.productId, returnQty: it.returnQty, productName: it.productName })),
+        reason, receiptNumber, returnDate
+      )
+      setSuccess(true)
+    } catch (err) {
+      setError(err.message || 'Failed to process return')
+    } finally {
+      setReturning(false)
+    }
+  }
+
+  // Success screen
+  if (success) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-green-50 px-6 py-8 flex flex-col items-center">
+            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
+              <CheckCircle size={28} className="text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Return Processed</h2>
+            <p className="text-sm text-gray-600 mt-2 text-center">
+              <span className="font-semibold">{totalReturnItems}</span> item{totalReturnItems !== 1 ? 's' : ''} returned to inventory.
+            </p>
+            <div className="mt-3 w-full max-w-xs space-y-1">
+              {selectedItems.map((it, i) => (
+                <div key={i} className="flex justify-between text-xs text-gray-600">
+                  <span className="truncate">{it.productName}</span>
+                  <span className="font-semibold text-gray-800 ml-2 shrink-0">×{it.returnQty}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
+              <span>Receipt: <span className="font-semibold text-gray-700">{receiptNumber}</span></span>
+              <span>·</span>
+              <span>Reason: <span className="font-semibold text-gray-700">{reason}</span></span>
+            </div>
+          </div>
+          <div className="px-6 py-4 flex justify-end bg-gray-50 border-t">
+            <button onClick={onClose} className="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors text-sm flex items-center gap-2">
+              <Check size={16} /> Done
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      {returning && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+            <Loader2 size={48} className="animate-spin text-orange-500" />
+            <p className="text-lg font-semibold text-gray-800">Processing Return...</p>
+            <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
+          </div>
+        </div>
+      )}
+      <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl mx-4">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
+              <RotateCcw size={18} className="text-orange-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Return Item</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Look up a sale and select items to return</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-auto p-6 space-y-5">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+              <XCircle size={16} className="text-red-500 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Step 1: Receipt Lookup */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <Search size={15} className="text-gray-500" />
+              Look Up Sale
+            </h3>
+            <div className="flex flex-col sm:flex-row items-end gap-3">
+              <div className="flex-1 w-full">
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Receipt Number <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={receiptNumber}
+                  onChange={e => { setReceiptNumber(e.target.value); if (sale) { setSale(null); setSaleItems([]) } }}
+                  placeholder="Enter receipt number..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+              <div className="w-full sm:w-44">
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">Sale Date</label>
+                <input
+                  type="date"
+                  value={returnDate}
+                  onChange={e => { setReturnDate(e.target.value); if (sale) { setSale(null); setSaleItems([]) } }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleFetchSale}
+                disabled={fetching || !receiptNumber.trim()}
+                className="w-full sm:w-auto px-5 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shrink-0"
+              >
+                {fetching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                {fetching ? 'Searching...' : 'Fetch Sale'}
+              </button>
+            </div>
+          </div>
+
+          {/* Step 2: Sale Items Table */}
+          {sale && (
+            <>
+              {/* Sale Summary */}
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                  <div>
+                    <span className="text-gray-500">Receipt:</span>{' '}
+                    <span className="font-semibold text-gray-900">{sale.receipt_number || '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Date:</span>{' '}
+                    <span className="font-semibold text-gray-900">{sale.created_at ? new Date(sale.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—'}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Total:</span>{' '}
+                    <span className="font-semibold text-gray-900">₵{(Number(sale.total) || 0).toFixed(2)}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Payment:</span>{' '}
+                    <span className="font-semibold text-gray-900">{sale.payment_method || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800 mb-3">Select items to return</h3>
+                {saleItems.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    <Package size={36} className="mx-auto mb-2 text-gray-300" />
+                    No line items found in this sale.
+                  </div>
+                ) : (
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200">
+                          <th className="w-10 px-3 py-2.5 text-center">
+                            <input
+                              type="checkbox"
+                              checked={saleItems.length > 0 && saleItems.every(it => it.checked)}
+                              onChange={() => {
+                                const allChecked = saleItems.every(it => it.checked)
+                                setSaleItems(prev => prev.map(it => ({ ...it, checked: !allChecked, returnQty: !allChecked ? it.quantitySold : 0 })))
+                              }}
+                              className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                            />
+                          </th>
+                          <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Product</th>
+                          <th className="px-3 py-2.5 text-right font-semibold text-gray-600">Sold</th>
+                          <th className="px-3 py-2.5 text-right font-semibold text-gray-600">Unit Price</th>
+                          <th className="px-3 py-2.5 text-center font-semibold text-gray-600 w-28">Return Qty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {saleItems.map((item, i) => (
+                          <tr
+                            key={i}
+                            className={`border-b border-gray-100 last:border-b-0 transition-colors ${
+                              item.checked ? 'bg-orange-50/60' : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <td className="px-3 py-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={item.checked}
+                                onChange={() => toggleItem(i)}
+                                className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
+                              />
+                            </td>
+                            <td className="px-3 py-3">
+                              <p className="font-medium text-gray-900">{item.productName}</p>
+                              {item.unit !== '—' && <p className="text-xs text-gray-500">{item.unit}</p>}
+                            </td>
+                            <td className="px-3 py-3 text-right text-gray-700 font-medium">{item.quantitySold}</td>
+                            <td className="px-3 py-3 text-right text-gray-600">₵{item.unitPrice.toFixed(2)}</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center justify-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => updateReturnQty(i, item.returnQty - 1)}
+                                  disabled={!item.checked || item.returnQty <= 0}
+                                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                  <Minus size={14} />
+                                </button>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={item.quantitySold}
+                                  value={item.checked ? item.returnQty : 0}
+                                  onChange={e => updateReturnQty(i, parseInt(e.target.value) || 0)}
+                                  disabled={!item.checked}
+                                  className="w-14 text-center px-1 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-gray-100 disabled:text-gray-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => updateReturnQty(i, item.returnQty + 1)}
+                                  disabled={!item.checked || item.returnQty >= item.quantitySold}
+                                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Reason */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Return Reason <span className="text-red-500">*</span></label>
+                <select
+                  value={reason}
+                  onChange={e => setReason(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
+                >
+                  <option value="">Select a reason...</option>
+                  {reasons.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* Return Summary */}
+              {selectedItems.length > 0 && (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-gray-900">{selectedItems.length}</span> item{selectedItems.length !== 1 ? 's' : ''} selected · <span className="font-semibold text-gray-900">{totalReturnItems}</span> total units
+                  </div>
+                  <div className="text-sm font-bold text-orange-600">
+                    Refund: ₵{selectedItems.reduce((s, it) => s + it.returnQty * it.unitPrice, 0).toFixed(2)}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Empty state when no sale fetched */}
+          {!sale && !fetching && (
+            <div className="text-center py-10 text-gray-400">
+              <FileText size={40} className="mx-auto mb-3 text-gray-300" />
+              <p className="text-sm">Enter a receipt number above and click <span className="font-semibold text-gray-600">"Fetch Sale"</span> to look up the transaction.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+          <button type="button" onClick={onClose} className="bg-white border border-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm">
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={returning || selectedItems.length === 0}
+            className="bg-orange-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-2"
+          >
+            <RotateCcw size={16} />
+            Process Return ({totalReturnItems})
+          </button>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import Users from './pages/Users'
 import Suppliers from './pages/Suppliers'
 import SupplierDetail from './pages/SupplierDetail'
 import Customers from './pages/Customers'
+import Cashiers from './pages/Cashiers'
 import SalesHistory from './pages/SalesHistory'
 
 // Role guard — blocks specific roles from accessing a route
@@ -83,6 +84,7 @@ function App() {
                   <Route path="settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />
                   <Route path="users" element={<RoleGuard blockedRoles={['sales']}><Users /></RoleGuard>} />
                   <Route path="customers" element={<RoleGuard blockedRoles={['sales']}><Customers /></RoleGuard>} />
+                  <Route path="cashiers" element={<RoleGuard blockedRoles={['sales']}><Cashiers /></RoleGuard>} />
                   <Route path="suppliers" element={<RoleGuard blockedRoles={['sales']}><Suppliers /></RoleGuard>} />
                   <Route path="suppliers/:id" element={<RoleGuard blockedRoles={['sales']}><SupplierDetail /></RoleGuard>} />
                 </Route>

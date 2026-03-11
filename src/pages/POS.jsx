@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { X, ChevronDown, User, Search, Edit, RotateCcw, DollarSign, Plus, Minus, Trash2, Check, Printer, Mail, Save, Download, Clock, RotateCw, CheckCircle, ShoppingBag, Percent, Receipt as ReceiptIcon, CreditCard, Settings, FileText, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { X, ChevronDown, User, Search, Edit, RotateCcw, DollarSign, Plus, Minus, Trash2, Check, Printer, Mail, Save, Download, Clock, RotateCw, CheckCircle, ShoppingBag, Percent, Receipt as ReceiptIcon, CreditCard, Settings, FileText, AlertCircle, Loader2, AlertTriangle, Info, XCircle } from 'lucide-react'
 import Receipt from '../components/Receipt'
 import { printReceiptDirect } from '../utils/printReceipt'
 import { listCustomers, listProducts, listProductsByBranch, listHeldSales, createSale, createHeldSale, deleteHeldSale } from '../api/awoselDb.js'
@@ -44,6 +44,7 @@ function mapApiProductToPOS(p) {
     department: p.category || 'General',
     itemName: p.name || 'Unknown',
     price,
+    stock: Number(p.quantity) || Number(p.stock) || 0,
     barcode: p.barcode || '',
     baseUnit,
     units
@@ -72,6 +73,7 @@ const POS = () => {
   const [showHeldSalesModal, setShowHeldSalesModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successTransaction, setSuccessTransaction] = useState(null)
+  const [savingState, setSavingState] = useState(null) // null | 'save' | 'print' | 'email'
   const [showIWantToMenu, setShowIWantToMenu] = useState(false)
   const [productsFromApi, setProductsFromApi] = useState([])
   const [allProducts, setAllProducts] = useState([]) // full product list cached in memory
@@ -79,6 +81,9 @@ const POS = () => {
   const [productsError, setProductsError] = useState('')
   const [customersFromApi, setCustomersFromApi] = useState([])
   const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false)
+  const [alertQueue, setAlertQueue] = useState([]) // {id, type, title, message}
+  const [removeConfirm, setRemoveConfirm] = useState(null) // { id, name } of item pending removal
+  const alertTimerRef = useRef(null)
   const receiptRef = useRef(null)
   const iWantToMenuRef = useRef(null)
   const cartDiscountRef = useRef(null)
@@ -87,6 +92,18 @@ const POS = () => {
   useEffect(() => {
     selectedCustomerIdRef.current = (customer && customer.id != null && Number(customer.id) > 0) ? Number(customer.id) : null
   }, [customer])
+
+  // Alert helper — pushes a styled toast notification
+  const showAlert = useCallback((type, message, title = '') => {
+    const id = Date.now() + Math.random()
+    setAlertQueue(prev => [...prev.slice(-4), { id, type, title, message }]) // keep max 5
+    setTimeout(() => {
+      setAlertQueue(prev => prev.filter(a => a.id !== id))
+    }, type === 'error' ? 5000 : 3500)
+  }, [])
+  const dismissAlert = useCallback((id) => {
+    setAlertQueue(prev => prev.filter(a => a.id !== id))
+  }, [])
 
   // Load customers from API for POS
   useEffect(() => {
@@ -270,7 +287,7 @@ const POS = () => {
       // Validate product
       if (!product || !product.id) {
         console.error('Invalid product:', product)
-        alert('Invalid product selected')
+        showAlert('error', 'Invalid product selected')
         return
       }
 
@@ -285,6 +302,13 @@ const POS = () => {
       const unit = selectedUnit || (product.units?.[0] || { unit: 'piece', conversion: 1, price: product.price })
       const unitPrice = typeof unit.price === 'number' ? unit.price : (typeof product.price === 'number' ? product.price : 0)
       const unitLabel = UNITS_OF_MEASURE.find(u => u.value === unit.unit)?.abbreviation || unit.unit || 'pc'
+
+      // Stock check
+      const productStock = typeof product.stock === 'number' ? product.stock : 0
+      if (productStock <= 0) {
+        showAlert('error', `"${product.itemName || product.name}" is out of stock.`, 'Out of Stock')
+        return
+      }
 
       // Check if item already exists in cart
       const existingItem = items.find(item => 
@@ -317,7 +341,7 @@ const POS = () => {
       setPendingProduct(null)
     } catch (error) {
       console.error('Error adding item to cart:', error)
-      alert('Failed to add item to cart. Please try again.')
+      showAlert('error', 'Failed to add item to cart. Please try again.')
     }
   }, [items])
 
@@ -357,7 +381,7 @@ const POS = () => {
       }))
     } catch (error) {
       console.error('Error changing quantity:', error)
-      alert('Failed to update quantity. Please try again.')
+      showAlert('error', 'Failed to update quantity. Please try again.')
     }
   }, [])
 
@@ -373,7 +397,7 @@ const POS = () => {
       )
     } catch (error) {
       console.error('Error removing item:', error)
-      alert('Failed to remove item. Please try again.')
+      showAlert('error', 'Failed to remove item. Please try again.')
     }
   }, [])
 
@@ -417,15 +441,16 @@ const POS = () => {
     if (selectedItem && window.confirm(`Return ${selectedItem.itemName}?`)) {
       // In a real app, this would create a return transaction
       handleRemoveItem(selectedItem.id)
-      alert('Item returned successfully')
+      showAlert('success', 'Item returned successfully')
     }
   }
 
   const handleSaveTransaction = async (print = false, email = false) => {
+    if (savingState) return // prevent double-clicks while saving
     try {
       // Validation checks
       if (!Array.isArray(items) || items.length === 0) {
-        alert('Cannot save empty transaction')
+        showAlert('warning', 'Cannot save empty transaction', 'Empty Cart')
         return
       }
 
@@ -440,24 +465,24 @@ const POS = () => {
       
       if (invalidItem) {
         console.error('Invalid item in cart:', invalidItem)
-        alert('Cart contains invalid items. Please review and try again.')
+        showAlert('error', 'Cart contains invalid items. Please review and try again.', 'Invalid Items')
         return
       }
 
       // Payment validation
       if (!selectedPayment) {
-        alert('Please select a payment method')
+        showAlert('warning', 'Please select a payment method', 'Payment Required')
         return
       }
 
       if (amountDue > 0.01) {
-        alert(`Please complete payment. Amount due: ₵${amountDue.toFixed(2)}`)
+        showAlert('warning', `Please complete payment. Amount due: ₵${amountDue.toFixed(2)}`, 'Incomplete Payment')
         return
       }
 
       // Validate total is positive
       if (total < 0) {
-        alert('Invalid transaction total. Please check discounts.')
+        showAlert('error', 'Invalid transaction total. Please check discounts.', 'Invalid Total')
         return
       }
 
@@ -510,6 +535,7 @@ const POS = () => {
           product_unit: item.unitUuid || null
         }))
       }
+      setSavingState(print ? 'print' : email ? 'email' : 'save')
       await createSale(salePayload)
 
       // Save transaction with error handling (local copy)
@@ -565,7 +591,9 @@ const POS = () => {
       setReceiptNumber(`RCP-${Date.now()}`)
     } catch (error) {
       console.error('Error saving transaction:', error)
-      alert(`Failed to save transaction: ${error.message || 'Unknown error'}. Please try again.`)
+      showAlert('error', `Failed to save transaction: ${error.message || 'Unknown error'}. Please try again.`, 'Save Failed')
+    } finally {
+      setSavingState(null)
     }
   }
 
@@ -649,7 +677,7 @@ const POS = () => {
           printReceiptDirect(receiptRef.current)
         } else {
           console.error('Receipt reference not found')
-          alert('Unable to print - receipt content not ready')
+          showAlert('error', 'Unable to print - receipt content not ready', 'Print Error')
         }
       }, 100)
       
@@ -676,20 +704,20 @@ const POS = () => {
       }, 500)
     } catch (error) {
       console.error('Error printing receipt:', error)
-      alert('Failed to print receipt. Please try again.')
+      showAlert('error', 'Failed to print receipt. Please try again.', 'Print Error')
     }
   }
 
   const handlePutOnHold = React.useCallback(() => {
     try {
       if (!Array.isArray(items) || items.length === 0) {
-        alert('No items to put on hold')
+        showAlert('warning', 'No items to put on hold', 'Empty Cart')
         return
       }
 
       // Check held sales limit
       if (heldSales.length >= 20) {
-        alert('Maximum held sales limit reached (20). Please complete or delete some held sales first.')
+        showAlert('warning', 'Maximum held sales limit reached (20). Please complete or delete some held sales first.', 'Limit Reached')
         return
       }
 
@@ -731,21 +759,21 @@ const POS = () => {
           setCustomer(null)
           setCustomerSearch('')
           setReceiptNumber(`RCP-${Date.now()}`)
-          alert(`Sale placed on hold (${holdId})`)
+          showAlert('success', `Sale placed on hold (${holdId})`)
         })
         .catch(err => {
           console.error('Error putting sale on hold:', err)
-          alert('Failed to put sale on hold. Please try again.')
+          showAlert('error', 'Failed to put sale on hold. Please try again.')
         })
     } catch (error) {
       console.error('Error putting sale on hold:', error)
-      alert('Failed to put sale on hold. Please try again.')
+      showAlert('error', 'Failed to put sale on hold. Please try again.')
     }
   }, [items, heldSales, customer, cartDiscount, selectedPayment, amountPaid, mobileMoneyNumber, mobileMoneyProvider, giftCardCode, subtotal, tax, total])
 
   const handleRecallHeldSale = React.useCallback((heldSale) => {
     if (!heldSale) {
-      alert('Cannot recall invalid held sale')
+      showAlert('error', 'Cannot recall invalid held sale')
       return
     }
     if (items.length > 0) {
@@ -754,7 +782,7 @@ const POS = () => {
       }
     }
     if (!Array.isArray(heldSale.items)) {
-      alert('Invalid held sale data')
+      showAlert('error', 'Invalid held sale data')
       return
     }
 
@@ -762,7 +790,7 @@ const POS = () => {
       item && typeof item.unitPrice === 'number' && typeof item.qty === 'number'
     )
     if (validItems.length === 0) {
-      alert('Held sale contains no valid items')
+      showAlert('error', 'Held sale contains no valid items')
       return
     }
 
@@ -789,7 +817,7 @@ const POS = () => {
         .then(() => setHeldSales(prev => prev.filter(s => s.id !== holdId)))
         .catch(() => setHeldSales(prev => prev.filter(s => s.id !== holdId)))
     }
-    alert('Held sale recalled successfully')
+    showAlert('success', 'Held sale recalled successfully')
   }, [items.length])
 
   const handleDeleteHeldSale = (holdId) => {
@@ -797,9 +825,9 @@ const POS = () => {
     deleteHeldSale(holdId)
       .then(() => {
         setHeldSales(prev => prev.filter(s => s.id !== holdId))
-        alert('Held sale deleted')
+        showAlert('success', 'Held sale deleted')
       })
-      .catch(() => alert('Failed to delete held sale.'))
+      .catch(() => showAlert('error', 'Failed to delete held sale.'))
   }
 
   // "I Want to" menu handlers
@@ -812,7 +840,7 @@ const POS = () => {
         break
       case 'applyCartDiscount':
         if (items.length === 0) {
-          alert('No items in cart to apply discount')
+          showAlert('warning', 'No items in cart to apply discount', 'Empty Cart')
           return
         }
         // Scroll to and focus on cart discount input
@@ -834,7 +862,7 @@ const POS = () => {
         break
       case 'openCashDrawer':
         // In real app, this would trigger cash drawer hardware
-        alert('Cash drawer opened')
+        showAlert('info', 'Cash drawer opened')
         break
       case 'lookupCustomer':
         // Focus on customer search field
@@ -848,21 +876,21 @@ const POS = () => {
         break
       case 'viewReceipt':
         if (items.length === 0) {
-          alert('No transaction to view receipt')
+          showAlert('warning', 'No transaction to view receipt')
           return
         }
         setShowReceiptModal(true)
         break
       case 'applyItemDiscount':
         if (!selectedItem) {
-          alert('Please select an item first')
+          showAlert('warning', 'Please select an item first')
           return
         }
         handleApplyItemDiscount()
         break
       case 'clearCart':
         if (items.length === 0) {
-          alert('Cart is already empty')
+          showAlert('info', 'Cart is already empty')
           return
         }
         if (window.confirm('Clear all items from cart?')) {
@@ -933,7 +961,87 @@ const POS = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 relative">
+      {/* Full-page saving overlay */}
+      {savingState && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+            <Loader2 size={48} className="animate-spin text-green-600" />
+            <p className="text-lg font-semibold text-gray-800">
+              {savingState === 'print' ? 'Saving & Printing...' : savingState === 'email' ? 'Saving & Emailing...' : 'Saving Transaction...'}
+            </p>
+            <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Notifications */}
+      {alertQueue.length > 0 && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9998] flex flex-col gap-3 w-full max-w-md px-4">
+          {alertQueue.map((alert) => {
+            const config = {
+              error:   { bg: 'bg-red-50 border-red-300',    text: 'text-red-800',    icon: <XCircle size={20} className="text-red-500 shrink-0" /> },
+              warning: { bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800',  icon: <AlertTriangle size={20} className="text-amber-500 shrink-0" /> },
+              success: { bg: 'bg-green-50 border-green-300', text: 'text-green-800',  icon: <CheckCircle size={20} className="text-green-500 shrink-0" /> },
+              info:    { bg: 'bg-blue-50 border-blue-300',   text: 'text-blue-800',   icon: <Info size={20} className="text-blue-500 shrink-0" /> },
+            }[alert.type] || { bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800', icon: <Info size={20} className="text-gray-500 shrink-0" /> }
+            return (
+              <div
+                key={alert.id}
+                className={`flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg animate-[slideDown_0.3s_ease-out] ${config.bg}`}
+              >
+                {config.icon}
+                <div className="flex-1 min-w-0">
+                  {alert.title && <p className={`font-semibold text-sm ${config.text}`}>{alert.title}</p>}
+                  <p className={`text-sm ${config.text} ${alert.title ? 'mt-0.5' : ''}`}>{alert.message}</p>
+                </div>
+                <button onClick={() => dismissAlert(alert.id)} className={`${config.text} hover:opacity-70 shrink-0 mt-0.5`}>
+                  <X size={16} />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Remove Item Confirmation Modal */}
+      {removeConfirm && (
+        <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-[slideDown_0.25s_ease-out]">
+            <div className="bg-red-50 px-6 py-4 flex items-center gap-3 border-b border-red-100">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                <Trash2 size={20} className="text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Remove Item</h3>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-gray-700">
+                Are you sure you want to remove <span className="font-semibold text-gray-900">"{removeConfirm.name}"</span> from the cart?
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3 border-t">
+              <button
+                onClick={() => setRemoveConfirm(null)}
+                className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleRemoveItem(removeConfirm.id)
+                  setRemoveConfirm(null)
+                  showAlert('success', `"${removeConfirm.name}" removed from cart`)
+                }}
+                className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-blue-800 text-white px-6 py-1.5 flex items-center justify-between">
         <h1 className="text-lg font-bold">Sales Receipt</h1>
@@ -1274,9 +1382,7 @@ const POS = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            if (window.confirm(`Remove ${item.itemName} from cart?`)) {
-                              handleRemoveItem(item.id)
-                            }
+                            setRemoveConfirm({ id: item.id, name: item.itemName })
                           }}
                           className="p-2 hover:bg-red-100 rounded transition-colors"
                           title="Remove item"
@@ -1344,7 +1450,7 @@ const POS = () => {
               Qty-
             </button>
             <button 
-              onClick={() => selectedItem && handleRemoveItem(selectedItem.id)}
+              onClick={() => selectedItem && setRemoveConfirm({ id: selectedItem.id, name: selectedItem.itemName })}
               disabled={!selectedItem}
               className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -1511,17 +1617,19 @@ const POS = () => {
         </button>
         <button 
           onClick={() => handleSaveTransaction(false, false)}
-          className="bg-green-600 text-white px-6 py-3 rounded font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+          disabled={!!savingState}
+          className={`text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2 ${savingState === 'save' ? 'bg-green-500 cursor-wait' : savingState ? 'bg-green-400 cursor-not-allowed opacity-60' : 'bg-green-600 hover:bg-green-700'}`}
         >
-          <Save size={18} />
-          Save Only
+          {savingState === 'save' ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          {savingState === 'save' ? 'Saving...' : 'Save Only'}
         </button>
         <button 
           onClick={() => handleSaveTransaction(true, false)}
-          className="bg-green-600 text-white px-6 py-3 rounded font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+          disabled={!!savingState}
+          className={`text-white px-6 py-3 rounded font-medium transition-colors flex items-center gap-2 ${savingState === 'print' ? 'bg-green-500 cursor-wait' : savingState ? 'bg-green-400 cursor-not-allowed opacity-60' : 'bg-green-600 hover:bg-green-700'}`}
         >
-          <Printer size={18} />
-          Save & Print
+          {savingState === 'print' ? <Loader2 size={18} className="animate-spin" /> : <Printer size={18} />}
+          {savingState === 'print' ? 'Saving...' : 'Save & Print'}
         </button>
       </div>
 

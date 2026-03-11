@@ -14,7 +14,10 @@ import {
   Receipt,
   LayoutDashboard,
   Store,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Wallet,
+  Sparkles,
+  Zap
 } from 'lucide-react'
 import { useNavigationHistory } from '../contexts/NavigationHistory'
 import { useAuth } from '../contexts/AuthContext'
@@ -62,6 +65,7 @@ const Layout = () => {
     { path: '/sales', icon: Receipt, label: 'Sales History', adminOnly: true },
     { path: '/inventory', icon: Package, label: 'Inventory' },
     { path: '/customers', icon: UserCircle, label: 'Customers' },
+    { path: '/cashiers', icon: Wallet, label: 'Cashiers' },
     { path: '/suppliers', icon: Truck, label: 'Suppliers' },
     { path: '/users', icon: Users, label: 'Users' },
     { path: '/settings', icon: Settings, label: 'Settings' },
@@ -190,6 +194,32 @@ const Layout = () => {
             )
           })}
         </nav>
+
+        {/* Upgrade Banner */}
+        {sidebarOpen ? (
+          <div className="mx-3 mb-3 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 p-4 text-white relative overflow-hidden">
+            <div className="absolute -top-3 -right-3 w-16 h-16 bg-white/10 rounded-full" />
+            <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white/10 rounded-full" />
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={16} className="text-yellow-300" />
+                <span className="text-xs font-bold uppercase tracking-wider text-white/90">Upgrade</span>
+              </div>
+              <h4 className="text-sm font-bold leading-tight">StorePro Plus</h4>
+              <p className="text-[11px] text-white/70 mt-1 leading-relaxed">Unlock analytics, multi-store & more.</p>
+              <button className="mt-3 w-full py-2 bg-white text-primary-600 rounded-lg text-xs font-bold hover:bg-white/90 transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <Zap size={13} />
+                Upgrade Now
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto mb-3">
+            <button className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white hover:shadow-lg transition-shadow" title="Upgrade to StorePro Plus">
+              <Sparkles size={18} className="text-yellow-300" />
+            </button>
+          </div>
+        )}
 
         {/* User Section */}
         <div className="p-4 border-t">
