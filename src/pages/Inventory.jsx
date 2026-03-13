@@ -1667,6 +1667,25 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
       if (field === 'sku') {
         skuTouched.current = true
       }
+      // When main selling price or cost price changes, update base unit row and cascade to other units
+      if (field === 'price' || field === 'cost') {
+        const numValue = parseFloat(value) || 0
+        next.units = prev.units.map((u, i) => {
+          const conv = parseFloat(u.conversion) || 1
+          const isBase = conv === 1 || i === 0
+          if (isBase) {
+            return { ...u, [field === 'price' ? 'price' : 'cost']: numValue }
+          }
+          // Auto-recalculate non-base units unless manually edited
+          if (field === 'price' && !manualPriceEdits.current.has(`${i}-price`)) {
+            return { ...u, price: parseFloat((numValue * conv).toFixed(2)) }
+          }
+          if (field === 'cost' && !manualPriceEdits.current.has(`${i}-cost`)) {
+            return { ...u, cost: parseFloat((numValue * conv).toFixed(2)) }
+          }
+          return u
+        })
+      }
       return next
     })
     // Clear error for this field when user starts typing
@@ -1795,14 +1814,64 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
     }))
   }
 
-  // Update unit
+  // Track which unit price/cost fields the user has manually edited
+  const manualPriceEdits = React.useRef(new Set())
+
+  // Update unit — auto-calculate price/cost when conversion factor changes
   const handleUpdateUnit = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      units: prev.units.map((unit, i) => 
+    setFormData(prev => {
+      const updatedUnits = prev.units.map((unit, i) => 
         i === index ? { ...unit, [field]: value } : unit
       )
-    }))
+
+      // Find the base unit row (conversion === 1) to get base prices
+      const baseRow = updatedUnits.find(u => parseFloat(u.conversion) === 1) || updatedUnits[0]
+      const basePrice = parseFloat(baseRow?.price) || 0
+      const baseCost = parseFloat(baseRow?.cost) || 0
+
+      if (field === 'conversion') {
+        // When conversion factor changes, auto-populate price & cost for this row
+        const conv = parseFloat(value) || 0
+        if (conv > 0 && basePrice > 0) {
+          updatedUnits[index] = {
+            ...updatedUnits[index],
+            price: parseFloat((basePrice * conv).toFixed(2)),
+            cost: parseFloat((baseCost * conv).toFixed(2))
+          }
+        }
+        // Clear manual edit flags so future base price changes re-calculate
+        manualPriceEdits.current.delete(`${index}-price`)
+        manualPriceEdits.current.delete(`${index}-cost`)
+      }
+
+      if (field === 'price') {
+        manualPriceEdits.current.add(`${index}-price`)
+      }
+      if (field === 'cost') {
+        manualPriceEdits.current.add(`${index}-cost`)
+      }
+
+      // When base unit price/cost changes, recalculate all other unit prices
+      if ((field === 'price' || field === 'cost') && (parseFloat(updatedUnits[index].conversion) === 1 || index === 0)) {
+        const newBasePrice = field === 'price' ? (parseFloat(value) || 0) : basePrice
+        const newBaseCost = field === 'cost' ? (parseFloat(value) || 0) : baseCost
+
+        for (let i = 0; i < updatedUnits.length; i++) {
+          if (i === index) continue
+          const conv = parseFloat(updatedUnits[i].conversion) || 1
+          if (conv > 0) {
+            if (!manualPriceEdits.current.has(`${i}-price`)) {
+              updatedUnits[i] = { ...updatedUnits[i], price: parseFloat((newBasePrice * conv).toFixed(2)) }
+            }
+            if (!manualPriceEdits.current.has(`${i}-cost`)) {
+              updatedUnits[i] = { ...updatedUnits[i], cost: parseFloat((newBaseCost * conv).toFixed(2)) }
+            }
+          }
+        }
+      }
+
+      return { ...prev, units: updatedUnits }
+    })
   }
 
   return (
@@ -2168,6 +2237,9 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
                               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="0.00"
                             />
+                            {!isBaseUnit && parseFloat(unit.conversion) > 1 && (
+                              <p className="text-xs text-green-600 mt-1">Auto: {formData.baseUnit} ₵{(parseFloat(formData.price) || 0).toFixed(2)} × {unit.conversion}</p>
+                            )}
                           </div>
 
                           {/* Unit Cost Price */}
@@ -2184,6 +2256,9 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
                               className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
                               placeholder="0.00"
                             />
+                            {!isBaseUnit && parseFloat(unit.conversion) > 1 && (
+                              <p className="text-xs text-green-600 mt-1">Auto: {formData.baseUnit} ₵{(parseFloat(formData.cost) || 0).toFixed(2)} × {unit.conversion}</p>
+                            )}
                           </div>
                         </div>
 
