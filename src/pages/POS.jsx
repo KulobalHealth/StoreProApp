@@ -662,15 +662,37 @@ const POS = () => {
         }
       }, 100)
       
+      // Capture transaction snapshot BEFORE clearing the cart
+      const txSnapshot = {
+        receiptNumber,
+        date: new Date(),
+        cashier: cashierName,
+        customer: customer?.name || null,
+        items: items.map(item => ({
+          itemNumber: item.itemNumber,
+          department: item.department,
+          itemName: item.itemName,
+          qty: item.qty,
+          unit: item.unit || 'piece',
+          unitLabel: item.unitLabel || 'pc',
+          unitPrice: item.unitPrice,
+          extPrice: item.extPrice,
+          discount: item.discount || 0
+        })),
+        subtotal,
+        discount: cartDiscountAmount,
+        tax,
+        total,
+        paymentMethod: selectedPayment,
+        amountPaid,
+        change,
+        action: 'saved and printed'
+      }
+
       // Close receipt modal and show success modal
       setTimeout(() => {
         setShowReceiptModal(false)
-        setSuccessTransaction({
-          receiptNumber,
-          total,
-          paymentMethod: selectedPayment,
-          action: 'saved and printed'
-        })
+        setSuccessTransaction(txSnapshot)
         setShowSuccessModal(true)
         
         // Reset after printing
@@ -2256,12 +2278,12 @@ const SuccessModal = ({ transaction, onClose }) => {
             <div className="pt-3 border-t">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">Items:</span>
-                <span className="text-gray-900 font-semibold">{transaction.items.length}</span>
+                <span className="text-gray-900 font-semibold">{(transaction.items || []).length}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total Quantity:</span>
                 <span className="text-gray-900 font-semibold">
-                  {transaction.items.reduce((sum, item) => sum + item.qty, 0)}
+                  {(transaction.items || []).reduce((sum, item) => sum + item.qty, 0)}
                 </span>
               </div>
             </div>
@@ -2270,26 +2292,26 @@ const SuccessModal = ({ transaction, onClose }) => {
             <div className="pt-3 border-t space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Subtotal:</span>
-                <span className="text-gray-900">₵{transaction.subtotal.toFixed(2)}</span>
+                <span className="text-gray-900">₵{(transaction.subtotal || 0).toFixed(2)}</span>
               </div>
-              {transaction.discount > 0 && (
+              {(transaction.discount || 0) > 0 && (
                 <div className="flex justify-between items-center text-green-600">
                   <span>Discount:</span>
-                  <span>-₵{transaction.discount.toFixed(2)}</span>
+                  <span>-₵{(transaction.discount || 0).toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Tax:</span>
-                <span className="text-gray-900">₵{transaction.tax.toFixed(2)}</span>
+                <span className="text-gray-900">₵{(transaction.tax || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-lg font-bold text-gray-900">Total:</span>
-                <span className="text-2xl font-bold text-green-600">₵{transaction.total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-green-600">₵{(transaction.total || 0).toFixed(2)}</span>
               </div>
-              {transaction.change > 0 && (
+              {(transaction.change || 0) > 0 && (
                 <div className="flex justify-between items-center text-primary-600">
                   <span className="font-medium">Change:</span>
-                  <span className="font-bold">₵{transaction.change.toFixed(2)}</span>
+                  <span className="font-bold">₵{(transaction.change || 0).toFixed(2)}</span>
                 </div>
               )}
             </div>
