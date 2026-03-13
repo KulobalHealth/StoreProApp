@@ -516,7 +516,7 @@ const POS = () => {
         receiptNumber: receiptNumber || `RCP-${Date.now()}`,
         date: new Date().toISOString(),
         timestamp: Date.now(),
-        cashier: 'John Doe', // In real app, get from auth
+        cashier: cashierName,
         customer: customer?.name || null,
         items: items.map(item => ({
           itemNumber: item.itemNumber || '',
@@ -629,7 +629,7 @@ const POS = () => {
         receiptNumber,
         date: new Date(),
         timestamp: Date.now(),
-        cashier: 'John Doe',
+        cashier: cashierName,
         customer: customer?.name || null,
         items: items.map(item => ({
           itemNumber: item.itemNumber,
@@ -959,11 +959,19 @@ const POS = () => {
     setSelectedItem(item)
   }
 
+  // Get logged-in user's name for cashier
+  const cashierName = React.useMemo(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}')
+      return u.name || u.full_name || [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || u.email || ''
+    } catch { return '' }
+  }, [])
+
   // Prepare transaction data for receipt
   const transactionData = {
     receiptNumber,
     date: new Date(),
-    cashier: 'John Doe',
+    cashier: cashierName,
     customer: customer?.name || null,
     items: items.map(item => ({
       itemNumber: item.itemNumber,
