@@ -1579,6 +1579,15 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [fetchError, setFetchError] = useState(null)
+  const skuTouched = React.useRef(!!product?.sku) // true if editing existing product
+
+  // Auto-generate SKU from product name: first 4 letters + 2 random digits
+  const generateSku = (name) => {
+    const letters = name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase()
+    if (!letters) return ''
+    const digits = String(Math.floor(10 + Math.random() * 90)) // 10-99
+    return letters + digits
+  }
 
   // Fetch product from API if productId is provided
   useEffect(() => {
@@ -1642,12 +1651,30 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
       ]
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [field]: value }
+      // Auto-generate SKU when typing product name (only if user hasn't manually edited SKU)
+      if (field === 'name' && !skuTouched.current) {
+        next.sku = generateSku(value)
+      }
+      if (field === 'sku') {
+        skuTouched.current = true
+      }
+      return next
+    })
     // Clear error for this field when user starts typing
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev }
         delete newErrors[field]
+        return newErrors
+      })
+    }
+    // Also clear SKU error when name auto-generates it
+    if (field === 'name' && !skuTouched.current && errors.sku) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors.sku
         return newErrors
       })
     }

@@ -29,14 +29,20 @@ const UNITS_OF_MEASURE = [
 function mapApiProductToPOS(p) {
   const baseUnit = p.base_unit || 'piece'
   const price = Number(p.selling_price) ?? Number(p.price) ?? 0
-  const units = (p.units && p.units.length > 0)
+  const cost = Number(p.cost_price) ?? Number(p.cost) ?? 0
+  const mappedUnits = (p.units && p.units.length > 0)
     ? p.units.map(u => ({
         uuid: u.uuid || null,
         unit: u.unit_name || u.unit || baseUnit,
         conversion: Number(u.conversion_quantity) ?? Number(u.conversion) ?? 1,
         price: Number(u.unit_price) ?? Number(u.price) ?? price
       }))
-    : [{ uuid: null, unit: baseUnit, conversion: 1, price }]
+    : []
+  // Always ensure the base unit is in the units list (at the front)
+  const hasBaseUnit = mappedUnits.some(u => u.unit === baseUnit && u.conversion === 1)
+  const units = hasBaseUnit
+    ? mappedUnits
+    : [{ uuid: null, unit: baseUnit, conversion: 1, price }, ...mappedUnits]
   return {
     id: p.id,
     uuid: p.uuid || p.id,
@@ -556,10 +562,11 @@ const POS = () => {
         change_amount: transaction.change,
         items: items.map(item => ({
           product_id: item.uuid || item.id,
-          quantity: item.qty,
+          quantity: Number(item.qty),
           product_unit: item.unitUuid || null
         }))
       }
+      console.log('[POS] Sale payload:', JSON.stringify(salePayload, null, 2))
       setSavingState(print ? 'print' : email ? 'email' : 'save')
       await createSale(salePayload)
 
@@ -669,10 +676,11 @@ const POS = () => {
         change_amount: transaction.change,
         items: items.map(item => ({
           product_id: item.uuid || item.id,
-          quantity: item.qty,
+          quantity: Number(item.qty),
           product_unit: item.unitUuid || null
         }))
       }
+      console.log('[POS] Print sale payload:', JSON.stringify(salePayload, null, 2))
       await createSale(salePayload)
 
       // Save transaction to localStorage before printing
@@ -1540,7 +1548,7 @@ const POS = () => {
             <div className="mb-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Payment Method</h3>
               <div className="grid grid-cols-3 gap-2">
-                {['Cash', 'Mobile Money', 'Check'].map((method) => (
+                {['Cash', 'Mobile Money', 'Cheque'].map((method) => (
                   <button
                     key={method}
                     onClick={() => {
