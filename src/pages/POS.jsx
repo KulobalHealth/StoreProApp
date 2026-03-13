@@ -85,9 +85,34 @@ const POS = () => {
   const [removeConfirm, setRemoveConfirm] = useState(null) // { id, name } of item pending removal
   const alertTimerRef = useRef(null)
   const receiptRef = useRef(null)
+  const searchInputRef = useRef(null)
   const iWantToMenuRef = useRef(null)
   const cartDiscountRef = useRef(null)
   const selectedCustomerIdRef = useRef(null)
+  // Auto-refocus search bar when it loses focus (unless a modal is open)
+  const anyModalOpen = showEditModal || showDiscountModal || showUnitModal || showReceiptModal || showHeldSalesModal || showSuccessModal || !!removeConfirm
+
+  useEffect(() => {
+    const input = searchInputRef.current
+    if (!input) return
+    const handleBlur = () => {
+      setTimeout(() => {
+        if (!anyModalOpen && searchInputRef.current && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'SELECT') {
+          searchInputRef.current.focus()
+        }
+      }, 100)
+    }
+    input.addEventListener('blur', handleBlur)
+    return () => input.removeEventListener('blur', handleBlur)
+  }, [anyModalOpen])
+
+  // Refocus search bar when all modals close
+  useEffect(() => {
+    if (!anyModalOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 150)
+    }
+  }, [anyModalOpen])
+
   // Keep ref in sync with selected customer so save always has current value
   useEffect(() => {
     selectedCustomerIdRef.current = (customer && customer.id != null && Number(customer.id) > 0) ? Number(customer.id) : null
@@ -961,11 +986,11 @@ const POS = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 relative">
+    <div className="h-screen flex flex-col bg-gray-50 relative overflow-hidden">
       {/* Full-page saving overlay */}
       {savingState && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+          <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
             <Loader2 size={48} className="animate-spin text-green-600" />
             <p className="text-lg font-semibold text-gray-800">
               {savingState === 'print' ? 'Saving & Printing...' : savingState === 'email' ? 'Saving & Emailing...' : 'Saving Transaction...'}
@@ -983,7 +1008,7 @@ const POS = () => {
               error:   { bg: 'bg-red-50 border-red-300',    text: 'text-red-800',    icon: <XCircle size={20} className="text-red-500 shrink-0" /> },
               warning: { bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800',  icon: <AlertTriangle size={20} className="text-amber-500 shrink-0" /> },
               success: { bg: 'bg-green-50 border-green-300', text: 'text-green-800',  icon: <CheckCircle size={20} className="text-green-500 shrink-0" /> },
-              info:    { bg: 'bg-blue-50 border-blue-300',   text: 'text-blue-800',   icon: <Info size={20} className="text-blue-500 shrink-0" /> },
+              info:    { bg: 'bg-primary-50 border-primary-300',   text: 'text-primary-800',   icon: <Info size={20} className="text-primary-500 shrink-0" /> },
             }[alert.type] || { bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800', icon: <Info size={20} className="text-gray-500 shrink-0" /> }
             return (
               <div
@@ -1007,7 +1032,7 @@ const POS = () => {
       {/* Remove Item Confirmation Modal */}
       {removeConfirm && (
         <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-[slideDown_0.25s_ease-out]">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-[slideDown_0.25s_ease-out]">
             <div className="bg-red-50 px-6 py-4 flex items-center gap-3 border-b border-red-100">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                 <Trash2 size={20} className="text-red-600" />
@@ -1043,15 +1068,15 @@ const POS = () => {
       )}
 
       {/* Header */}
-      <div className="bg-blue-800 text-white px-6 py-1.5 flex items-center justify-between">
+      <div className="bg-primary-800 text-white px-6 py-1.5 flex items-center justify-between shrink-0">
         <h1 className="text-lg font-bold">Sales Receipt</h1>
-        <button onClick={handleCancel} className="p-1 hover:bg-blue-700 rounded">
+        <button onClick={handleCancel} className="p-1 hover:bg-primary-700 rounded">
           <X size={18} />
         </button>
       </div>
 
       {/* Top Controls Bar */}
-      <div className="bg-white border-b px-6 py-3 flex items-center gap-4">
+      <div className="bg-white border-b px-6 py-3 flex items-center gap-4 shrink-0">
         <div className="relative" ref={iWantToMenuRef}>
           <button 
             onClick={() => setShowIWantToMenu(!showIWantToMenu)}
@@ -1075,7 +1100,7 @@ const POS = () => {
                     <div className="text-xs text-gray-500">Recall or manage held transactions</div>
                   </div>
                   {heldSales.length > 0 && (
-                    <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">
+                    <span className="ml-auto bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded">
                       {heldSales.length}
                     </span>
                   )}
@@ -1180,6 +1205,7 @@ const POS = () => {
           )}
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Scan or search for a product..."
             value={itemSearch}
@@ -1189,7 +1215,7 @@ const POS = () => {
                 handleAddItem(filteredProducts[0])
               }
             }}
-            className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-8 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
             autoFocus
           />
           <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -1234,7 +1260,7 @@ const POS = () => {
               onFocus={() => !customer && setCustomerDropdownOpen(true)}
               onBlur={() => setTimeout(() => setCustomerDropdownOpen(false), 180)}
               readOnly={!!customer}
-              className="w-full pl-10 pr-16 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-16 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             {customer ? (
               <button
@@ -1293,7 +1319,7 @@ const POS = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Side - Items Table */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Items Table */}
@@ -1343,10 +1369,10 @@ const POS = () => {
                               e.stopPropagation()
                               handleQtyChange(item.id, -1, item.unit)
                             }}
-                            className="p-1 hover:bg-blue-200 rounded transition-colors"
+                            className="p-1 hover:bg-primary-200 rounded transition-colors"
                             title="Decrease quantity"
                           >
-                            <Minus size={16} className="text-blue-600" />
+                            <Minus size={16} className="text-primary-600" />
                           </button>
                           <input
                             type="number"
@@ -1360,7 +1386,7 @@ const POS = () => {
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-16 px-2 py-1 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-16 px-2 py-1 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
                             step="0.25"
                             min="0.25"
                           />
@@ -1370,10 +1396,10 @@ const POS = () => {
                               e.stopPropagation()
                               handleQtyChange(item.id, 1, item.unit)
                             }}
-                            className="p-1 hover:bg-blue-200 rounded transition-colors"
+                            className="p-1 hover:bg-primary-200 rounded transition-colors"
                             title="Increase quantity"
                           >
-                            <Plus size={16} className="text-blue-600" />
+                            <Plus size={16} className="text-primary-600" />
                           </button>
                         </div>
                       </td>
@@ -1402,7 +1428,7 @@ const POS = () => {
             <button 
               onClick={handleEditItem}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Edit size={18} />
               Edit
@@ -1410,7 +1436,7 @@ const POS = () => {
             <button 
               onClick={handleReturnItem}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RotateCcw size={18} />
               Return Item
@@ -1428,7 +1454,7 @@ const POS = () => {
                 }
               }}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <DollarSign size={18} />
               Qty/Price/Discount
@@ -1436,7 +1462,7 @@ const POS = () => {
             <button 
               onClick={() => selectedItem && handleQtyChange(selectedItem.id, 1)}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus size={18} />
               Qty+
@@ -1444,7 +1470,7 @@ const POS = () => {
             <button 
               onClick={() => selectedItem && handleQtyChange(selectedItem.id, -1)}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Minus size={18} />
               Qty-
@@ -1452,7 +1478,7 @@ const POS = () => {
             <button 
               onClick={() => selectedItem && setRemoveConfirm({ id: selectedItem.id, name: selectedItem.itemName })}
               disabled={!selectedItem}
-              className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-primary-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 size={18} />
               Remove
@@ -1461,7 +1487,7 @@ const POS = () => {
         </div>
 
         {/* Right Side - Summary and Payment */}
-        <div className="w-96 bg-white border-l flex flex-col overflow-y-auto min-h-0">
+        <div className="w-96 bg-white border-l flex flex-col overflow-y-auto min-h-0 shrink-0">
           {/* Transaction Summary */}
           <div className="p-6 border-b">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Transaction Summary</h2>
@@ -1515,8 +1541,8 @@ const POS = () => {
                     }}
                     className={`px-3 py-2 rounded text-sm font-medium transition-colors relative ${
                       selectedPayment === method
-                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-500'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-primary-100 text-primary-700 border-2 border-primary-500'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
                     }`}
                   >
                     {method}
@@ -1587,10 +1613,10 @@ const POS = () => {
       </div>
 
       {/* Bottom Action Buttons */}
-      <div className="bg-white border-t px-6 py-4 flex items-center justify-end gap-3 shadow-lg">
+      <div className="bg-white border-t px-6 py-4 flex items-center justify-end gap-3 shadow-lg shrink-0">
         <button 
           onClick={() => setShowHeldSalesModal(true)}
-          className="bg-purple-600 text-white px-6 py-3 rounded font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
+          className="bg-primary-600 text-white px-6 py-3 rounded font-medium hover:bg-primary-700 transition-colors flex items-center gap-2"
         >
           <Clock size={18} />
           Held Sales {heldSales.length > 0 && `(${heldSales.length})`}
@@ -1598,13 +1624,13 @@ const POS = () => {
         <button 
           onClick={handlePutOnHold}
           disabled={items.length === 0}
-          className="bg-blue-600 text-white px-6 py-3 rounded font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-primary-600 text-white px-6 py-3 rounded font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Put on Hold
         </button>
         <button 
           onClick={handleCancel}
-          className="bg-blue-600 text-white px-6 py-3 rounded font-medium hover:bg-blue-700 transition-colors"
+          className="bg-primary-600 text-white px-6 py-3 rounded font-medium hover:bg-primary-700 transition-colors"
         >
           Cancel
         </button>
@@ -1811,7 +1837,7 @@ const EditItemModal = ({ item, onSave, onClose, products = [] }) => {
           <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">
             Cancel
           </button>
-          <button onClick={handleSave} className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <button onClick={handleSave} className="flex-1 bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">
             Save
           </button>
         </div>
@@ -1889,7 +1915,7 @@ const ReceiptModal = ({ transaction, storeInfo, onPrint, onClose, receiptRef }) 
           </button>
           <button
             onClick={handleDownload}
-            className="bg-blue-600 text-white px-6 py-3 rounded font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="bg-primary-600 text-white px-6 py-3 rounded font-medium hover:bg-primary-700 transition-colors flex items-center gap-2"
           >
             <Download size={18} />
             Download PDF
@@ -1941,8 +1967,8 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
                 onClick={() => onSelect(unitOption)}
                 className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex justify-between items-center">
@@ -1960,7 +1986,7 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-blue-600">₵{unitOption.price.toFixed(2)}</div>
+                    <div className="font-bold text-primary-600">₵{unitOption.price.toFixed(2)}</div>
                     <div className="text-xs text-gray-500">per {unitAbbr}</div>
                   </div>
                 </div>
@@ -2168,7 +2194,7 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
                   <div className="flex gap-2 pt-3 border-t">
                     <button
                       onClick={() => onRecall(sale)}
-                      className="flex-1 bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-primary-600 text-white px-4 py-2 rounded font-medium hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <RotateCw size={18} />
                       Recall Sale
@@ -2295,7 +2321,7 @@ const SuccessModal = ({ transaction, onClose }) => {
                 <span className="text-2xl font-bold text-green-600">₵{transaction.total.toFixed(2)}</span>
               </div>
               {transaction.change > 0 && (
-                <div className="flex justify-between items-center text-blue-600">
+                <div className="flex justify-between items-center text-primary-600">
                   <span className="font-medium">Change:</span>
                   <span className="font-bold">₵{transaction.change.toFixed(2)}</span>
                 </div>

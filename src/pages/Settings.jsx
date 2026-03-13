@@ -134,17 +134,17 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2.5">
               <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center">
                 <SettingsIcon size={18} className="text-white" />
               </div>
               Settings
             </h1>
-            <p className="text-sm text-gray-500 mt-1 ml-12">Configure your store and preferences</p>
+            <p className="text-gray-500 text-xs mt-0.5 ml-12">Configure your store and preferences</p>
           </div>
           <button
             onClick={handleSave}
@@ -182,10 +182,10 @@ const Settings = () => {
 
         {/* ─── Store Info ─── */}
         {activeTab === 'store' && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
-              <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Store size={18} className="text-blue-600" />
+              <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
+                <Store size={18} className="text-primary-600" />
               </div>
               <div>
                 <h2 className="text-base font-bold text-gray-900">Store Information</h2>
@@ -238,7 +238,7 @@ const Settings = () => {
                     min="0"
                     step="0.01"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Applied to POS subtotal (0 = no tax)</p>
+                  <p className="text-xs text-gray-500 mt-1">Applied to POS subtotal (0 = no tax)</p>
                 </div>
                 <div>
                   <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
@@ -283,7 +283,7 @@ const Settings = () => {
 
         {/* ─── Security ─── */}
         {activeTab === 'security' && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
               <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center">
                 <Shield size={18} className="text-red-600" />
@@ -324,12 +324,12 @@ const Settings = () => {
                   max="480"
                   placeholder="30"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">Auto-logout after inactivity</p>
+                <p className="text-xs text-gray-500 mt-1.5">Auto-logout after inactivity</p>
               </div>
               <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Shield size={15} className="text-purple-500" />
+                  <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <Shield size={15} className="text-primary-500" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Two-Factor Authentication</p>
@@ -350,11 +350,11 @@ const Settings = () => {
         {/* ─── Backups ─── */}
         {activeTab === 'backups' && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <Database size={18} className="text-indigo-600" />
+                  <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <Database size={18} className="text-primary-600" />
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-gray-900">Backups</h2>
@@ -365,7 +365,7 @@ const Settings = () => {
                   onClick={handleCreateBackup}
                   disabled={isCreatingBackup}
                   className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-all ${
-                    isCreatingBackup ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    isCreatingBackup ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700 text-white'
                   }`}
                 >
                   {isCreatingBackup
@@ -376,8 +376,8 @@ const Settings = () => {
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-4 bg-blue-50 rounded-xl">
-                    <div className="flex items-center gap-2 text-xs font-medium text-blue-600 mb-1">
+                  <div className="p-4 bg-primary-50 rounded-xl">
+                    <div className="flex items-center gap-2 text-xs font-medium text-primary-600 mb-1">
                       <Clock size={13} /> Last Backup
                     </div>
                     <p className="text-sm font-bold text-gray-900">{new Date(settings.backups.lastBackup).toLocaleString('en-GB')}</p>
@@ -396,7 +396,7 @@ const Settings = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h3 className="text-sm font-bold text-gray-900">Sales Upload History</h3>
               </div>
@@ -417,7 +417,7 @@ const Settings = () => {
                         <td className="py-3 px-5 text-gray-700">{new Date(b.date).toLocaleString('en-GB')}</td>
                         <td className="py-3 px-5">
                           <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                            b.type === 'Automatic' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                            b.type === 'Automatic' ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-700'
                           }`}>{b.type}</span>
                         </td>
                         <td className="py-3 px-5 text-gray-700">{b.size}</td>
@@ -428,7 +428,7 @@ const Settings = () => {
                         </td>
                         <td className="py-3 px-5">
                           <div className="flex justify-center gap-1">
-                            <button onClick={() => handleDownloadBackup(b.id)} className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors" title="Download">
+                            <button onClick={() => handleDownloadBackup(b.id)} className="p-1.5 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors" title="Download">
                               <Download size={15} />
                             </button>
                             <button onClick={() => handleRestoreBackup(b.id)} className="p-1.5 rounded-lg hover:bg-green-100 text-green-600 transition-colors" title="Restore">
@@ -448,7 +448,7 @@ const Settings = () => {
         {/* ─── Billing ─── */}
         {activeTab === 'billing' && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
                 <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center">
                   <CreditCard size={18} className="text-emerald-600" />
@@ -460,7 +460,7 @@ const Settings = () => {
               </div>
               <div className="p-6 space-y-6">
                 {/* Plan banner */}
-                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-transparent rounded-xl border border-blue-100">
+                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-primary-50 to-transparent rounded-xl border border-primary-100">
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">{settings.billing.plan} Plan</h3>
                     <p className="text-sm text-gray-500 mt-0.5">
@@ -474,7 +474,7 @@ const Settings = () => {
                     </span>
                   </div>
                   <div className="text-right">
-                    <p className="text-3xl font-bold text-blue-700">{'\u20B5'}{settings.billing.amount.toFixed(2)}</p>
+                    <p className="text-3xl font-bold text-primary-700">{'\u20B5'}{settings.billing.amount.toFixed(2)}</p>
                     <p className="text-xs text-gray-500">per {settings.billing.billingCycle === 'monthly' ? 'month' : 'year'}</p>
                   </div>
                 </div>
@@ -489,15 +489,15 @@ const Settings = () => {
                       onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'credit_card' } })}
                       className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                         settings.billing.paymentMethod === 'credit_card'
-                          ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <CreditCard size={20} className={settings.billing.paymentMethod === 'credit_card' ? 'text-blue-600' : 'text-gray-400'} />
+                      <CreditCard size={20} className={settings.billing.paymentMethod === 'credit_card' ? 'text-primary-600' : 'text-gray-400'} />
                       <div className="text-left">
                         <p className="text-sm font-semibold text-gray-900">Credit / Debit Card</p>
                         <p className="text-xs text-gray-500">Pay with card</p>
                       </div>
-                      {settings.billing.paymentMethod === 'credit_card' && <CheckCircle size={18} className="ml-auto text-blue-600" />}
+                      {settings.billing.paymentMethod === 'credit_card' && <CheckCircle size={18} className="ml-auto text-primary-600" />}
                     </button>
                     <button
                       onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'mobile_money' } })}
@@ -516,9 +516,9 @@ const Settings = () => {
                   </div>
 
                   {settings.billing.paymentMethod === 'credit_card' ? (
-                    <div className="p-5 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                    <div className="p-5 bg-primary-50 rounded-xl border border-primary-100 space-y-3">
                       <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <CreditCard size={16} className="text-blue-600" /> Card Details
+                        <CreditCard size={16} className="text-primary-600" /> Card Details
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="p-3 bg-white rounded-lg">
@@ -592,7 +592,7 @@ const Settings = () => {
 
                 {/* Next billing */}
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <Calendar size={18} className="text-blue-600" />
+                  <Calendar size={18} className="text-primary-600" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">
                       Next billing: {new Date(settings.billing.nextBillingDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -604,7 +604,7 @@ const Settings = () => {
             </div>
 
             {/* Billing history */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
                 <FileText size={16} className="text-primary-500" />
                 <h3 className="text-sm font-bold text-gray-900">Billing History</h3>
@@ -631,7 +631,7 @@ const Settings = () => {
                           <div className="flex items-center gap-1.5">
                             {inv.paymentMethod === 'mobile_money'
                               ? <><Smartphone size={14} className="text-green-600" /><span className="text-gray-700">{inv.provider}</span></>
-                              : <><CreditCard size={14} className="text-blue-600" /><span className="text-gray-700">Card</span></>
+                              : <><CreditCard size={14} className="text-primary-600" /><span className="text-gray-700">Card</span></>
                             }
                           </div>
                         </td>
@@ -646,7 +646,7 @@ const Settings = () => {
                         <td className="py-3 px-5 text-center">
                           <button
                             onClick={() => handleDownloadInvoice(inv.invoice)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-primary-600 hover:bg-primary-50 transition-colors"
                           >
                             <Download size={13} /> Invoice
                           </button>

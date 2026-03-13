@@ -142,7 +142,7 @@ const Suppliers = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
@@ -165,10 +165,10 @@ const Suppliers = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Suppliers</p>
@@ -179,7 +179,7 @@ const Suppliers = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Supplied</p>
@@ -190,7 +190,7 @@ const Suppliers = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Debt</p>
@@ -201,7 +201,7 @@ const Suppliers = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-sm border border-gray-200 p-4" style={{ backgroundColor: '#FF7521' }}>
+          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Owing Debt</p>
@@ -215,7 +215,7 @@ const Suppliers = () => {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
@@ -230,14 +230,14 @@ const Suppliers = () => {
 
         {/* Error */}
         {error && (
-          <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-2 text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-2 text-red-700 text-sm">
             <AlertTriangle size={16} />
             {error}
           </div>
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="py-16 text-center">
               <div className="flex flex-col items-center gap-3 text-gray-500">
@@ -271,13 +271,13 @@ const Suppliers = () => {
                             <div className="min-w-0">
                               <button
                                 type="button"
-                                onClick={() => navigate(`/suppliers/${s.id || s.uuid}`)}
+                                onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
                                 className="font-medium text-gray-900 text-sm hover:text-primary-500 transition-colors truncate block"
                               >
                                 {s.name}
                               </button>
                               {s.email && (
-                                <p className="text-xs text-gray-400 truncate">{s.email}</p>
+                                <p className="text-xs text-gray-500 truncate">{s.email}</p>
                               )}
                             </div>
                           </div>
@@ -291,8 +291,8 @@ const Suppliers = () => {
                               </div>
                             )}
                             {s.phone2 && (
-                              <div className="flex items-center gap-1.5 text-sm text-gray-400">
-                                <Phone size={12} className="text-gray-300 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                <Phone size={12} className="text-gray-400 shrink-0" />
                                 {s.phone2}
                               </div>
                             )}
@@ -328,7 +328,7 @@ const Suppliers = () => {
                           <div className="flex justify-center gap-1">
                             <button
                               type="button"
-                              onClick={() => navigate(`/suppliers/${s.id || s.uuid}`)}
+                              onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
                               className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                               title="View details"
                             >
@@ -365,7 +365,7 @@ const Suppliers = () => {
                 <p className="text-sm font-medium text-gray-500">
                   {searchTerm.trim() ? 'No suppliers match your search' : 'No suppliers yet'}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   {searchTerm.trim() ? 'Try a different search term.' : 'Add a supplier to get started.'}
                 </p>
                 {!searchTerm.trim() && (
@@ -404,7 +404,7 @@ const Suppliers = () => {
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">{editingId ? 'Edit Supplier' : 'Add Supplier'}</h2>
-                  <p className="text-gray-400 text-xs mt-0.5">{editingId ? 'Update supplier information' : 'Enter supplier details'}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{editingId ? 'Update supplier information' : 'Enter supplier details'}</p>
                 </div>
               </div>
               <button

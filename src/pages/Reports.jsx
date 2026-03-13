@@ -230,54 +230,65 @@ const Reports = () => {
   }, [dateRange])
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-          <p className="text-gray-600 mt-1">Generate sales reports and access sales and inventory data</p>
-        </div>
-        <div className="flex space-x-2">
-          {/* View Mode Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-1 mr-2">
-            <button
-              onClick={() => setViewMode('simple')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                viewMode === 'simple'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <List size={18} className="mr-2" />
-              Simple View
-            </button>
-            <button
-              onClick={() => setViewMode('charts')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
-                viewMode === 'charts'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <BarChart3 size={18} className="mr-2" />
-              Charts View
-            </button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <BarChart3 size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Reports & Analytics</h1>
+                <p className="text-gray-500 text-xs">Generate sales reports and access analytics data</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('simple')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    viewMode === 'simple'
+                      ? 'bg-white text-primary-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <List size={16} className="mr-1.5" />
+                  Simple
+                </button>
+                <button
+                  onClick={() => setViewMode('charts')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    viewMode === 'charts'
+                      ? 'bg-white text-primary-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <BarChart3 size={16} className="mr-1.5" />
+                  Charts
+                </button>
+              </div>
+              <button 
+                onClick={handleExportCSV}
+                className="btn-secondary flex items-center"
+              >
+                <Download size={18} className="mr-2" />
+                Export CSV
+              </button>
+              <button 
+                onClick={handleExportPDF}
+                className="btn-secondary flex items-center"
+              >
+                <FileText size={18} className="mr-2" />
+                Export PDF
+              </button>
+            </div>
           </div>
-          <button 
-            onClick={handleExportCSV}
-            className="btn-secondary flex items-center"
-          >
-            <Download size={18} className="mr-2" />
-            Export CSV
-          </button>
-          <button 
-            onClick={handleExportPDF}
-            className="btn-secondary flex items-center"
-          >
-            <FileText size={18} className="mr-2" />
-            Export PDF
-          </button>
         </div>
       </div>
+
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
       {/* Report Type Tabs */}
       <div className="mb-6">
@@ -286,7 +297,7 @@ const Reports = () => {
             onClick={() => setReportType('sales')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'sales'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -297,7 +308,7 @@ const Reports = () => {
             onClick={() => setReportType('inventory')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'inventory'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -308,7 +319,7 @@ const Reports = () => {
             onClick={() => setReportType('profit')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'profit'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -325,7 +336,7 @@ const Reports = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="today">Today</option>
             <option value="week">Last 7 Days</option>
@@ -340,14 +351,14 @@ const Reports = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <span className="text-gray-500">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         )}
@@ -358,10 +369,10 @@ const Reports = () => {
         <>
           {/* Sales Summary Cards - Enhanced */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center justify-between mb-2">
-                <DollarSign size={24} className="text-blue-600" />
-                <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full font-semibold">
+                <DollarSign size={24} className="text-primary-600" />
+                <span className="text-xs bg-primary-200 text-primary-800 px-2 py-1 rounded-full font-semibold">
                   {salesMetrics.totalOrders} orders
                 </span>
               </div>
@@ -380,10 +391,10 @@ const Reports = () => {
               <p className="text-3xl font-bold text-gray-900">₵{salesMetrics.totalProfit.toFixed(2)}</p>
               <p className="text-xs text-gray-600 mt-2">After all costs</p>
             </div>
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center justify-between mb-2">
-                <ShoppingBag size={24} className="text-purple-600" />
-                <span className="text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded-full font-semibold">
+                <ShoppingBag size={24} className="text-primary-600" />
+                <span className="text-xs bg-primary-200 text-primary-800 px-2 py-1 rounded-full font-semibold">
                   Avg
                 </span>
               </div>
@@ -413,7 +424,7 @@ const Reports = () => {
                   const prevDay = salesChartData[index - 1]
                   const change = prevDay ? ((day.sales - prevDay.sales) / prevDay.sales * 100) : 0
                   return (
-                    <div key={day.date} className="card border-l-4 border-blue-500">
+                    <div key={day.date} className="card border-l-4 border-primary-500">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-gray-900">{day.date}</h3>
                         {prevDay && (
@@ -430,7 +441,7 @@ const Reports = () => {
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Sales:</span>
-                          <span className="font-bold text-lg text-blue-600">₵{day.sales.toFixed(2)}</span>
+                          <span className="font-bold text-lg text-primary-600">₵{day.sales.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Profit:</span>
@@ -601,9 +612,9 @@ const Reports = () => {
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.totalProducts}</p>
               <p className="text-xs text-gray-600 mt-2">Items in inventory</p>
             </div>
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <DollarSign size={24} className="text-blue-600 mr-2" />
+                <DollarSign size={24} className="text-primary-600 mr-2" />
                 <p className="text-sm text-gray-700 font-medium">Total Stock Value</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">₵{inventoryMetrics.totalStockValue.toFixed(2)}</p>
@@ -625,9 +636,9 @@ const Reports = () => {
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.itemsNeedingReorder}</p>
               <p className="text-xs text-gray-600 mt-2">Below reorder point</p>
             </div>
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <LayoutGrid size={24} className="text-purple-600 mr-2" />
+                <LayoutGrid size={24} className="text-primary-600 mr-2" />
                 <p className="text-sm text-gray-700 font-medium">Categories</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.totalCategories}</p>
@@ -793,9 +804,9 @@ const Reports = () => {
         <>
           {/* Profit Summary Cards - Enhanced */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <DollarSign size={24} className="text-blue-600 mr-2" />
+                <DollarSign size={24} className="text-primary-600 mr-2" />
                 <p className="text-sm text-gray-700 font-medium">Total Revenue</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">₵{salesMetrics.totalSales.toFixed(2)}</p>
@@ -809,9 +820,9 @@ const Reports = () => {
               <p className="text-3xl font-bold text-gray-900">₵{salesMetrics.totalProfit.toFixed(2)}</p>
               <p className="text-xs text-gray-600 mt-2">After all expenses</p>
             </div>
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <Percent size={24} className="text-purple-600 mr-2" />
+                <Percent size={24} className="text-primary-600 mr-2" />
                 <p className="text-sm text-gray-700 font-medium">Profit Margin</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">
@@ -930,6 +941,7 @@ const Reports = () => {
           )}
         </>
       )}
+    </div>
     </div>
   )
 }

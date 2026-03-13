@@ -123,7 +123,7 @@ const ActivityDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Minimal top bar */}
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
           <img src={logo} alt="StorePro" className="h-9 object-contain" />
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
@@ -144,7 +144,7 @@ const ActivityDashboard = () => {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="px-4 sm:px-6 py-8">
         {/* Hero greeting */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -154,7 +154,7 @@ const ActivityDashboard = () => {
         </div>
 
         {/* Branch section */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           {/* Section header */}
           <div className="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -202,7 +202,7 @@ const ActivityDashboard = () => {
             {loading ? (
               <div className="py-16 text-center">
                 <Loader2 size={28} className="animate-spin text-primary-500 mx-auto mb-3" />
-                <p className="text-gray-400 text-sm">Loading branches...</p>
+                <p className="text-gray-500 text-sm">Loading branches...</p>
               </div>
             ) : branches.length === 0 ? (
               <div className="py-16 text-center">
@@ -223,7 +223,7 @@ const ActivityDashboard = () => {
               </div>
             ) : filteredBranches.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-gray-400 text-sm">No branches match "{branchSearch}"</p>
+                <p className="text-gray-500 text-sm">No branches match "{branchSearch}"</p>
               </div>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -253,7 +253,7 @@ const ActivityDashboard = () => {
         </div>
 
         {/* Footer */}
-        <footer className="mt-12 pb-2 text-center text-xs text-gray-400">
+        <footer className="mt-12 pb-2 text-center text-xs text-gray-500">
           <p>© {new Date().getFullYear()} StorePro. All rights reserved.</p>
           <p className="mt-0.5">
             Powered by <span className="font-semibold text-primary-500">Data Leap Technologies INC</span>
@@ -264,7 +264,7 @@ const ActivityDashboard = () => {
       {/* Create Branch Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { setShowForm(false); setError('') }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
             {/* Modal header */}
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">

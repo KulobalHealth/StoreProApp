@@ -337,29 +337,40 @@ const Accounting = () => {
   }, [dateRange])
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Accounting & Audit Tools</h1>
-          <p className="text-gray-600 mt-1">Financial statements, tax reports, and audit trail for Ghanaian businesses</p>
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => handleExportCSV('transactions')}
-            className="btn-secondary flex items-center"
-          >
-            <Download size={18} className="mr-2" />
-            Export CSV
-          </button>
-          <button 
-            onClick={handleExportPDF}
-            className="btn-secondary flex items-center"
-          >
-            <FileText size={18} className="mr-2" />
-            Export PDF
-          </button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <Calculator size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Accounting & Audit Tools</h1>
+                <p className="text-gray-500 text-xs">Financial statements, tax reports, and audit trail</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => handleExportCSV('transactions')}
+                className="btn-secondary flex items-center"
+              >
+                <Download size={18} className="mr-2" />
+                Export CSV
+              </button>
+              <button 
+                onClick={handleExportPDF}
+                className="btn-secondary flex items-center"
+              >
+                <FileText size={18} className="mr-2" />
+                Export PDF
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
       {/* Report Type Tabs */}
       <div className="mb-6">
@@ -368,7 +379,7 @@ const Accounting = () => {
             onClick={() => setReportType('overview')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'overview'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -379,7 +390,7 @@ const Accounting = () => {
             onClick={() => setReportType('income')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'income'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -390,7 +401,7 @@ const Accounting = () => {
             onClick={() => setReportType('balance')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'balance'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -401,7 +412,7 @@ const Accounting = () => {
             onClick={() => setReportType('tax')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'tax'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -412,7 +423,7 @@ const Accounting = () => {
             onClick={() => setReportType('audit')}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
               reportType === 'audit'
-                ? 'border-blue-600 text-blue-600'
+                ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -429,7 +440,7 @@ const Accounting = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="today">Today</option>
             <option value="week">Last 7 Days</option>
@@ -445,14 +456,14 @@ const Accounting = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <span className="text-gray-500">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         )}
@@ -463,17 +474,17 @@ const Accounting = () => {
         <>
           {/* Financial Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">₵{financials.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <TrendingUp size={14} className="text-blue-600 mr-1" />
+                    <TrendingUp size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">{filteredTransactions.filter(t => t.type === 'sale').length} sales</span>
                   </div>
                 </div>
-                <div className="bg-blue-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <DollarSign size={24} className="text-white" />
                 </div>
               </div>
@@ -497,17 +508,17 @@ const Accounting = () => {
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Net Profit</p>
-                  <p className="text-2xl font-bold text-purple-700">₵{financials.netProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-2xl font-bold text-primary-700">₵{financials.netProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <CheckCircle size={14} className="text-purple-600 mr-1" />
+                    <CheckCircle size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">After expenses</span>
                   </div>
                 </div>
-                <div className="bg-purple-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <DollarSign size={24} className="text-white" />
                 </div>
               </div>
@@ -645,7 +656,7 @@ const Accounting = () => {
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center w-fit ${
                           transaction.type === 'sale' ? 'bg-green-100 text-green-800' :
                           transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
-                          'bg-blue-100 text-blue-800'
+                          'bg-primary-100 text-primary-800'
                         }`}>
                           {transaction.type === 'sale' && <TrendingUp size={12} className="mr-1" />}
                           {transaction.type === 'expense' && <TrendingDown size={12} className="mr-1" />}
@@ -673,7 +684,7 @@ const Accounting = () => {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-right text-blue-600 font-medium">
+                      <td className="py-3 px-4 text-right text-primary-600 font-medium">
                         ₵{transaction.vat.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 text-gray-700">{transaction.account}</td>
@@ -689,7 +700,7 @@ const Accounting = () => {
                     <td className="py-4 px-4 text-right font-bold text-green-600">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.credit, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-4 px-4 text-right font-bold text-blue-600">
+                    <td className="py-4 px-4 text-right font-bold text-primary-600">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.vat, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-4 px-4"></td>
@@ -706,17 +717,17 @@ const Accounting = () => {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">₵{incomeStatement.revenue.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <DollarSign size={14} className="text-blue-600 mr-1" />
+                    <DollarSign size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">Sales & Income</span>
                   </div>
                 </div>
-                <div className="bg-blue-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <TrendingUp size={24} className="text-white" />
                 </div>
               </div>
@@ -742,17 +753,17 @@ const Accounting = () => {
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Operating Profit</p>
                   <p className="text-2xl font-bold text-gray-900">₵{incomeStatement.operatingProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Building2 size={14} className="text-purple-600 mr-1" />
+                    <Building2 size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">Before taxes</span>
                   </div>
                 </div>
-                <div className="bg-purple-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <TrendingUp size={24} className="text-white" />
                 </div>
               </div>
@@ -799,9 +810,9 @@ const Accounting = () => {
 
             <div className="space-y-8">
               {/* Revenue Section */}
-              <div className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-lg border-l-4 border-blue-600">
+              <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600">
                 <div className="flex items-center mb-4">
-                  <DollarSign size={20} className="text-blue-600 mr-2" />
+                  <DollarSign size={20} className="text-primary-600 mr-2" />
                   <h3 className="text-xl font-bold text-gray-900">Revenue</h3>
                 </div>
                 <div className="space-y-3">
@@ -813,9 +824,9 @@ const Accounting = () => {
                     <span className="text-gray-700 font-medium">Other Income</span>
                     <span className="font-bold text-lg text-gray-900">₵{incomeStatement.revenue.otherIncome.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between items-center py-4 px-4 bg-blue-100 rounded-lg border-2 border-blue-300">
+                  <div className="flex justify-between items-center py-4 px-4 bg-primary-100 rounded-lg border-2 border-primary-300">
                     <span className="font-bold text-lg text-gray-900">Total Revenue</span>
-                    <span className="font-bold text-2xl text-blue-700">₵{incomeStatement.revenue.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span className="font-bold text-2xl text-primary-700">₵{incomeStatement.revenue.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
               </div>
@@ -944,17 +955,17 @@ const Accounting = () => {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Assets</p>
                   <p className="text-2xl font-bold text-gray-900">₵{balanceSheet.assets.totalAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Wallet size={14} className="text-blue-600 mr-1" />
+                    <Wallet size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">All assets</span>
                   </div>
                 </div>
-                <div className="bg-blue-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <TrendingUp size={24} className="text-white" />
                 </div>
               </div>
@@ -1038,7 +1049,7 @@ const Accounting = () => {
               <div className="flex justify-between items-center mb-6 pb-4 border-b">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <Wallet size={24} className="mr-3 text-blue-600" />
+                    <Wallet size={24} className="mr-3 text-primary-600" />
                     Assets
                   </h2>
                   <p className="text-sm text-gray-600 mt-2 flex items-center">
@@ -1050,9 +1061,9 @@ const Accounting = () => {
 
               <div className="space-y-6">
                 {/* Current Assets */}
-                <div className="bg-gradient-to-r from-blue-50 to-transparent p-5 rounded-lg border-l-4 border-blue-600">
+                <div className="bg-gradient-to-r from-primary-50 to-transparent p-5 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center mb-4">
-                    <TrendingUp size={18} className="text-blue-600 mr-2" />
+                    <TrendingUp size={18} className="text-primary-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Current Assets</h3>
                   </div>
                   <div className="space-y-2">
@@ -1084,17 +1095,17 @@ const Accounting = () => {
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.currentAssets.prepaidExpenses.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex justify-between items-center py-3 px-4 bg-blue-100 rounded-lg border-2 border-blue-300 mt-3">
+                    <div className="flex justify-between items-center py-3 px-4 bg-primary-100 rounded-lg border-2 border-primary-300 mt-3">
                       <span className="font-bold text-gray-900">Total Current Assets</span>
-                      <span className="font-bold text-xl text-blue-700">₵{balanceSheet.assets.currentAssets.totalCurrentAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="font-bold text-xl text-primary-700">₵{balanceSheet.assets.currentAssets.totalCurrentAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Fixed Assets */}
-                <div className="bg-gradient-to-r from-purple-50 to-transparent p-5 rounded-lg border-l-4 border-purple-600">
+                <div className="bg-gradient-to-r from-primary-50 to-transparent p-5 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center mb-4">
-                    <Building2 size={18} className="text-purple-600 mr-2" />
+                    <Building2 size={18} className="text-primary-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Fixed Assets</h3>
                   </div>
                   <div className="space-y-2">
@@ -1119,20 +1130,20 @@ const Accounting = () => {
                       </div>
                       <span className="font-semibold text-red-600">(₵{Math.abs(balanceSheet.assets.fixedAssets.accumulatedDepreciation).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
                     </div>
-                    <div className="flex justify-between items-center py-3 px-4 bg-purple-100 rounded-lg border-2 border-purple-300 mt-3">
+                    <div className="flex justify-between items-center py-3 px-4 bg-primary-100 rounded-lg border-2 border-primary-300 mt-3">
                       <span className="font-bold text-gray-900">Total Fixed Assets</span>
-                      <span className="font-bold text-xl text-purple-700">₵{balanceSheet.assets.fixedAssets.totalFixedAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="font-bold text-xl text-primary-700">₵{balanceSheet.assets.fixedAssets.totalFixedAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Total Assets */}
-                <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-blue-200 to-blue-100 rounded-lg border-4 border-blue-400 shadow-lg">
+                <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-primary-200 to-primary-100 rounded-lg border-4 border-primary-400 shadow-lg">
                   <div className="flex items-center">
-                    <Wallet size={28} className="text-blue-700 mr-3" />
+                    <Wallet size={28} className="text-primary-700 mr-3" />
                     <span className="font-bold text-2xl text-gray-900">Total Assets</span>
                   </div>
-                  <span className="font-bold text-3xl text-blue-700">₵{balanceSheet.assets.totalAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-bold text-3xl text-primary-700">₵{balanceSheet.assets.totalAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
@@ -1316,17 +1327,17 @@ const Accounting = () => {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">VAT Output</p>
                   <p className="text-2xl font-bold text-gray-900">₵{financials.totalVAT.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <TrendingUp size={14} className="text-blue-600 mr-1" />
+                    <TrendingUp size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">From sales</span>
                   </div>
                 </div>
-                <div className="bg-blue-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <Receipt size={24} className="text-white" />
                 </div>
               </div>
@@ -1407,15 +1418,15 @@ const Accounting = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* VAT Section */}
-              <div className="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-lg border-l-4 border-blue-600 shadow-md">
+              <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <Receipt size={20} className="text-blue-600 mr-2" />
+                  <Receipt size={20} className="text-primary-600 mr-2" />
                   <h3 className="text-xl font-bold text-gray-900">Value Added Tax (VAT)</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <span className="text-gray-700 font-medium">VAT Rate:</span>
-                    <span className="font-bold text-lg text-blue-600">{TAX_RATES.VAT}%</span>
+                    <span className="font-bold text-lg text-primary-600">{TAX_RATES.VAT}%</span>
                   </div>
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <span className="text-gray-700">VAT Output (Sales):</span>
@@ -1427,7 +1438,7 @@ const Accounting = () => {
                       ₵{filteredTransactions.filter(t => t.type === 'purchase').reduce((sum, t) => sum + t.vat, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-4 px-4 bg-blue-100 rounded-lg border-2 border-blue-300 mt-3">
+                  <div className="flex justify-between items-center py-4 px-4 bg-primary-100 rounded-lg border-2 border-primary-300 mt-3">
                     <span className="font-bold text-lg text-gray-900">VAT Payable to GRA:</span>
                     <span className="font-bold text-2xl text-orange-600">₵{financials.taxPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
@@ -1457,21 +1468,21 @@ const Accounting = () => {
               </div>
 
               {/* GETFund Section */}
-              <div className="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-lg border-l-4 border-purple-600 shadow-md">
+              <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <FileText size={20} className="text-purple-600 mr-2" />
+                  <FileText size={20} className="text-primary-600 mr-2" />
                   <h3 className="text-xl font-bold text-gray-900">GETFund Levy</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <span className="text-gray-700 font-medium">GETFund Rate:</span>
-                    <span className="font-bold text-lg text-purple-600">{TAX_RATES.GETFund}%</span>
+                    <span className="font-bold text-lg text-primary-600">{TAX_RATES.GETFund}%</span>
                   </div>
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <span className="text-gray-700">Total GETFund Collected:</span>
                     <span className="font-semibold text-gray-900">₵{financials.totalGETFund.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
-                  <div className="flex justify-between items-center py-4 px-4 bg-purple-100 rounded-lg border-2 border-purple-300 mt-3">
+                  <div className="flex justify-between items-center py-4 px-4 bg-primary-100 rounded-lg border-2 border-primary-300 mt-3">
                     <span className="font-bold text-lg text-gray-900">GETFund Payable to GRA:</span>
                     <span className="font-bold text-2xl text-orange-600">₵{financials.totalGETFund.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
@@ -1544,9 +1555,9 @@ const Accounting = () => {
                       <td className="py-3 px-4 font-medium text-gray-900">{transaction.receiptNumber}</td>
                       <td className="py-3 px-4 text-gray-700">{transaction.description}</td>
                       <td className="py-3 px-4 text-right font-semibold text-gray-900">₵{transaction.netAmount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="py-3 px-4 text-right text-blue-600 font-medium">₵{transaction.vat.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="py-3 px-4 text-right text-primary-600 font-medium">₵{transaction.vat.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                       <td className="py-3 px-4 text-right text-green-600 font-medium">₵{transaction.nhil.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="py-3 px-4 text-right text-purple-600 font-medium">₵{transaction.getfund.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="py-3 px-4 text-right text-primary-600 font-medium">₵{transaction.getfund.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1556,13 +1567,13 @@ const Accounting = () => {
                     <td className="py-4 px-4 text-right font-bold text-gray-900">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.netAmount, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-4 px-4 text-right font-bold text-blue-600">
+                    <td className="py-4 px-4 text-right font-bold text-primary-600">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.vat, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-4 px-4 text-right font-bold text-green-600">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.nhil, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="py-4 px-4 text-right font-bold text-purple-600">
+                    <td className="py-4 px-4 text-right font-bold text-primary-600">
                       ₵{filteredTransactions.reduce((sum, t) => sum + t.getfund, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -1578,23 +1589,23 @@ const Accounting = () => {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Transactions</p>
                   <p className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</p>
                   <div className="flex items-center mt-2">
-                    <Activity size={14} className="text-blue-600 mr-1" />
+                    <Activity size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">All transactions</span>
                   </div>
                 </div>
-                <div className="bg-blue-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <Database size={24} className="text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Audit Period</p>
@@ -1602,11 +1613,11 @@ const Accounting = () => {
                     {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                   <div className="flex items-center mt-2">
-                    <Calendar size={14} className="text-purple-600 mr-1" />
+                    <Calendar size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">Date range</span>
                   </div>
                 </div>
-                <div className="bg-purple-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <Clock size={24} className="text-white" />
                 </div>
               </div>
@@ -1630,17 +1641,17 @@ const Accounting = () => {
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-indigo-50 to-indigo-100 border-l-4 border-indigo-600">
+            <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Verified Users</p>
                   <p className="text-2xl font-bold text-gray-900">1</p>
                   <div className="flex items-center mt-2">
-                    <UserCheck size={14} className="text-indigo-600 mr-1" />
+                    <UserCheck size={14} className="text-primary-600 mr-1" />
                     <span className="text-xs text-gray-600">Active users</span>
                   </div>
                 </div>
-                <div className="bg-indigo-600 p-3 rounded-lg">
+                <div className="bg-primary-600 p-3 rounded-lg">
                   <UserCheck size={24} className="text-white" />
                 </div>
               </div>
@@ -1702,7 +1713,7 @@ const Accounting = () => {
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center w-fit ${
                           transaction.type === 'sale' ? 'bg-green-100 text-green-800' :
                           transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
-                          'bg-blue-100 text-blue-800'
+                          'bg-primary-100 text-primary-800'
                         }`}>
                           {transaction.type === 'sale' && <TrendingUp size={12} className="mr-1" />}
                           {transaction.type === 'expense' && <TrendingDown size={12} className="mr-1" />}
@@ -1721,7 +1732,7 @@ const Accounting = () => {
                         <span className={`font-semibold ${
                           transaction.type === 'sale' ? 'text-green-600' : 
                           transaction.type === 'expense' ? 'text-red-600' : 
-                          'text-blue-600'
+                          'text-primary-600'
                         }`}>
                           ₵{(transaction.debit + transaction.credit).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
@@ -1756,12 +1767,12 @@ const Accounting = () => {
                   </div>
                   <span className="font-bold text-lg text-green-700">{filteredTransactions.filter(t => t.type === 'sale').length}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                <div className="flex justify-between items-center py-3 px-4 bg-primary-50 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center">
-                    <Package size={18} className="text-blue-600 mr-2" />
+                    <Package size={18} className="text-primary-600 mr-2" />
                     <span className="text-gray-700 font-medium">Purchase Transactions</span>
                   </div>
-                  <span className="font-bold text-lg text-blue-700">{filteredTransactions.filter(t => t.type === 'purchase').length}</span>
+                  <span className="font-bold text-lg text-primary-700">{filteredTransactions.filter(t => t.type === 'purchase').length}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 px-4 bg-red-50 rounded-lg border-l-4 border-red-600">
                   <div className="flex items-center">
@@ -1828,6 +1839,7 @@ const Accounting = () => {
           </div>
         </>
       )}
+    </div>
     </div>
   )
 }

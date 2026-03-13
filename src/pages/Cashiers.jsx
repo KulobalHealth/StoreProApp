@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getActiveBranch, getSessionBranchId } from '../utils/branch'
 import { listEmployees, listSales } from '../api/awoselDb.js'
 import {
-  Users, Search, Calendar, TrendingUp,
+  Users, Search, Calendar, TrendingUp, Wallet,
   ShoppingCart, Clock, ChevronDown, Loader2, AlertTriangle,
   Receipt, BarChart3, CalendarDays, CalendarRange, Filter, LogOut
 } from 'lucide-react'
@@ -249,8 +249,16 @@ const Cashiers = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">Cashiers</h1>
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+              <Wallet size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 tracking-tight">Cashiers</h1>
+              <p className="text-gray-500 text-xs">Monitor cashier performance and sales</p>
+            </div>
+          </div>
           <button
             onClick={() => { logout(); navigate('/login') }}
             className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
@@ -262,40 +270,40 @@ const Cashiers = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+      <div className="px-4 sm:px-6 py-5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Revenue</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">₵{summaryTotals.sales.toFixed(2)}</p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center">
-                <span className="text-xl font-bold text-primary-600">₵</span>
+              <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                <span className="text-lg font-bold text-primary-600">₵</span>
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2">{periodLabel} across all cashiers</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Transactions</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{summaryTotals.count}</p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-primary-50 flex items-center justify-center">
-                <Receipt size={22} className="text-primary-500" />
+              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+                <Receipt size={20} className="text-primary-500" />
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2">{periodLabel} sales count</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Profit</p>
                 <p className="text-2xl font-bold text-primary-600 mt-1">₵{summaryTotals.profit.toFixed(2)}</p>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-primary-100 flex items-center justify-center">
-                <TrendingUp size={22} className="text-primary-600" />
+              <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                <TrendingUp size={20} className="text-primary-600" />
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-2">{periodLabel} profit earned</p>
@@ -304,7 +312,7 @@ const Cashiers = () => {
 
         {/* Error */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
             <AlertTriangle size={20} className="text-red-500 shrink-0" />
             <p className="text-sm text-red-700">{error}</p>
           </div>
@@ -336,7 +344,7 @@ const Cashiers = () => {
               const avgSale = stats.count > 0 ? stats.sales / stats.count : 0
 
               return (
-                <div key={emp.uuid || emp.id || idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary-200 transition-all duration-200">
+                <div key={emp.uuid || emp.id || idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all duration-200">
                   {/* Card Header */}
                   <div className="px-5 py-4 flex items-center gap-4 border-b border-gray-100">
                     <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
@@ -350,7 +358,7 @@ const Cashiers = () => {
                         <p className="text-xs text-gray-500 truncate">{emp.email}</p>
                       )}
                       {emp.phone && (
-                        <p className="text-xs text-gray-400 truncate">{emp.phone}</p>
+                        <p className="text-xs text-gray-500 truncate">{emp.phone}</p>
                       )}
                     </div>
                     <span className="inline-flex px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 text-[10px] font-bold uppercase tracking-wider border border-primary-200">
@@ -360,7 +368,7 @@ const Cashiers = () => {
 
                   {/* Selected Period Stats */}
                   <div className="px-5 py-4">
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">{periodLabel} Performance</p>
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">{periodLabel} Performance</p>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-gray-50 rounded-lg p-3 text-center">
                         <span className="block text-base font-bold text-primary-500 mb-1 mx-auto">₵</span>
@@ -399,7 +407,7 @@ const Cashiers = () => {
                         { label: 'Year', value: cashier.yearSales },
                       ].map(({ label, value }) => (
                         <div key={label} className="text-center">
-                          <p className="text-[10px] text-gray-400 font-medium">{label}</p>
+                          <p className="text-[10px] text-gray-500 font-medium">{label}</p>
                           <p className="text-xs font-bold text-gray-700">₵{value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toFixed(0)}</p>
                         </div>
                       ))}

@@ -669,8 +669,13 @@ const Inventory = () => {
     try {
       const branchId = getSessionBranchId()
       const res = await listReceipts(branchId)
-      const data = res?.data || res
-      setPurchaseOrders(Array.isArray(data) ? data : [])
+      const raw = Array.isArray(res) ? res
+        : Array.isArray(res?.data) ? res.data
+        : Array.isArray(res?.stockReceipts) ? res.stockReceipts
+        : Array.isArray(res?.stock_receipts) ? res.stock_receipts
+        : Array.isArray(res?.receipts) ? res.receipts
+        : []
+      setPurchaseOrders(raw)
     } catch (err) {
       console.error(err)
       setPurchaseOrders([])
@@ -713,8 +718,9 @@ const Inventory = () => {
         organizationId: getSessionOrgId(),
         items: items.map(item => ({
           product_id: item.productId,
-          quantity: Number(item.quantity),
-          unit_cost: parseFloat(item.unitCost) || 0,
+          quantity: String(item.quantity),
+          unit_cost: String(parseFloat(item.unitCost) || 0),
+          total_cost: String(Number(item.quantity) * (parseFloat(item.unitCost) || 0)),
         }))
       }
       await createReceipt(payload)
@@ -727,9 +733,9 @@ const Inventory = () => {
     }
   }
 
-  const receivePurchaseOrder = async (poId) => {
+  const receivePurchaseOrder = async (poId, poUuid) => {
     try {
-      await receiveReceipt({ id: poId, branchId: getSessionBranchId(), organizationId: getSessionOrgId() })
+      await receiveReceipt({ stock_receipt_id: poUuid, branchId: getSessionBranchId(), organizationId: getSessionOrgId() })
       fetchPurchaseOrders()
       fetchProducts()
       showAlert('Purchase order received. Stock and supplier balance updated.', 'success')
@@ -748,10 +754,10 @@ const Inventory = () => {
               success: { bg: 'bg-green-50 border-green-200', icon: <CheckCircle size={20} className="text-green-500" />, title: 'Success', text: 'text-green-800', bar: 'bg-green-500' },
               error: { bg: 'bg-red-50 border-red-200', icon: <XCircle size={20} className="text-red-500" />, title: 'Error', text: 'text-red-800', bar: 'bg-red-500' },
               warning: { bg: 'bg-amber-50 border-amber-200', icon: <AlertTriangle size={20} className="text-amber-500" />, title: 'Warning', text: 'text-amber-800', bar: 'bg-amber-500' },
-              info: { bg: 'bg-blue-50 border-blue-200', icon: <Package size={20} className="text-blue-500" />, title: 'Info', text: 'text-blue-800', bar: 'bg-blue-500' },
-            }[alert.type] || { bg: 'bg-blue-50 border-blue-200', icon: <Package size={20} className="text-blue-500" />, title: 'Info', text: 'text-blue-800', bar: 'bg-blue-500' }
+              info: { bg: 'bg-primary-50 border-primary-200', icon: <Package size={20} className="text-primary-500" />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' },
+            }[alert.type] || { bg: 'bg-primary-50 border-primary-200', icon: <Package size={20} className="text-primary-500" />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' }
             return (
-              <div key={alert.id} className={`pointer-events-auto rounded-xl border shadow-lg overflow-hidden ${styles.bg}`} style={{ animation: 'slideDown 0.35s ease-out' }}>
+              <div key={alert.id} className={`pointer-events-auto rounded-lg border shadow-lg overflow-hidden ${styles.bg}`} style={{ animation: 'slideDown 0.35s ease-out' }}>
                 <div className="px-4 py-3 flex items-start gap-3">
                   <div className="mt-0.5 shrink-0">{styles.icon}</div>
                   <div className="flex-1 min-w-0">
@@ -772,7 +778,7 @@ const Inventory = () => {
       {/* Full-page product saving overlay */}
       {productSaving && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+          <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
             <Loader2 size={48} className="animate-spin text-primary-600" />
             <p className="text-lg font-semibold text-gray-800">
               {editingProduct ? 'Updating Product...' : 'Saving Product...'}
@@ -784,7 +790,7 @@ const Inventory = () => {
 
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
@@ -854,10 +860,10 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Summary Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Products</p>
@@ -868,7 +874,7 @@ const Inventory = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Stock Value</p>
@@ -881,7 +887,7 @@ const Inventory = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Low Stock</p>
@@ -892,7 +898,7 @@ const Inventory = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-sm border border-gray-200 p-4" style={{ backgroundColor: '#FF7521' }}>
+          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Expired</p>
@@ -907,7 +913,7 @@ const Inventory = () => {
 
         {/* Low Stock Alert */}
         {lowStockItems.length > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-amber-600 mt-0.5 shrink-0" size={18} />
               <div className="min-w-0 flex-1">
@@ -924,7 +930,7 @@ const Inventory = () => {
         )}
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -1025,7 +1031,7 @@ const Inventory = () => {
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {productsError && (
             <div className="px-5 py-3 bg-red-50 border-b border-red-100 text-red-700 text-sm flex items-center gap-2">
               <AlertTriangle size={16} />
@@ -1068,7 +1074,7 @@ const Inventory = () => {
                     const costPrice = Number(product.cost) || 0
                     const profit = sellingPrice - costPrice
                     return (
-                      <tr key={product.id} className={`hover:bg-primary-50/40 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                      <tr key={product.id} onClick={() => handleEditClick(product)} className={`hover:bg-primary-50/40 transition-colors cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
@@ -1077,7 +1083,7 @@ const Inventory = () => {
                             <div className="min-w-0">
                               <p className="font-medium text-gray-900 text-sm truncate">{product.name}</p>
                               {product.barcode && product.barcode !== '-' && (
-                                <p className="text-xs text-gray-400 truncate">{product.barcode}</p>
+                                <p className="text-xs text-gray-500 truncate">{product.barcode}</p>
                               )}
                             </div>
                           </div>
@@ -1117,14 +1123,14 @@ const Inventory = () => {
                         <td className="py-3 px-4">
                           <div className="flex justify-center gap-1">
                             <button
-                              onClick={() => handleEditClick(product)}
+                              onClick={(e) => { e.stopPropagation(); handleEditClick(product) }}
                               className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                               title="Edit"
                             >
                               <Edit size={15} />
                             </button>
                             <button
-                              onClick={() => deleteProduct(product.uuid || product.id)}
+                              onClick={(e) => { e.stopPropagation(); deleteProduct(product.uuid || product.id) }}
                               className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                               title="Delete"
                             >
@@ -1141,7 +1147,7 @@ const Inventory = () => {
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <Package size={40} />
                         <p className="text-sm font-medium text-gray-500">No products found</p>
-                        <p className="text-xs text-gray-400">Try adjusting your search or add a new product.</p>
+                        <p className="text-xs text-gray-500">Try adjusting your search or add a new product.</p>
                         <button
                           onClick={() => setShowAddModal(true)}
                           className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
@@ -1216,7 +1222,7 @@ const Inventory = () => {
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">Export Products</h2>
-                  <p className="text-gray-400 text-xs mt-0.5">Filter before exporting to CSV</p>
+                  <p className="text-gray-500 text-xs mt-0.5">Filter before exporting to CSV</p>
                 </div>
               </div>
               <button
@@ -1500,7 +1506,7 @@ const Inventory = () => {
           loading={purchaseOrdersLoading}
           onSelectPo={(po) => {
             setShowPurchaseOrderList(false)
-            navigate(`/purchase-orders/${po.id}`)
+            navigate(`/purchase-orders/${po.id}`, { state: { uuid: po.uuid, supplierName: po.supplier_name || po.supplier || '' } })
           }}
           onClose={() => setShowPurchaseOrderList(false)}
           onCreateNew={() => {
@@ -2212,7 +2218,7 @@ const ProductSuccessModal = ({ product, onClose }) => {
             <h2 className="text-xl font-bold text-white">
               Product {product.action === 'added' ? 'Added' : 'Updated'}!
             </h2>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {product.action === 'added' 
                 ? 'Added to inventory successfully' 
                 : 'Product information updated'}
@@ -2847,7 +2853,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       {returning && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
+          <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
             <Loader2 size={48} className="animate-spin text-orange-500" />
             <p className="text-lg font-semibold text-gray-800">Processing Return...</p>
             <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
@@ -2881,7 +2887,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
           )}
 
           {/* Step 1: Receipt Lookup */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <Search size={15} className="text-gray-500" />
               Look Up Sale
@@ -2922,7 +2928,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
           {sale && (
             <>
               {/* Sale Summary */}
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
                   <div>
                     <span className="text-gray-500">Receipt:</span>{' '}
@@ -2952,7 +2958,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
                     No line items found in this sale.
                   </div>
                 ) : (
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
@@ -3047,7 +3053,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
 
               {/* Return Summary */}
               {selectedItems.length > 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
                   <div className="text-sm text-gray-600">
                     <span className="font-semibold text-gray-900">{selectedItems.length}</span> item{selectedItems.length !== 1 ? 's' : ''} selected · <span className="font-semibold text-gray-900">{totalReturnItems}</span> total units
                   </div>

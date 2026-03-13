@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Activity, ArrowUpRight, RefreshCw, Zap
 } from 'lucide-react'
 import { listSales, listProductsByBranch, listEmployees, listSuppliers, listCustomers } from '../api/awoselDb'
-import { getSessionBranchId } from '../utils/branch'
+import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
 
 const BranchDashboard = () => {
   const { user } = useAuth()
@@ -134,7 +134,7 @@ const BranchDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
@@ -171,13 +171,13 @@ const BranchDashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         {/* Greeting Banner */}
-        <div className="bg-gray-900 rounded-sm p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="bg-gray-900 rounded-lg p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-white text-lg font-bold">{getGreeting()}, {firstName}! 👋</h2>
-            <p className="text-gray-400 text-sm mt-0.5">Here's what's happening at <span className="text-primary-400 font-medium">{branch.name}</span> today.</p>
+            <p className="text-gray-500 text-sm mt-0.5">Here's what's happening at <span className="text-primary-400 font-medium">{branch.name}</span> today.</p>
           </div>
           <button
             onClick={() => navigate('/pos')}
@@ -189,16 +189,16 @@ const BranchDashboard = () => {
         </div>
 
         {/* Activity Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <button
             onClick={() => navigate('/inventory')}
-            className="bg-white rounded-sm border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Inventory</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{productCount}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5">
                   {lowStockCount > 0
                     ? <span className="text-red-500 font-medium">{lowStockCount} low stock</span>
                     : 'All stocked'
@@ -212,13 +212,13 @@ const BranchDashboard = () => {
           </button>
           <button
             onClick={() => navigate('/users')}
-            className="bg-white rounded-sm border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Staff</p>
                 <p className="text-2xl font-bold text-primary-500 mt-1">{staffCount}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Team members</p>
+                <p className="text-xs text-gray-500 mt-0.5">Team members</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
                 <Users className="text-primary-500" size={20} />
@@ -227,13 +227,13 @@ const BranchDashboard = () => {
           </button>
           <button
             onClick={() => navigate('/suppliers')}
-            className="bg-white rounded-sm border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Suppliers</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{supplierCount}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Active suppliers</p>
+                <p className="text-xs text-gray-500 mt-0.5">Active suppliers</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
                 <Truck className="text-primary-500" size={20} />
@@ -242,21 +242,36 @@ const BranchDashboard = () => {
           </button>
           <button
             onClick={() => navigate('/customers')}
-            className="rounded-sm border border-gray-200 p-4 text-left bg-primary-500 hover:bg-primary-600 transition-all group"
+            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Customers</p>
-                <p className="text-2xl font-bold text-white mt-1">{customerCount}</p>
-                <p className="text-xs text-white/60 mt-0.5">
+                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Customers</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{customerCount}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
                   {customersOwing > 0
-                    ? <span className="text-white font-medium">{customersOwing} owing</span>
+                    ? <span className="text-primary-500 font-medium">{customersOwing} owing</span>
                     : 'No balances'
                   }
                 </p>
               </div>
+              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                <UserCircle className="text-primary-500" size={20} />
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/sales')}
+            className="rounded-lg border border-gray-200 p-4 text-left bg-primary-500 hover:bg-primary-600 transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Transactions</p>
+                <p className="text-2xl font-bold text-white mt-1">{totalTransactions}</p>
+                <p className="text-xs text-white/60 mt-0.5">Sales today</p>
+              </div>
               <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <UserCircle className="text-white" size={20} />
+                <Receipt className="text-white" size={20} />
               </div>
             </div>
           </button>
@@ -290,7 +305,7 @@ const BranchDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* Recent Transactions — spans 2 cols */}
-          <div className="lg:col-span-2 bg-white rounded-sm border border-gray-200 overflow-hidden">
+          <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
               <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                 <Receipt size={16} className="text-primary-500" />
@@ -308,7 +323,7 @@ const BranchDashboard = () => {
             {loading ? (
               <div className="py-12 text-center">
                 <div className="w-7 h-7 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p className="text-sm text-gray-400">Loading...</p>
+                <p className="text-sm text-gray-500">Loading...</p>
               </div>
             ) : recentSales.length > 0 ? (
               <div className="overflow-x-auto">
@@ -323,7 +338,11 @@ const BranchDashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {recentSales.map((sale, i) => (
-                      <tr key={sale.id || sale.uuid || i} className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-primary-50/40 transition-colors`}>
+                      <tr
+                        key={sale.id || sale.uuid || i}
+                        onClick={() => navigate('/sales')}
+                        className={`${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-primary-50/40 transition-colors cursor-pointer`}
+                      >
                         <td className="py-2.5 px-4 text-sm text-gray-600">
                           {new Date(sale.created_at || sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </td>
@@ -336,7 +355,7 @@ const BranchDashboard = () => {
                               ? 'bg-green-100 text-green-700'
                               : (sale.payment_method || '').toLowerCase() === 'momo'
                               ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-blue-100 text-blue-700'
+                              : 'bg-primary-100 text-primary-700'
                           }`}>
                             {sale.payment_method || 'N/A'}
                           </span>
@@ -352,7 +371,7 @@ const BranchDashboard = () => {
             ) : (
               <div className="py-12 text-center">
                 <Clock size={32} className="mx-auto mb-2 text-gray-300" />
-                <p className="text-sm text-gray-400">No transactions today</p>
+                <p className="text-sm text-gray-500">No transactions today</p>
                 <button
                   onClick={() => navigate('/pos')}
                   className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary-500 hover:text-primary-600 font-medium"
@@ -371,7 +390,7 @@ const BranchDashboard = () => {
           {/* Sidebar — Summary + Alerts */}
           <div className="space-y-5">
             {/* Revenue Breakdown */}
-            <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200">
                 <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                   <Activity size={16} className="text-primary-500" />
@@ -391,7 +410,7 @@ const BranchDashboard = () => {
                   const items = [
                     { label: 'Cash', amount: cashTotal, count: cashSales.length, color: 'bg-green-500' },
                     { label: 'MoMo', amount: momoTotal, count: momoSales.length, color: 'bg-yellow-500' },
-                    { label: 'Other', amount: otherTotal, count: otherSales.length, color: 'bg-blue-500' },
+                    { label: 'Other', amount: otherTotal, count: otherSales.length, color: 'bg-primary-500' },
                   ]
 
                   return items.map(item => (
@@ -399,7 +418,7 @@ const BranchDashboard = () => {
                       <div className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
                         <span className="text-sm text-gray-600">{item.label}</span>
-                        <span className="text-xs text-gray-400">({item.count})</span>
+                        <span className="text-xs text-gray-500">({item.count})</span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">₵{formatMoney(item.amount)}</span>
                     </div>
@@ -407,7 +426,7 @@ const BranchDashboard = () => {
                 })()}
 
                 {totalRevenue === 0 && (
-                  <p className="text-xs text-gray-400 text-center py-2">No sales data yet</p>
+                  <p className="text-xs text-gray-500 text-center py-2">No sales data yet</p>
                 )}
 
                 <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
@@ -418,7 +437,7 @@ const BranchDashboard = () => {
             </div>
 
             {/* Inventory Alert */}
-            <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                   <AlertCircle size={16} className="text-primary-500" />
@@ -433,12 +452,12 @@ const BranchDashboard = () => {
               </div>
               <div className="p-6 text-center">
                 <Package size={28} className="mx-auto mb-2 text-gray-300" />
-                <p className="text-sm text-gray-400">No alerts</p>
+                <p className="text-sm text-gray-500">No alerts</p>
               </div>
             </div>
 
             {/* Quick Stats Card */}
-            <div className="bg-gray-900 rounded-sm p-4">
+            <div className="bg-gray-900 rounded-lg p-4">
               <h3 className="text-white text-sm font-bold mb-3">Today at a Glance</h3>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">

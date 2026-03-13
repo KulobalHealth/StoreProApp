@@ -201,16 +201,16 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-6 bg-gray-50 min-h-full">
         {/* Company Profile Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-gray-200 w-12 h-12 rounded-full flex items-center justify-center">
-              <Building2 size={24} className="text-gray-600" />
+          <div className="flex items-center gap-3">
+            <div className="bg-primary-500 w-9 h-9 rounded-lg flex items-center justify-center">
+              <Building2 size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Awosel OS Store</h1>
-              <p className="text-sm text-gray-500">Dashboard Overview</p>
+              <h1 className="text-lg font-bold text-gray-900 tracking-tight">Awosel OS Store</h1>
+              <p className="text-gray-500 text-xs">Dashboard Overview</p>
             </div>
           </div>
         </div>
@@ -370,7 +370,7 @@ const Dashboard = () => {
           </div>
 
           <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
-            <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium block">Connect accounts</a>
+            <a href="#" className="text-sm text-primary-600 hover:text-primary-700 font-medium block">Connect accounts</a>
             <a href="#" className="text-sm text-gray-600 hover:text-gray-700 font-medium flex items-center">
               Go to registers
               <ChevronDown size={16} className="ml-1" />
@@ -490,13 +490,13 @@ const Dashboard = () => {
         </div>
 
         {/* Discover Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-sm border border-blue-200 p-6">
+        <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg shadow-sm border border-primary-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Discover</h3>
           
-          <div className="bg-gradient-to-br from-blue-200 to-indigo-300 rounded-lg h-32 mb-4 flex items-center justify-center relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-200 to-primary-300 rounded-lg h-32 mb-4 flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-white bg-opacity-90 rounded-full p-4 shadow-lg">
-                <Play size={32} className="text-blue-600" />
+                <Play size={32} className="text-primary-600" />
               </div>
             </div>
           </div>
@@ -506,7 +506,7 @@ const Dashboard = () => {
             Learn more about how Awosel OS Payroll works in this short one minute video.
           </p>
           
-          <a href="#" className="text-sm text-blue-700 hover:text-blue-800 font-semibold">
+          <a href="#" className="text-sm text-primary-700 hover:text-primary-800 font-semibold">
             Watch now
           </a>
         </div>
@@ -515,10 +515,10 @@ const Dashboard = () => {
       {/* Main Grid - Row 3 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
         {/* Cash Flow Card */}
-        <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-lg shadow-sm border border-purple-200 p-6">
+        <div className="bg-gradient-to-br from-primary-50 to-orange-100 rounded-lg shadow-sm border border-primary-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Wallet size={20} className="mr-2 text-purple-600" />
+              <Wallet size={20} className="mr-2 text-primary-600" />
               Cash Flow
             </h3>
           </div>
@@ -532,7 +532,7 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="space-y-3 pt-4 border-t border-purple-200">
+          <div className="space-y-3 pt-4 border-t border-primary-200">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Inflow</span>
               <span className="text-sm font-semibold text-green-700">₵{cashFlowData.inflow.toLocaleString()}</span>
@@ -605,10 +605,10 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Package size={16} className="text-blue-600 mr-2" />
+                <Package size={16} className="text-primary-600 mr-2" />
                 <span className="text-sm text-gray-700">Reorder Needed</span>
               </div>
-              <span className="text-sm font-bold text-blue-700">{inventoryStatus.reorderNeeded}</span>
+              <span className="text-sm font-bold text-primary-700">{inventoryStatus.reorderNeeded}</span>
             </div>
           </div>
         </div>
@@ -621,7 +621,7 @@ const Dashboard = () => {
               <Receipt size={20} className="mr-2 text-primary-600" />
               Recent Transactions
             </h3>
-            <a href="#" className="text-xs text-blue-600 hover:text-blue-700 font-medium">View all</a>
+            <a href="#" className="text-xs text-primary-600 hover:text-primary-700 font-medium">View all</a>
           </div>
 
           <div className="space-y-3">

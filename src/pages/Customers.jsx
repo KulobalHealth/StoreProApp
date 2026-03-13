@@ -151,7 +151,7 @@ const Customers = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
@@ -174,10 +174,10 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
         {/* Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Customers</p>
@@ -188,7 +188,7 @@ const Customers = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Sales</p>
@@ -199,7 +199,7 @@ const Customers = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Owing</p>
@@ -210,7 +210,7 @@ const Customers = () => {
               </div>
             </div>
           </div>
-          <div className="rounded-sm border border-gray-200 p-4" style={{ backgroundColor: '#FF7521' }}>
+          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Owing Balance</p>
@@ -224,7 +224,7 @@ const Customers = () => {
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
@@ -239,14 +239,14 @@ const Customers = () => {
 
         {/* Error */}
         {error && !showForm && (
-          <div className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-2 text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-2 text-red-700 text-sm">
             <AlertTriangle size={16} />
             {error}
           </div>
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="py-16 text-center">
               <div className="flex flex-col items-center gap-3 text-gray-500">
@@ -281,7 +281,7 @@ const Customers = () => {
                             <div className="min-w-0">
                               <p className="font-medium text-gray-900 text-sm truncate">{c.name}</p>
                               {c.email && (
-                                <p className="text-xs text-gray-400 truncate">{c.email}</p>
+                                <p className="text-xs text-gray-500 truncate">{c.email}</p>
                               )}
                             </div>
                           </div>
@@ -295,8 +295,8 @@ const Customers = () => {
                               </div>
                             )}
                             {c.email && (
-                              <div className="flex items-center gap-1.5 text-sm text-gray-400">
-                                <Mail size={12} className="text-gray-300 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                <Mail size={12} className="text-gray-400 shrink-0" />
                                 {c.email}
                               </div>
                             )}
@@ -372,7 +372,7 @@ const Customers = () => {
                 <p className="text-sm font-medium text-gray-500">
                   {searchTerm.trim() ? 'No customers match your search' : 'No customers yet'}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   {searchTerm.trim() ? 'Try a different search term.' : 'Add a customer to get started.'}
                 </p>
                 {!searchTerm.trim() && (
@@ -411,7 +411,7 @@ const Customers = () => {
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">{editingId ? 'Edit Customer' : 'Add Customer'}</h2>
-                  <p className="text-gray-400 text-xs mt-0.5">{editingId ? 'Update customer information' : 'Enter customer details'}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{editingId ? 'Update customer information' : 'Enter customer details'}</p>
                 </div>
               </div>
               <button
@@ -526,7 +526,7 @@ const Customers = () => {
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">Customer Details</h2>
-                  <p className="text-gray-400 text-xs mt-0.5">View customer information and sales record</p>
+                  <p className="text-gray-500 text-xs mt-0.5">View customer information and sales record</p>
                 </div>
               </div>
               <button
@@ -608,7 +608,7 @@ const Customers = () => {
                     <div>
                       <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent Sales</h3>
                       {recentSales.length > 0 ? (
-                        <div className="bg-white rounded-sm border border-gray-200 overflow-hidden">
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                           <table className="w-full">
                             <thead>
                               <tr className="bg-gray-900 text-white">
@@ -631,7 +631,7 @@ const Customers = () => {
                       ) : (
                         <div className="text-center py-8 bg-gray-50 rounded-lg">
                           <ShoppingBag size={32} className="mx-auto mb-2 text-gray-300" />
-                          <p className="text-sm text-gray-400">No sales yet</p>
+                          <p className="text-sm text-gray-500">No sales yet</p>
                         </div>
                       )}
                     </div>

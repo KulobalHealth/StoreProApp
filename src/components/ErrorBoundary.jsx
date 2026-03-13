@@ -111,9 +111,9 @@ class ErrorBoundary extends React.Component {
             )}
 
             {/* Suggested Actions */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-4">
-              <p className="text-sm font-semibold text-blue-900 mb-2">Suggested Actions:</p>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+            <div className="bg-primary-50 p-4 rounded-lg mb-4">
+              <p className="text-sm font-semibold text-primary-900 mb-2">Suggested Actions:</p>
+              <ul className="text-sm text-primary-800 space-y-1 list-disc list-inside">
                 <li>Click "Reload Page" to try again</li>
                 <li>Click "Go to POS" to return to the main page</li>
                 {errorCount > 2 && (
@@ -126,7 +126,7 @@ class ErrorBoundary extends React.Component {
             <div className="flex gap-3">
               <button
                 onClick={this.handleReload}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <RefreshCw size={18} />
                 Reload Page

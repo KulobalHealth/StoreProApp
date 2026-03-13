@@ -117,8 +117,14 @@ export async function listSuppliers(branchId) {
   return fetchApi('GET', '/suppliers/branch/' + branchId)
 }
 
-export async function getSupplier(id) {
-  return fetchApi('GET', '/suppliers/' + id)
+export async function listSuppliersByBranch(branchId) {
+  return fetchApi('GET', '/suppliers/branch/' + branchId)
+}
+
+export async function getSupplier(id, query = {}) {
+  const params = new URLSearchParams(query)
+  const qs = params.toString()
+  return fetchApi('GET', '/suppliers/details/' + id + (qs ? '?' + qs : ''))
 }
 
 export async function createSupplier(body) {
@@ -159,12 +165,22 @@ export async function getReceipt(id) {
   return fetchApi('GET', '/stock-receipts/' + id)
 }
 
+export async function getReceivedStock(branchId, receiptId) {
+  const params = new URLSearchParams({ branchId })
+  if (receiptId) params.set('receiptId', receiptId)
+  return fetchApi('GET', '/stock-receipts/received?' + params.toString())
+}
+
 export async function addReceiptItem(receiptId, body) {
   return fetchApi('POST', '/stock-receipts/' + receiptId + '/items', body)
 }
 
 export async function receiveReceipt(body) {
   return fetchApi('POST', '/stock-receipts/receive', body)
+}
+
+export async function deleteReceipt(id) {
+  return fetchApi('DELETE', '/stock-receipts/' + id)
 }
 
 // ---- Sales ----

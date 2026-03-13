@@ -278,36 +278,43 @@ const MultiStore = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <Store size={32} className="mr-3 text-primary-600" />
-            Multi-Store Management
-          </h1>
-          <p className="text-gray-600 mt-1">Manage multiple store locations, sales, inventory, and transfers</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={handleExportData}
-            className="btn-secondary flex items-center"
-          >
-            <Download size={18} className="mr-2" />
-            Export Data
-          </button>
-          <button
-            onClick={() => setShowAddStoreModal(true)}
-            className="btn-primary flex items-center"
-          >
-            <Plus size={18} className="mr-2" />
-            Add Store
-          </button>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <Store size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Multi-Store Management</h1>
+                <p className="text-gray-500 text-xs">Manage multiple store locations and transfers</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleExportData}
+                className="btn-secondary flex items-center"
+              >
+                <Download size={18} className="mr-2" />
+                Export Data
+              </button>
+              <button
+                onClick={() => setShowAddStoreModal(true)}
+                className="btn-primary flex items-center"
+              >
+                <Plus size={18} className="mr-2" />
+                Add Store
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Store Selector */}
-      <div className="card mb-6">
+      <div className="card">
         <div className="flex items-center justify-between mb-4">
           <label className="text-sm font-semibold text-gray-700 flex items-center">
             <Filter size={18} className="mr-2" />
@@ -375,7 +382,7 @@ const MultiStore = () => {
         <div className="space-y-6">
           {/* Consolidated Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90 mb-1">Total Stores</p>
@@ -393,7 +400,7 @@ const MultiStore = () => {
                 <DollarSign size={32} className="opacity-80" />
               </div>
             </div>
-            <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90 mb-1">Total Inventory</p>
@@ -411,7 +418,7 @@ const MultiStore = () => {
                 <TrendingUp size={32} className="opacity-80" />
               </div>
             </div>
-            <div className="card bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+            <div className="card bg-gradient-to-br from-primary-600 to-primary-700 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90 mb-1">Active Stores</p>
@@ -458,7 +465,7 @@ const MultiStore = () => {
                         <div className="flex justify-center gap-2">
                           <button
                             onClick={() => handleViewStoreDetails(store)}
-                            className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
+                            className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                             title="View Details"
                           >
                             <Eye size={16} />
@@ -704,21 +711,22 @@ const MultiStore = () => {
           </div>
         </div>
       )}
+      </div>
 
       {/* Add Store Modal */}
       {showAddStoreModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
+            <div className="bg-gray-900 p-6 rounded-t-xl">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
-                  <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
+                  <div className="bg-primary-500 p-2 rounded-lg mr-3">
                     <Store size={24} className="text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">Add New Store</h3>
-                    <p className="text-sm text-blue-100 mt-1">Create a new store location</p>
+                    <p className="text-sm text-gray-400 mt-1">Create a new store location</p>
                   </div>
                 </div>
                 <button 
@@ -824,12 +832,12 @@ const MultiStore = () => {
               </div>
 
               {/* Info Box */}
-              <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="mt-6 p-4 bg-primary-50 border-l-4 border-primary-500 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle size={20} className="text-blue-600 mr-3 mt-0.5" />
+                  <AlertCircle size={20} className="text-primary-600 mr-3 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-blue-900">Store Information</p>
-                    <p className="text-xs text-blue-700 mt-1">
+                    <p className="text-sm font-medium text-primary-900">Store Information</p>
+                    <p className="text-xs text-primary-700 mt-1">
                       All fields marked with <span className="text-red-500">*</span> are required. 
                       The store will be set to active status by default.
                     </p>
@@ -848,7 +856,7 @@ const MultiStore = () => {
                 </button>
                 <button 
                   onClick={handleAddStore} 
-                  className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="btn-primary flex-1 flex items-center justify-center"
                 >
                   <Plus size={18} className="mr-2" />
                   Add Store

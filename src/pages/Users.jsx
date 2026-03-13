@@ -11,18 +11,18 @@ import { getActiveBranch, getSessionBranchId, getSessionOrgId } from '../utils/b
 const ROLES = ['manager', 'sales', 'account']
 
 const ROLE_COLORS = {
-  manager: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
+  manager: { bg: 'bg-primary-50', text: 'text-primary-700', border: 'border-primary-200', dot: 'bg-primary-500' },
   sales: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
-  account: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', dot: 'bg-purple-500' },
+  account: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
   admin: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
 }
 
 const AVATAR_COLORS = [
   'from-primary-500 to-primary-700',
   'from-emerald-500 to-teal-700',
-  'from-blue-500 to-indigo-700',
+  'from-amber-500 to-amber-700',
   'from-orange-500 to-red-600',
-  'from-purple-500 to-violet-700',
+  'from-primary-600 to-orange-700',
   'from-pink-500 to-rose-700',
   'from-cyan-500 to-sky-700',
 ]
@@ -255,7 +255,7 @@ const Users = () => {
   if (!isAdmin) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[60vh]">
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-10 text-center max-w-md">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-10 text-center max-w-md">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="text-amber-600" size={32} />
           </div>
@@ -267,39 +267,47 @@ const Users = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
       {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Employee Management</h1>
-            <p className="text-gray-500 mt-1">Manage your team members and their roles</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={fetchEmployees}
-              className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
-              title="Refresh"
-            >
-              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-            <button
-              type="button"
-              onClick={openAddModal}
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-sm shadow-primary-200 transition-all hover:shadow-md"
-            >
-              <UserPlus size={18} />
-              <span className="font-medium">Add Employee</span>
-            </button>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <UsersIcon size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Employee Management</h1>
+                <p className="text-gray-500 text-xs">Manage your team members and their roles</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={fetchEmployees}
+                className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
+                title="Refresh"
+              >
+                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+              </button>
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all"
+              >
+                <UserPlus size={18} />
+                <span className="font-medium">Add Employee</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Stats Cards */}
       {!loading && list.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-1">
               <UsersIcon size={16} className="text-gray-400" />
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span>
@@ -312,7 +320,7 @@ const Users = () => {
               <button
                 key={role}
                 onClick={() => setRoleFilter(f => f === role ? 'all' : role)}
-                className={`rounded-xl border p-4 text-left transition-all ${roleFilter === role ? `${colors.bg} ${colors.border} ring-2 ring-offset-1 ring-${role === 'manager' ? 'blue' : role === 'sales' ? 'emerald' : role === 'account' ? 'purple' : 'red'}-300` : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                className={`rounded-lg border p-4 text-left transition-all ${roleFilter === role ? `${colors.bg} ${colors.border} ring-2 ring-offset-1 ring-${role === 'manager' ? 'blue' : role === 'sales' ? 'emerald' : role === 'account' ? 'purple' : 'red'}-300` : 'bg-white border-gray-200 hover:border-gray-300'}`}
               >
                 <div className="flex items-center gap-2 mb-1">
                   <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
@@ -327,7 +335,7 @@ const Users = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
           <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
             <X size={16} className="text-red-600" />
           </div>
@@ -339,7 +347,7 @@ const Users = () => {
       )}
 
       {/* Search & Filter Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex flex-col sm:flex-row gap-3">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -365,7 +373,7 @@ const Users = () => {
       </div>
 
       {/* Users List */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
             <div className="w-10 h-10 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
@@ -493,6 +501,7 @@ const Users = () => {
           </>
         )}
       </div>
+      </div>
 
       {/* Add / Edit Modal */}
       {showModal && (
@@ -501,12 +510,12 @@ const Users = () => {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editingUser ? 'bg-blue-50' : 'bg-primary-50'}`}>
-                  {editingUser ? <Pencil size={18} className="text-blue-600" /> : <UserPlus size={18} className="text-primary-600" />}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editingUser ? 'bg-primary-50' : 'bg-primary-50'}`}>
+                  {editingUser ? <Pencil size={18} className="text-primary-600" /> : <UserPlus size={18} className="text-primary-600" />}
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">{editingUser ? 'Edit Employee' : 'Add New Employee'}</h2>

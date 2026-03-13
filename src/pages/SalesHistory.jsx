@@ -193,7 +193,7 @@ const SalesHistory = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Compact Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
@@ -226,7 +226,7 @@ const SalesHistory = () => {
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+      <div className="px-4 sm:px-6 lg:px-8 py-5 space-y-5">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
             <X size={16} className="shrink-0" />
@@ -235,7 +235,7 @@ const SalesHistory = () => {
         )}
 
         {/* Period Filter Chips */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-1.5 text-gray-500 mr-1">
               <Calendar size={14} />
@@ -306,7 +306,7 @@ const SalesHistory = () => {
 
         {/* Summary Stat Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Transactions</p>
@@ -315,7 +315,7 @@ const SalesHistory = () => {
               <ShoppingCart className="text-primary-500" size={20} />
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</p>
@@ -324,7 +324,7 @@ const SalesHistory = () => {
               <DollarSign className="text-primary-500" size={20} />
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</p>
@@ -333,7 +333,7 @@ const SalesHistory = () => {
               <TrendingUp className="text-emerald-500" size={20} />
             </div>
           </div>
-          <div className="bg-white rounded-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Sale</p>
@@ -342,7 +342,7 @@ const SalesHistory = () => {
               <BarChart3 className="text-primary-500" size={20} />
             </div>
           </div>
-          <div className="rounded-sm border border-gray-200 p-4" style={{ backgroundColor: '#FF7521' }}>
+          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-white/80 uppercase tracking-wider">Margin</p>
@@ -355,27 +355,29 @@ const SalesHistory = () => {
 
         {/* Payment Breakdown */}
         {paymentEntries.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <CreditCard size={16} className="text-primary-500" />
-              <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Payment Breakdown — {periodLabel}</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {paymentEntries.map(([method, amount]) => (
-                <div
-                  key={method}
-                  className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-lg border border-gray-100"
-                >
-                  <span className="text-sm font-medium text-gray-700 capitalize">{method}</span>
-                  <span className="text-sm font-bold text-gray-900">₵{Number(amount).toFixed(2)}</span>
-                </div>
-              ))}
+          <div className="bg-white rounded-lg border border-gray-200 px-4 py-2.5">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 shrink-0">
+                <CreditCard size={14} className="text-primary-500" />
+                <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Payment Breakdown — {periodLabel}</h3>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {paymentEntries.map(([method, amount]) => (
+                  <div
+                    key={method}
+                    className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-md border border-gray-100"
+                  >
+                    <span className="text-xs font-medium text-gray-600 capitalize">{method}</span>
+                    <span className="text-xs font-bold text-gray-900">₵{Number(amount).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {/* Search, Filter, and Sort */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -446,7 +448,7 @@ const SalesHistory = () => {
         </div>
 
         {/* Sales Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="py-20 text-center">
               <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
@@ -456,7 +458,7 @@ const SalesHistory = () => {
             <div className="py-20 text-center">
               <Receipt size={48} className="mx-auto mb-3 text-gray-300" />
               <p className="text-gray-500 font-medium">No sales found</p>
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-gray-500 text-sm mt-1">
                 {searchTerm || paymentFilter !== 'all'
                   ? 'Try adjusting your filters or search query'
                   : 'No transactions recorded for the selected period'}
@@ -527,7 +529,7 @@ const SalesHistory = () => {
                               : (sale.payment_method || '').toLowerCase() === 'mobile money' || (sale.payment_method || '').toLowerCase() === 'momo'
                                 ? 'bg-amber-50 text-amber-700'
                                 : (sale.payment_method || '').toLowerCase() === 'card'
-                                  ? 'bg-blue-50 text-blue-700'
+                                  ? 'bg-primary-50 text-primary-700'
                                   : 'bg-gray-100 text-gray-700'
                           }`}>
                             {sale.payment_method || '—'}
@@ -618,7 +620,7 @@ const SalesHistory = () => {
                   </div>
                   <div>
                     <h2 className="text-lg font-bold">Sale Details</h2>
-                    <p className="text-gray-400 text-xs mt-0.5">
+                    <p className="text-gray-500 text-xs mt-0.5">
                       {selectedSale.receipt_number || '—'} · {selectedSale.created_at ? new Date(selectedSale.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
                     </p>
                   </div>
@@ -634,31 +636,31 @@ const SalesHistory = () => {
               {/* Modal Summary Strip */}
               <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex flex-wrap gap-x-8 gap-y-2 text-sm shrink-0">
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Customer</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Customer</p>
                   <p className="text-gray-900 font-medium">{selectedSale.customer_name || 'Walk-in'}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Payment</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Payment</p>
                   <p className="text-gray-900 font-medium capitalize">{selectedSale.payment_method || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Subtotal</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Subtotal</p>
                   <p className="text-gray-900 font-medium">₵{(Number(selectedSale.subtotal) || 0).toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Discount</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Discount</p>
                   <p className="text-orange-600 font-medium">-₵{(Number(selectedSale.discount) || 0).toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Tax</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Tax</p>
                   <p className="text-gray-700 font-medium">₵{(Number(selectedSale.tax) || 0).toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Total</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Total</p>
                   <p className="text-primary-500 font-bold text-base">₵{(Number(selectedSale.total) || 0).toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Profit</p>
+                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Profit</p>
                   <p className="text-emerald-600 font-bold">₵{(Number(selectedSale.total_profit) || 0).toFixed(2)}</p>
                 </div>
               </div>
@@ -669,7 +671,7 @@ const SalesHistory = () => {
                   <Package size={16} className="text-primary-500" /> Line Items ({(selectedSale.items || []).length})
                 </h3>
                 {(selectedSale.items || []).length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-8">No items recorded.</p>
+                  <p className="text-gray-500 text-sm text-center py-8">No items recorded.</p>
                 ) : (
                   <div className="rounded-lg border border-gray-200 overflow-hidden">
                     <div className="overflow-x-auto">

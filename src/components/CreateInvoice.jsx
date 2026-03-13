@@ -125,17 +125,17 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
+        <div className="bg-gray-900 p-6 rounded-t-xl">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
+              <div className="bg-primary-500 p-2 rounded-lg mr-3">
                 <FileText size={24} className="text-white" />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">
                   {editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}
                 </h3>
-                <p className="text-sm text-blue-100 mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   {editingInvoice ? 'Update invoice information' : 'Add a new invoice to your system'}
                 </p>
               </div>
@@ -356,7 +356,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
           </div>
 
           {/* Totals */}
-          <div className="mb-6 bg-gradient-to-br from-gray-50 to-blue-50 p-5 rounded-lg border border-gray-200">
+          <div className="mb-6 bg-gradient-to-br from-gray-50 to-primary-50 p-5 rounded-lg border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
@@ -416,7 +416,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
             </button>
             <button 
               onClick={handleSave} 
-              className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="btn-primary flex-1 flex items-center justify-center"
             >
               <Save size={18} className="mr-2" />
               {editingInvoice ? 'Update Invoice' : 'Create Invoice'}

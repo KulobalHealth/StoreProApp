@@ -141,9 +141,9 @@ const Staff = () => {
       case 'Admin':
         return <Shield size={16} className="text-red-600" />
       case 'Manager':
-        return <UserCheck size={16} className="text-blue-600" />
+        return <UserCheck size={16} className="text-primary-600" />
       case 'Accountant':
-        return <Key size={16} className="text-purple-600" />
+        return <Key size={16} className="text-amber-600" />
       default:
         return <User size={16} className="text-gray-600" />
     }
@@ -154,9 +154,9 @@ const Staff = () => {
       case 'Admin':
         return 'bg-red-100 text-red-700'
       case 'Manager':
-        return 'bg-blue-100 text-blue-700'
+        return 'bg-primary-100 text-primary-700'
       case 'Accountant':
-        return 'bg-purple-100 text-purple-700'
+        return 'bg-amber-100 text-amber-700'
       default:
         return 'bg-gray-100 text-gray-700'
     }
@@ -211,43 +211,47 @@ const Staff = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <UserCheck size={32} className="mr-3 text-primary-600" />
-            Staff Management
-          </h1>
-          <p className="text-gray-600 mt-2 flex items-center">
-            <Shield size={16} className="mr-2" />
-            Manage staff members, roles, permissions, and login credentials
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <UserCheck size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Staff Management</h1>
+                <p className="text-gray-500 text-xs">Manage staff members, roles, and credentials</p>
+              </div>
+            </div>
+            <button 
+              className="btn-primary flex items-center" 
+              onClick={() => {
+                setEditingStaff(null)
+                setShowAddModal(true)
+              }}
+            >
+              <Plus size={18} className="mr-2" />
+              Add Staff
+            </button>
+          </div>
         </div>
-        <button 
-          className="btn-primary flex items-center" 
-          onClick={() => {
-            setEditingStaff(null)
-            setShowAddModal(true)
-          }}
-        >
-          <Plus size={18} className="mr-2" />
-          Add Staff
-        </button>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-        <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Staff</p>
               <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
               <div className="flex items-center mt-2">
-                <Users size={14} className="text-blue-600 mr-1" />
+                <Users size={14} className="text-primary-600 mr-1" />
                 <span className="text-xs text-gray-600">All members</span>
               </div>
             </div>
-            <div className="bg-blue-600 p-3 rounded-lg">
+            <div className="bg-primary-600 p-3 rounded-lg">
               <Users size={24} className="text-white" />
             </div>
           </div>
@@ -284,32 +288,32 @@ const Staff = () => {
             </div>
           </div>
         </div>
-        <div className="card bg-gradient-to-br from-indigo-50 to-indigo-100 border-l-4 border-indigo-600">
+        <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-l-4 border-primary-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Managers</p>
-              <p className="text-2xl font-bold text-indigo-700">{roleStats.Manager}</p>
+              <p className="text-2xl font-bold text-primary-700">{roleStats.Manager}</p>
               <div className="flex items-center mt-2">
-                <UserCheck size={14} className="text-indigo-600 mr-1" />
+                <UserCheck size={14} className="text-primary-600 mr-1" />
                 <span className="text-xs text-gray-600">Management</span>
               </div>
             </div>
-            <div className="bg-indigo-600 p-3 rounded-lg">
+            <div className="bg-primary-600 p-3 rounded-lg">
               <UserCheck size={24} className="text-white" />
             </div>
           </div>
         </div>
-        <div className="card bg-gradient-to-br from-purple-50 to-purple-100 border-l-4 border-purple-600">
+        <div className="card bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Cashiers</p>
-              <p className="text-2xl font-bold text-purple-700">{roleStats.Cashier}</p>
+              <p className="text-2xl font-bold text-amber-700">{roleStats.Cashier}</p>
               <div className="flex items-center mt-2">
-                <User size={14} className="text-purple-600 mr-1" />
+                <User size={14} className="text-amber-600 mr-1" />
                 <span className="text-xs text-gray-600">Point of sale</span>
               </div>
             </div>
-            <div className="bg-purple-600 p-3 rounded-lg">
+            <div className="bg-amber-600 p-3 rounded-lg">
               <User size={24} className="text-white" />
             </div>
           </div>
@@ -335,7 +339,7 @@ const Staff = () => {
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
               >
                 <option value="all">All Roles</option>
                 <option value="Admin">Admin</option>
@@ -349,7 +353,7 @@ const Staff = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -401,8 +405,8 @@ const Staff = () => {
                     <div className="flex items-center">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center mr-3 ${
                         member.role === 'Admin' ? 'bg-red-100' :
-                        member.role === 'Manager' ? 'bg-blue-100' :
-                        member.role === 'Accountant' ? 'bg-purple-100' :
+                        member.role === 'Manager' ? 'bg-primary-100' :
+                        member.role === 'Accountant' ? 'bg-amber-100' :
                         'bg-gray-100'
                       }`}>
                         {getRoleIcon(member.role)}
@@ -465,7 +469,7 @@ const Staff = () => {
                     <div className="flex justify-center space-x-2">
                       <button
                         onClick={() => handleEditClick(member)}
-                        className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
+                        className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                         title="Edit Staff"
                       >
                         <Edit size={18} />
@@ -475,7 +479,7 @@ const Staff = () => {
                           setEditingStaff(member)
                           setShowPasswordModal(true)
                         }}
-                        className="p-2 rounded-lg hover:bg-purple-100 text-purple-600 transition-colors"
+                        className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                         title="Reset Password"
                       >
                         <Lock size={18} />
@@ -497,13 +501,14 @@ const Staff = () => {
                   <div className="flex flex-col items-center">
                     <Users size={48} className="text-gray-300 mb-3" />
                     <p className="text-gray-500 font-medium">No staff members found</p>
-                    <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filters</p>
+                    <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
                   </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
       </div>
 
       {/* Add/Edit Staff Modal */}
@@ -599,9 +604,9 @@ const StaffModal = ({ staff, onSave, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
-        <div className="px-6 py-5 border-b bg-gradient-to-r from-blue-50 to-transparent flex items-center justify-between">
+        <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
-            <div className="bg-blue-600 p-2 rounded-lg mr-3">
+            <div className="bg-primary-600 p-2 rounded-lg mr-3">
               {staff ? <Edit size={24} className="text-white" /> : <Plus size={24} className="text-white" />}
             </div>
             <div>
@@ -628,7 +633,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -643,7 +648,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -658,7 +663,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                 type="text"
                 value={formData.username}
                 onChange={(e) => handleChange('username', e.target.value.toLowerCase().replace(/\s+/g, ''))}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.username ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="johndoe"
@@ -674,7 +679,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.phone ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="+233 24 123 4567"
@@ -689,7 +694,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
               <select
                 value={formData.role}
                 onChange={(e) => handleChange('role', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {roles.map(role => (
                   <option key={role} value={role}>{role}</option>
@@ -705,7 +710,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
               <select
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -721,7 +726,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 ${
+                  className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 pr-10 ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder={staff ? 'Enter new password or leave blank' : 'Enter password'}
@@ -776,9 +781,9 @@ const PermissionsModal = ({ permissions, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl">
-        <div className="px-6 py-5 border-b bg-gradient-to-r from-purple-50 to-transparent flex items-center justify-between">
+        <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
-            <div className="bg-purple-600 p-2 rounded-lg mr-3">
+            <div className="bg-primary-500 p-2 rounded-lg mr-3">
               <Shield size={24} className="text-white" />
             </div>
             <div>
@@ -801,8 +806,8 @@ const PermissionsModal = ({ permissions, onClose }) => {
                     <th key={role} className="text-center py-4 px-4 font-bold text-gray-900">
                       <div className="flex items-center justify-center">
                         {role === 'Admin' && <Shield size={16} className="text-red-600 mr-2" />}
-                        {role === 'Manager' && <UserCheck size={16} className="text-blue-600 mr-2" />}
-                        {role === 'Accountant' && <Key size={16} className="text-purple-600 mr-2" />}
+                        {role === 'Manager' && <UserCheck size={16} className="text-primary-600 mr-2" />}
+                        {role === 'Accountant' && <Key size={16} className="text-amber-600 mr-2" />}
                         {role === 'Cashier' && <User size={16} className="text-gray-600 mr-2" />}
                         {role}
                       </div>
@@ -904,9 +909,9 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
-        <div className="px-6 py-5 border-b bg-gradient-to-r from-purple-50 to-transparent flex items-center justify-between">
+        <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
-            <div className="bg-purple-600 p-2 rounded-lg mr-3">
+            <div className="bg-primary-500 p-2 rounded-lg mr-3">
               <Lock size={24} className="text-white" />
             </div>
             <div>
@@ -932,7 +937,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
                   setPassword(e.target.value)
                   if (errors.password) setErrors({ ...errors, password: '' })
                 }}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 pr-10 ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter new password"
@@ -960,7 +965,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
                   setConfirmPassword(e.target.value)
                   if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' })
                 }}
-                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 ${
+                className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 pr-10 ${
                   errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Confirm new password"

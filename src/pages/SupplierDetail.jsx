@@ -13,9 +13,12 @@ import {
   Banknote,
   X,
   History,
+  Plus,
+  Loader2,
+  Pencil,
 } from 'lucide-react'
-import { getSupplier, listReceipts, listDebtPayments, postDebtPayment } from '../api/awoselDb.js'
-import { getSessionBranchId } from '../utils/branch.js'
+import { getSupplier, updateSupplier, listReceipts, listDebtPayments, postDebtPayment, createReceipt } from '../api/awoselDb.js'
+import { getSessionBranchId, getSessionOrgId } from '../utils/branch.js'
 
 const SupplierDetail = () => {
   const { id } = useParams()
@@ -30,18 +33,97 @@ const SupplierDetail = () => {
   const [payNotes, setPayNotes] = useState('')
   const [paySubmitting, setPaySubmitting] = useState(false)
   const [payError, setPayError] = useState('')
+  const [createPOOpen, setCreatePOOpen] = useState(false)
+  const [poPaymentType, setPoPaymentType] = useState('credit')
+  const [poSubmitting, setPoSubmitting] = useState(false)
+  const [poError, setPoError] = useState('')
+  const [editOpen, setEditOpen] = useState(false)
+  const [editForm, setEditForm] = useState({ name: '', phone1: '', phone2: '', email: '', location: '', description: '' })
+  const [editSubmitting, setEditSubmitting] = useState(false)
+  const [editError, setEditError] = useState('')
 
-  const fetchSupplierData = () => {
-    if (!id) return
-    return Promise.all([
-      getSupplier(id),
-      listReceipts(getSessionBranchId(), { supplier_id: id }),
-      listDebtPayments(id),
-    ]).then(([supplierData, poList, payments]) => {
-      setSupplier(supplierData)
-      setPurchaseOrders(Array.isArray(poList) ? poList : [])
-      setDebtPayments(Array.isArray(payments) ? payments : [])
+  const openEditModal = () => {
+    setEditForm({
+      name: supplier?.name || '',
+      phone1: supplier?.phone1 || '',
+      phone2: supplier?.phone2 || '',
+      email: supplier?.email || '',
+      location: supplier?.location || '',
+      description: supplier?.description || '',
     })
+    setEditError('')
+    setEditOpen(true)
+  }
+
+  const handleEditSupplier = async (e) => {
+    e.preventDefault()
+    if (!editForm.name.trim()) {
+      setEditError('Supplier name is required')
+      return
+    }
+    setEditSubmitting(true)
+    setEditError('')
+    try {
+      const supplierId = supplier?.uuid || supplier?.id || id
+      await updateSupplier(supplierId, {
+        ...editForm,
+        branchId: getSessionBranchId(),
+        organizationId: getSessionOrgId(),
+      })
+      setEditOpen(false)
+      await fetchSupplierData()
+    } catch (err) {
+      setEditError(err.message || 'Failed to update supplier')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  const fetchSupplierData = async () => {
+    if (!id) return
+
+    // Fetch supplier details
+    let supplierData = null
+    try {
+      const supplierRes = await getSupplier(id, { branchId: getSessionBranchId(), organizationId: getSessionOrgId() })
+      supplierData = supplierRes?.data || supplierRes
+    } catch (err) {
+      console.error('[SupplierDetail] getSupplier failed:', err.message)
+      throw err
+    }
+    setSupplier(supplierData)
+
+    // Fetch receipts (don't let this fail the whole page)
+    try {
+      const poList = await listReceipts(getSessionBranchId())
+      const raw = Array.isArray(poList) ? poList
+        : Array.isArray(poList?.data) ? poList.data
+        : Array.isArray(poList?.stockReceipts) ? poList.stockReceipts
+        : Array.isArray(poList?.stock_receipts) ? poList.stock_receipts
+        : Array.isArray(poList?.receipts) ? poList.receipts
+        : []
+      const matchIds = new Set([String(id)])
+      if (supplierData?.uuid) matchIds.add(String(supplierData.uuid))
+      if (supplierData?.id) matchIds.add(String(supplierData.id))
+      const mine = raw.filter((r) => {
+        return matchIds.has(String(r.supplier_id ?? ''))
+          || matchIds.has(String(r.supplierId ?? ''))
+          || matchIds.has(String(r.supplier ?? ''))
+      })
+      setPurchaseOrders(mine)
+    } catch (err) {
+      console.error('[SupplierDetail] listReceipts failed:', err.message)
+      setPurchaseOrders([])
+    }
+
+    // Fetch debt payments (table may not exist yet on backend)
+    try {
+      const payments = await listDebtPayments(id)
+      const pays = payments?.data || payments
+      setDebtPayments(Array.isArray(pays) ? pays : [])
+    } catch {
+      setDebtPayments([])
+    }
   }
 
   useEffect(() => {
@@ -86,6 +168,39 @@ const SupplierDetail = () => {
       .finally(() => setPaySubmitting(false))
   }
 
+  const handleCreatePO = async () => {
+    setPoSubmitting(true)
+    setPoError('')
+    try {
+      const res = await createReceipt({
+        supplier_id: supplier?.uuid || supplier?.id || id,
+        payment_type: poPaymentType,
+        branchId: getSessionBranchId(),
+        organizationId: getSessionOrgId(),
+      })
+      const receipt = res?.data || res
+      console.log('[DEBUG] createReceipt response:', JSON.stringify(receipt))
+      setCreatePOOpen(false)
+      setPoPaymentType('credit')
+      await fetchSupplierData()
+      if (receipt?.id) {
+        // Cache uuid for this PO
+        if (receipt.uuid) {
+          try {
+            const cache = JSON.parse(localStorage.getItem('po_uuid_cache') || '{}')
+            cache[String(receipt.id)] = receipt.uuid
+            localStorage.setItem('po_uuid_cache', JSON.stringify(cache))
+          } catch {}
+        }
+        navigate(`/purchase-orders/${receipt.id}`, { state: { uuid: receipt.uuid, supplierName: supplier?.name || supplier?.business_name || '' } })
+      }
+    } catch (err) {
+      setPoError(err.message || 'Failed to create purchase order')
+    } finally {
+      setPoSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
@@ -99,8 +214,8 @@ const SupplierDetail = () => {
 
   if (error && !supplier) {
     return (
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center">
+      <div className="p-6">
+        <div className="bg-white rounded-lg border border-red-100 shadow-sm p-8 text-center">
           <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <Building2 className="text-red-500" size={28} />
           </div>
@@ -125,7 +240,7 @@ const SupplierDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="px-4 sm:px-6 py-8">
         <button
           type="button"
           onClick={() => navigate('/suppliers')}
@@ -136,17 +251,27 @@ const SupplierDetail = () => {
         </button>
 
         {/* Hero */}
-        <div className="relative bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 overflow-hidden mb-8">
+        <div className="relative bg-white rounded-lg shadow-lg shadow-slate-200/60 border border-slate-100 overflow-hidden mb-8">
           <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-transparent to-primary-600/5 pointer-events-none" />
           <div className="relative px-6 sm:px-8 py-8">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary-500 text-white flex items-center justify-center shadow-lg shadow-primary-500/30">
                 <Building2 size={28} strokeWidth={2} />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
-                  {supplier?.name}
-                </h1>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate">
+                    {supplier?.name}
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={openEditModal}
+                    className="shrink-0 p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-300 hover:bg-primary-50 transition-colors"
+                    title="Edit supplier"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                </div>
                 {(supplier?.phone1 || supplier?.email || supplier?.location) && (
                   <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500">
                     {supplier?.phone1 && (
@@ -179,6 +304,102 @@ const SupplierDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Edit Supplier modal */}
+        {editOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => !editSubmitting && setEditOpen(false)}>
+            <div className="bg-white rounded-xl shadow-xl w-full max-h-[90vh] overflow-y-auto" style={{ maxWidth: '50vw', minWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+              <div className="px-8 py-5 border-b flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                  <Pencil size={22} className="text-primary-500" />
+                  Edit Supplier
+                </h3>
+                <button type="button" onClick={() => !editSubmitting && setEditOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleEditSupplier}>
+                <div className="px-8 py-8 space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Supplier Name *</label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="Supplier name"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Phone 1</label>
+                      <input
+                        type="text"
+                        value={editForm.phone1}
+                        onChange={(e) => setEditForm((f) => ({ ...f, phone1: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Phone number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Phone 2</label>
+                      <input
+                        type="text"
+                        value={editForm.phone2}
+                        onChange={(e) => setEditForm((f) => ({ ...f, phone2: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Phone number (optional)"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+                    <input
+                      type="text"
+                      value={editForm.location}
+                      onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="Address / location"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                      rows={3}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="e.g. Sells shoes, drinks and schnapps"
+                    />
+                  </div>
+                  {editError && <p className="text-sm text-red-600">{editError}</p>}
+                </div>
+                <div className="px-8 py-5 border-t bg-slate-50 rounded-b-xl flex gap-3 justify-end">
+                  <button type="button" onClick={() => !editSubmitting && setEditOpen(false)} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-white">
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editSubmitting}
+                    className="px-5 py-2 rounded-lg bg-primary-500 text-white font-medium hover:bg-primary-600 disabled:opacity-50 inline-flex items-center gap-2"
+                  >
+                    {editSubmitting ? <><Loader2 size={16} className="animate-spin" /> Saving…</> : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -233,47 +454,63 @@ const SupplierDetail = () => {
           </div>
         </div>
 
-        {/* Purchase orders list */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        {/* Receive history / Purchase orders */}
+        <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <FileText size={20} className="text-primary-500" />
-              Purchase orders
+              <Package size={20} className="text-primary-500" />
+              Receive History
             </h2>
+            <button
+              type="button"
+              onClick={() => { setCreatePOOpen(true); setPoError(''); setPoPaymentType('credit') }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
+            >
+              <Plus size={16} />
+              New Order
+            </button>
           </div>
           {purchaseOrders.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <FileText className="mx-auto text-slate-300 mb-3" size={48} />
-              <p className="text-slate-500 font-medium">No purchase orders yet.</p>
+              <Package className="mx-auto text-slate-300 mb-3" size={48} />
+              <p className="text-slate-500 font-medium">No stock receipts yet.</p>
+              <p className="text-sm text-slate-400 mt-1">Create a purchase order to start receiving stock from this supplier.</p>
               <button
                 type="button"
-                onClick={() => navigate('/inventory')}
-                className="mt-4 text-primary-600 font-medium hover:underline"
+                onClick={() => { setCreatePOOpen(true); setPoError(''); setPoPaymentType('credit') }}
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
               >
-                Create one from Inventory →
+                <Plus size={16} />
+                Create Purchase Order
               </button>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
               {purchaseOrders.map((po) => {
-                const total = Number(po.totalAmount) || 0
+                const poItems = po.items || []
+                const total = Number(po.totalAmount) || Number(po.total_amount) || poItems.reduce((s, i) => s + (Number(i.quantity || 0) * Number(i.unitCost || i.unit_cost || 0)), 0)
+                const itemCount = poItems.length
                 const isPending = po.status === 'pending'
+                const displayId = po.poNumber || po.po_number || `PO-${po.id}`
+                const displayDate = po.date || po.created_at
                 return (
                   <button
                     key={po.id}
                     type="button"
-                    onClick={() => navigate(`/purchase-orders/${po.id}`)}
+                    onClick={() => navigate(`/purchase-orders/${po.id}`, { state: { uuid: po.uuid, supplierName: supplier?.name || supplier?.business_name || '' } })}
                     className="w-full text-left px-6 py-4 flex items-center justify-between gap-4 hover:bg-slate-50/80 transition-colors"
                   >
                     <div className="min-w-0">
-                      <span className="font-semibold text-slate-900">{po.poNumber || `PO-${po.id}`}</span>
-                      <span className={`ml-2 px-2 py-0.5 rounded text-xs font-medium ${isPending ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                        {isPending ? 'Pending' : 'Received'}
-                      </span>
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        {po.date ? new Date(po.date).toLocaleDateString() : (po.created_at ? new Date(po.created_at).toLocaleDateString() : '—')}
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="font-semibold text-slate-900">{displayId}</span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${isPending ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {isPending ? 'Pending' : 'Received'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-500">
+                        {displayDate ? new Date(displayDate).toLocaleDateString() : '—'}
                         {' · '}
-                        {(po.items || []).length} item(s)
+                        {itemCount} item{itemCount !== 1 ? 's' : ''}
                       </p>
                     </div>
                     <div className="shrink-0 flex items-center gap-2">
@@ -289,7 +526,7 @@ const SupplierDetail = () => {
 
         {/* Debt payment history */}
         {debtPayments.length > 0 && (
-          <div className="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="mt-8 bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
               <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <History size={20} className="text-slate-500" />
@@ -312,10 +549,75 @@ const SupplierDetail = () => {
           </div>
         )}
 
+        {/* Create Purchase Order modal */}
+        {createPOOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => !poSubmitting && setCreatePOOpen(false)}>
+            <div className="bg-white rounded-xl shadow-xl w-full max-h-[90vh] overflow-y-auto" style={{ maxWidth: '50vw', minWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+              <div className="px-8 py-5 border-b flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                  <Package size={22} className="text-primary-500" />
+                  New Purchase Order
+                </h3>
+                <button type="button" onClick={() => !poSubmitting && setCreatePOOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-500">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="px-8 py-8 space-y-6">
+                <div>
+                  <p className="text-slate-600">Supplier: <span className="font-semibold text-slate-900 text-lg">{supplier?.name}</span></p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">Payment Type</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPoPaymentType('credit')}
+                      className={`px-5 py-5 rounded-xl border-2 font-medium transition-all ${
+                        poPaymentType === 'credit'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <CreditCard size={24} className="mx-auto mb-2" />
+                      Credit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPoPaymentType('full_payment')}
+                      className={`px-5 py-5 rounded-xl border-2 font-medium transition-all ${
+                        poPaymentType === 'full_payment'
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <Banknote size={24} className="mx-auto mb-2" />
+                      Full Payment
+                    </button>
+                  </div>
+                </div>
+                {poError && <p className="text-sm text-red-600">{poError}</p>}
+              </div>
+              <div className="px-8 py-5 border-t bg-slate-50 rounded-b-xl flex gap-3 justify-end">
+                <button type="button" onClick={() => !poSubmitting && setCreatePOOpen(false)} className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-white">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreatePO}
+                  disabled={poSubmitting}
+                  className="px-4 py-2 rounded-lg bg-primary-500 text-white font-medium hover:bg-primary-600 disabled:opacity-50 inline-flex items-center gap-2"
+                >
+                  {poSubmitting ? <><Loader2 size={16} className="animate-spin" /> Creating…</> : <><Plus size={16} /> Create Order</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Pay debt modal */}
         {payModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => !paySubmitting && setPayModalOpen(false)}>
-            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <Banknote size={22} className="text-amber-600" />

@@ -160,29 +160,36 @@ const Departments = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-            <Building2 size={32} className="mr-3 text-primary-600" />
-            Department Management
-          </h1>
-          <p className="text-gray-600 mt-1">Organize your inventory by creating and managing departments</p>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <Building2 size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Department Management</h1>
+                <p className="text-gray-500 text-xs">Organize your inventory by creating and managing departments</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setEditingDepartment(null)
+                setNewDepartment({ name: '', description: '' })
+                setShowDepartmentModal(true)
+              }}
+              className="btn-primary flex items-center"
+            >
+              <Plus size={18} className="mr-2" />
+              Add Department
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => {
-            setEditingDepartment(null)
-            setNewDepartment({ name: '', description: '' })
-            setShowDepartmentModal(true)
-          }}
-          className="btn-primary flex items-center"
-        >
-          <Plus size={18} className="mr-2" />
-          Add Department
-        </button>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
@@ -221,7 +228,7 @@ const Departments = () => {
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm text-gray-600">
-                        {dept.description || <span className="text-gray-400 italic">No description</span>}
+                        {dept.description || <span className="text-gray-500 italic">No description</span>}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-center">
@@ -239,7 +246,7 @@ const Departments = () => {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleEditDepartment(dept)}
-                          className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
+                          className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                           title="Edit Department"
                         >
                           <Edit size={18} />
@@ -261,7 +268,7 @@ const Departments = () => {
                     <div className="flex flex-col items-center">
                       <Building2 size={64} className="text-gray-300 mb-4" />
                       <p className="text-lg font-medium text-gray-500">No departments found</p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-sm text-gray-500 mt-2">
                         {searchTerm 
                           ? 'Try adjusting your search terms' 
                           : 'Click "Add Department" to create your first department'}
@@ -274,23 +281,24 @@ const Departments = () => {
           </table>
         </div>
       </div>
+      </div>
 
       {/* Department Management Modal */}
       {showDepartmentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-t-xl">
+            <div className="bg-gray-900 p-6 rounded-t-xl">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
-                  <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
+                  <div className="bg-primary-500 p-2 rounded-lg mr-3">
                     <Building2 size={24} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white">
+                    <h3 className="text-xl font-bold text-white">
                       {editingDepartment ? 'Edit Department' : 'Add New Department'}
                     </h3>
-                    <p className="text-sm text-indigo-100 mt-1">
+                    <p className="text-sm text-gray-400 mt-1">
                       {editingDepartment ? 'Update department information' : 'Create a new product department'}
                     </p>
                   </div>
@@ -339,12 +347,12 @@ const Departments = () => {
 
                 {/* Info Box */}
                 {editingDepartment && (
-                  <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                  <div className="p-4 bg-primary-50 border-l-4 border-primary-500 rounded-lg">
                     <div className="flex items-start">
-                      <AlertTriangle size={20} className="text-blue-600 mr-3 mt-0.5" />
+                      <AlertTriangle size={20} className="text-primary-600 mr-3 mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-blue-900">Update Notice</p>
-                        <p className="text-xs text-blue-700 mt-1">
+                        <p className="text-sm font-medium text-primary-900">Update Notice</p>
+                        <p className="text-xs text-primary-700 mt-1">
                           Changing the department name will update all products currently assigned to this department.
                         </p>
                       </div>
@@ -364,7 +372,7 @@ const Departments = () => {
                 </button>
                 <button 
                   onClick={editingDepartment ? handleUpdateDepartment : handleAddDepartment} 
-                  className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                  className="btn-primary flex-1 flex items-center justify-center"
                 >
                   <Save size={18} className="mr-2" />
                   {editingDepartment ? 'Update Department' : 'Add Department'}

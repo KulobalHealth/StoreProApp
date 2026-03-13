@@ -175,7 +175,7 @@ const Invoices = () => {
   const getStatusColor = (status) => {
     switch(status) {
       case 'paid': return 'bg-green-100 text-green-700 border-green-200'
-      case 'sent': return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'sent': return 'bg-primary-100 text-primary-700 border-primary-200'
       case 'overdue': return 'bg-red-100 text-red-700 border-red-200'
       case 'partial': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
       case 'draft': return 'bg-gray-100 text-gray-700 border-gray-200'
@@ -273,81 +273,97 @@ const Invoices = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-full">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <FileText size={32} className="mr-3 text-primary-600" />
-              Invoices & Payments
-            </h1>
-            <p className="text-gray-600 mt-1">Add, organize, and send invoices</p>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
+                <FileText size={18} strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Invoices & Payments</h1>
+                <p className="text-gray-500 text-xs">Add, organize, and send invoices</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setEditingInvoice(null)
+                setShowAddModal(true)
+              }}
+              className="btn-primary flex items-center"
+            >
+              <Plus size={18} className="mr-2" />
+              Create Invoice
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setEditingInvoice(null)
-              setShowAddModal(true)
-            }}
-            className="btn-primary flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
-          >
-            <Plus size={18} className="mr-2" />
-            Create Invoice
-          </button>
         </div>
       </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Invoices</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
-            <FileText size={24} className="text-primary-600" />
+            <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+              <FileText size={20} className="text-primary-600" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Paid</p>
               <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
             </div>
-            <CheckCircle size={24} className="text-green-600" />
+            <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
+              <CheckCircle size={20} className="text-green-600" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Overdue</p>
               <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
             </div>
-            <AlertCircle size={24} className="text-red-600" />
+            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
+              <AlertCircle size={20} className="text-red-600" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Amount</p>
-              <p className="text-2xl font-bold text-blue-600">₵{(stats.totalAmount / 1000).toFixed(0)}K</p>
+              <p className="text-2xl font-bold text-primary-600">₵{(stats.totalAmount / 1000).toFixed(0)}K</p>
             </div>
-            <DollarSign size={24} className="text-blue-600" />
+            <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+              <DollarSign size={20} className="text-primary-600" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Outstanding</p>
               <p className="text-2xl font-bold text-orange-600">₵{(stats.outstanding / 1000).toFixed(0)}K</p>
             </div>
-            <CreditCard size={24} className="text-orange-600" />
+            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
+              <CreditCard size={20} className="text-orange-600" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 mb-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-center mb-4">
           <Search size={20} className="text-primary-600 mr-2" />
           <h3 className="text-lg font-semibold text-gray-900">Search & Filter</h3>
@@ -384,7 +400,7 @@ const Invoices = () => {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b bg-gray-50">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
             <FileText size={20} className="text-primary-600 mr-2" />
@@ -408,7 +424,7 @@ const Invoices = () => {
             <tbody>
               {paginatedInvoices.length > 0 ? (
                 paginatedInvoices.map((invoice, index) => (
-                  <tr key={invoice.id || `invoice-${index}`} className="border-b hover:bg-blue-50 transition-colors group">
+                  <tr key={invoice.id || `invoice-${index}`} className="border-b hover:bg-primary-50 transition-colors group">
                     <td className="py-5 px-6">
                       <div className="flex items-center">
                         <FileText size={18} className="text-primary-600 mr-2" />
@@ -449,7 +465,7 @@ const Invoices = () => {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleViewDetails(invoice)}
-                          className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-all hover:scale-110"
+                          className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="View Details"
                         >
                           <Eye size={18} />
@@ -459,7 +475,7 @@ const Invoices = () => {
                             setReceiptInvoice(invoice)
                             setShowReceiptModal(true)
                           }}
-                          className="p-2 rounded-lg hover:bg-purple-100 text-purple-600 transition-all hover:scale-110"
+                          className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="Generate Receipt"
                         >
                           <Receipt size={18} />
@@ -473,7 +489,7 @@ const Invoices = () => {
                         </button>
                         <button
                           onClick={() => handleEditInvoice(invoice)}
-                          className="p-2 rounded-lg hover:bg-purple-100 text-purple-600 transition-all hover:scale-110"
+                          className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="Edit"
                         >
                           <Edit size={18} />
@@ -497,7 +513,7 @@ const Invoices = () => {
                         <FileText size={48} className="text-gray-400" />
                       </div>
                       <p className="text-xl font-semibold text-gray-500 mb-2">No invoices found</p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {searchTerm || statusFilter !== 'all'
                           ? 'Try adjusting your search or filters'
                           : 'Click "Create Invoice" to create your first invoice'}
@@ -556,6 +572,7 @@ const Invoices = () => {
           </div>
         )}
       </div>
+      </div>
 
       {/* Create/Edit Invoice Modal */}
       <CreateInvoice
@@ -573,15 +590,15 @@ const Invoices = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 rounded-t-xl">
+            <div className="bg-gray-900 p-6 rounded-t-xl">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
-                  <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
+                  <div className="bg-primary-500 p-2 rounded-lg mr-3">
                     <FileText size={24} className="text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">Invoice {selectedInvoice.invoiceNumber}</h3>
-                    <p className="text-sm text-indigo-100 mt-1">Invoice Details & Information</p>
+                    <p className="text-sm text-gray-400 mt-1">Invoice Details & Information</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -733,7 +750,7 @@ const Invoices = () => {
                     setReceiptInvoice(selectedInvoice)
                     setShowReceiptModal(true)
                   }}
-                  className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="btn-primary flex-1 flex items-center justify-center"
                 >
                   <Receipt size={18} className="mr-2" />
                   Generate Receipt
@@ -747,7 +764,7 @@ const Invoices = () => {
                 </button>
                 <button
                   onClick={() => handleSendInvoice(selectedInvoice)}
-                  className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                  className="btn-primary flex-1 flex items-center justify-center"
                 >
                   <Send size={18} className="mr-2" />
                   Send Invoice

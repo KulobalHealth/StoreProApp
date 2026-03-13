@@ -203,14 +203,14 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex items-center justify-between">
+        <div className="bg-gray-900 p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-white bg-opacity-20 p-2 rounded-lg">
+            <div className="bg-primary-500 p-2 rounded-lg">
               <Receipt size={24} className="text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Invoice Receipt</h2>
-              <p className="text-blue-100 text-sm">{invoice.invoiceNumber || 'N/A'}</p>
+              <p className="text-primary-100 text-sm">{invoice.invoiceNumber || 'N/A'}</p>
             </div>
           </div>
           <button
@@ -268,7 +268,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
                     invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
                     invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
                     invoice.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-blue-100 text-blue-800'
+                    'bg-primary-100 text-primary-800'
                   }`}>
                     {(invoice.status || 'draft').toUpperCase()}
                   </span>
@@ -350,7 +350,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
                 </div>
                 <div className="flex justify-between py-3 border-t-2 border-gray-900 mt-2">
                   <span className="font-bold text-lg text-gray-900">Total:</span>
-                  <span className="font-bold text-lg text-blue-600">
+                  <span className="font-bold text-lg text-primary-600">
                     ₵{(invoice.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -412,7 +412,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
           </button>
           <button
             onClick={handleShareEmail}
-            className="flex-1 btn-primary flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="flex-1 btn-primary flex items-center justify-center"
             disabled={!invoice.customer?.email}
           >
             <Mail size={18} className="mr-2" />
