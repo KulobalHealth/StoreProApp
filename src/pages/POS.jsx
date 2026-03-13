@@ -148,9 +148,10 @@ const POS = () => {
   // Get active branch
   const getActiveBranch = getActiveBranchUtil
 
-  // Fetch ALL products once on mount and cache them in memory for instant search
-  useEffect(() => {
+  // Reusable product fetch function
+  const fetchProducts = useCallback(() => {
     const branchId = getSessionBranchId()
+    if (!branchId) return
     setProductsLoading(true)
     setProductsError('')
     listProductsByBranch(branchId)
@@ -163,7 +164,6 @@ const POS = () => {
       })
       .catch(err => {
         const msg = err.message || 'Could not load products'
-        // If backend blocks sales role, show a helpful message
         if (msg.toLowerCase().includes('access denied') || msg.toLowerCase().includes('required role')) {
           setProductsError('Your account does not have permission to load products. Please ask an admin to grant POS access to the "sales" role on the backend.')
         } else {
@@ -174,6 +174,25 @@ const POS = () => {
       })
       .finally(() => setProductsLoading(false))
   }, [])
+
+  // Fetch products on mount
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
+
+  // Refetch products when the tab/page becomes visible (e.g. after editing inventory)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchProducts()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    // Also refetch when the window regains focus (covers same-tab navigation)
+    window.addEventListener('focus', handleVisibility)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', handleVisibility)
+    }
+  }, [fetchProducts])
 
   // Instant client-side filtering — no debounce, no API calls
   useEffect(() => {
