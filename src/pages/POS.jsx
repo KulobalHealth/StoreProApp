@@ -650,78 +650,7 @@ const POS = () => {
 
   const handlePrintReceipt = async () => {
     try {
-      // Prepare transaction data
-      const transaction = {
-        receiptNumber,
-        date: new Date(),
-        timestamp: Date.now(),
-        cashier: cashierName,
-        customer: customer?.name || null,
-        items: items.map(item => ({
-          itemNumber: item.itemNumber,
-          department: item.department,
-          itemName: item.itemName,
-          qty: item.qty,
-          unit: item.unit || 'piece',
-          unitLabel: item.unitLabel || 'pc',
-          unitPrice: item.unitPrice,
-          extPrice: item.extPrice,
-          discount: item.discount || 0
-        })),
-        subtotal,
-        discount: cartDiscountAmount,
-        tax,
-        total,
-        paymentMethod: selectedPayment,
-        amountPaid,
-        change,
-        mobileMoneyNumber: selectedPayment === 'Mobile Money' ? mobileMoneyNumber : null,
-        mobileMoneyProvider: selectedPayment === 'Mobile Money' ? mobileMoneyProvider : null,
-        giftCardCode: selectedPayment === 'Gift' ? giftCardCode : null
-      }
-
-      // Save to backend first (deducts stock); use ref so we always have current selected customer
-      const customerId = selectedCustomerIdRef.current
-      const salePayload = {
-        branchId: getSessionBranchId(),
-        organizationId: getSessionOrgId(),
-        customer_id: customerId || null,
-        subtotal: transaction.subtotal,
-        discount: transaction.discount,
-        tax: transaction.tax,
-        total: transaction.total,
-        payment_method: transaction.paymentMethod,
-        amount_paid: transaction.amountPaid,
-        change_amount: transaction.change,
-        items: items.map(item => ({
-          product_id: item.uuid || item.id,
-          quantity: Number(item.qty),
-          product_unit: item.unitUuid || null
-        }))
-      }
-      console.log('[POS] Print sale payload:', JSON.stringify(salePayload, null, 2))
-      await createSale(salePayload)
-
-      // Save transaction to localStorage before printing
-      try {
-        const transactionKey = `transaction_${transaction.timestamp}`
-        localStorage.setItem(transactionKey, JSON.stringify(transaction))
-        
-        // Update transaction history
-        const historyKey = 'transaction_history'
-        let history = []
-        try {
-          const savedHistory = localStorage.getItem(historyKey)
-          history = savedHistory ? JSON.parse(savedHistory) : []
-        } catch (e) {
-          console.warn('Could not load transaction history:', e)
-        }
-        history.unshift(transaction)
-        history = history.slice(0, 100)
-        localStorage.setItem(historyKey, JSON.stringify(history))
-      } catch (storageError) {
-        console.error('Error saving transaction:', storageError)
-      }
+      // Transaction was already saved to backend in handleSaveTransaction — just print and reset
 
       // Trigger print using system printer
       setTimeout(() => {
@@ -737,7 +666,9 @@ const POS = () => {
       setTimeout(() => {
         setShowReceiptModal(false)
         setSuccessTransaction({
-          ...transaction,
+          receiptNumber,
+          total,
+          paymentMethod: selectedPayment,
           action: 'saved and printed'
         })
         setShowSuccessModal(true)
