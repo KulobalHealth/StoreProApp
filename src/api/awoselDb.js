@@ -220,8 +220,8 @@ export async function deleteCustomer(id) {
 }
 
 // ---- Held sales ----
-export async function listHeldSales() {
-  return fetchApi('GET', '/held-sales')
+export async function listHeldSales(branchId) {
+  return fetchApi('GET', '/held-sales/' + encodeURIComponent(branchId))
 }
 
 export async function createHeldSale(body) {

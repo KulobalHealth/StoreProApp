@@ -210,19 +210,97 @@ const POS = () => {
     setProductsFromApi(filtered)
   }, [itemSearch, allProducts])
 
-  // Load held sales from localStorage on mount with comprehensive error handling
-  // Load held sales from API (DB)
+  // Load held sales from API (DB) and map to display format
   useEffect(() => {
-    listHeldSales()
-      .then(data => {
+    listHeldSales(getSessionBranchId())
+      .then(res => {
+        const data = res?.data || res
         const list = Array.isArray(data) ? data : []
-        const valid = list.filter(sale =>
-          sale && sale.id && Array.isArray(sale.items) && typeof sale.total === 'number'
-        )
-        setHeldSales(valid)
+
+        // Map API response items back to cart-compatible shape using allProducts for lookup
+        const mapped = list.map(sale => {
+          const saleItems = Array.isArray(sale.items) ? sale.items : []
+          const cartItems = saleItems.map(apiItem => {
+            // Find the product in our cached products list
+            const productId = apiItem.product_id || apiItem.productId || apiItem.id
+            const product = allProducts.find(p => p.id === productId || p.uuid === productId)
+            const qty = Number(apiItem.quantity ?? apiItem.qty ?? 1)
+
+            if (product) {
+              // Resolve the unit info
+              const unitUuid = apiItem.product_unit || apiItem.unitUuid || null
+              const matchedUnit = unitUuid && product.units
+                ? product.units.find(u => u.uuid === unitUuid)
+                : product.units?.[0]
+              const unitPrice = matchedUnit?.price ?? product.price ?? 0
+              const unitLabel = UNITS_OF_MEASURE.find(u => u.value === (matchedUnit?.unit || product.baseUnit))?.abbreviation || 'pc'
+
+              return {
+                id: product.id,
+                uuid: product.uuid || product.id,
+                itemNumber: product.itemNumber || '',
+                department: product.department || 'General',
+                itemName: product.itemName || 'Unknown',
+                qty,
+                unit: matchedUnit?.unit || product.baseUnit || 'piece',
+                unitUuid,
+                unitLabel,
+                unitPrice,
+                baseUnitPrice: product.price || unitPrice,
+                conversion: matchedUnit?.conversion || 1,
+                extPrice: unitPrice * qty,
+                discount: 0,
+                stock: product.stock || 0
+              }
+            }
+
+            // Fallback if product not found in cache — use whatever data the API gave us
+            return {
+              id: productId,
+              uuid: productId,
+              itemNumber: apiItem.itemNumber || apiItem.sku || '',
+              department: apiItem.department || 'General',
+              itemName: apiItem.itemName || apiItem.product_name || apiItem.name || 'Unknown',
+              qty,
+              unit: apiItem.unit || 'piece',
+              unitUuid: apiItem.product_unit || null,
+              unitLabel: apiItem.unitLabel || 'pc',
+              unitPrice: Number(apiItem.unitPrice ?? apiItem.unit_price ?? apiItem.price ?? 0),
+              baseUnitPrice: Number(apiItem.unitPrice ?? apiItem.price ?? 0),
+              conversion: Number(apiItem.conversion ?? 1),
+              extPrice: Number(apiItem.extPrice ?? apiItem.unitPrice ?? 0) * qty,
+              discount: 0,
+              stock: 0
+            }
+          })
+
+          const saleTotal = Number(sale.total ?? 0)
+          const saleSubtotal = Number(sale.subtotal ?? saleTotal)
+          const saleTax = Number(sale.tax ?? 0)
+          const saleDiscount = Number(sale.discount ?? 0)
+
+          return {
+            id: sale.id || sale.uuid,
+            timestamp: sale.created_at || sale.createdAt || sale.timestamp || new Date().toISOString(),
+            customer: sale.customer || null,
+            items: cartItems,
+            cartDiscount: saleDiscount > 0
+              ? { type: 'fixed', value: saleDiscount }
+              : { type: 'percentage', value: 0 },
+            selectedPayment: sale.payment_method || sale.selectedPayment || 'Cash',
+            amountPaid: Number(sale.amount_paid ?? 0),
+            subtotal: saleSubtotal,
+            tax: saleTax,
+            total: saleTotal,
+            itemCount: cartItems.length,
+            totalQty: cartItems.reduce((sum, item) => sum + item.qty, 0)
+          }
+        })
+
+        setHeldSales(mapped)
       })
       .catch(() => setHeldSales([]))
-  }, [])
+  }, [allProducts])
 
   // Close "I Want to" menu when clicking outside
   useEffect(() => {
@@ -727,33 +805,48 @@ const POS = () => {
         return
       }
 
-      const holdId = `HOLD-${Date.now()}`
-      const totalQty = items.reduce((sum, item) => {
-        const qty = typeof item.qty === 'number' ? item.qty : 0
-        return sum + qty
-      }, 0)
+      const customerId = selectedCustomerIdRef.current
 
-      const heldSale = {
-        id: holdId,
-        timestamp: new Date().toISOString(),
-        createdAt: Date.now(),
-        items: items.map(item => ({ ...item })),
-        customer: customer ? { ...customer } : null,
-        cartDiscount: cartDiscount ? { ...cartDiscount } : { type: 'percentage', value: 0 },
-        selectedPayment: selectedPayment || 'Cash',
-        amountPaid: typeof amountPaid === 'number' ? amountPaid : 0,
-        mobileMoneyNumber: mobileMoneyNumber || '',
-        mobileMoneyProvider: mobileMoneyProvider || 'MTN',
-        giftCardCode: giftCardCode || '',
+      // Build payload matching backend /held-sales endpoint
+      const holdPayload = {
+        branchId: getSessionBranchId(),
+        organizationId: getSessionOrgId(),
+        customer_id: customerId || null,
         subtotal: typeof subtotal === 'number' ? subtotal : 0,
+        discount: typeof cartDiscountAmount === 'number' ? cartDiscountAmount : 0,
         tax: typeof tax === 'number' ? tax : 0,
         total: typeof total === 'number' ? total : 0,
-        itemCount: items.length,
-        totalQty: totalQty
+        payment_method: selectedPayment || 'Cash',
+        amount_paid: 0,
+        change_amount: 0,
+        items: items.map(item => ({
+          product_id: item.uuid || item.id,
+          product_unit: item.unitUuid || null,
+          quantity: Number(item.qty)
+        }))
       }
 
-      createHeldSale(heldSale)
-        .then(() => {
+      createHeldSale(holdPayload)
+        .then(res => {
+          const data = res?.data || res
+          const holdId = data?.id || data?.uuid || `HOLD-${Date.now()}`
+
+          // Build local held sale object for the modal (includes full cart items for recall)
+          const heldSale = {
+            id: holdId,
+            timestamp: data?.created_at || data?.createdAt || new Date().toISOString(),
+            customer: customer ? { ...customer } : null,
+            items: items.map(item => ({ ...item })),
+            cartDiscount: cartDiscount ? { ...cartDiscount } : { type: 'percentage', value: 0 },
+            selectedPayment: selectedPayment || 'Cash',
+            amountPaid: 0,
+            subtotal: typeof subtotal === 'number' ? subtotal : 0,
+            tax: typeof tax === 'number' ? tax : 0,
+            total: typeof total === 'number' ? total : 0,
+            itemCount: items.length,
+            totalQty: items.reduce((sum, item) => sum + (typeof item.qty === 'number' ? item.qty : 0), 0)
+          }
+
           setHeldSales(prev => [...prev, heldSale])
           setItems([])
           setSelectedItem(null)
@@ -775,7 +868,7 @@ const POS = () => {
       console.error('Error putting sale on hold:', error)
       showAlert('error', 'Failed to put sale on hold. Please try again.')
     }
-  }, [items, heldSales, customer, cartDiscount, selectedPayment, amountPaid, mobileMoneyNumber, mobileMoneyProvider, giftCardCode, subtotal, tax, total])
+  }, [items, heldSales, customer, cartDiscount, cartDiscountAmount, selectedPayment, amountPaid, subtotal, tax, total])
 
   const handleRecallHeldSale = React.useCallback((heldSale) => {
     if (!heldSale) {
@@ -787,11 +880,12 @@ const POS = () => {
         return
       }
     }
-    if (!Array.isArray(heldSale.items)) {
-      showAlert('error', 'Invalid held sale data')
+    if (!Array.isArray(heldSale.items) || heldSale.items.length === 0) {
+      showAlert('error', 'Invalid held sale data — no items found')
       return
     }
 
+    // Items should already be in cart-compatible shape from the fetch mapping
     const validItems = heldSale.items.filter(item =>
       item && typeof item.unitPrice === 'number' && typeof item.qty === 'number'
     )
@@ -811,12 +905,9 @@ const POS = () => {
     setCartDiscount(heldSale.cartDiscount || { type: 'percentage', value: 0 })
     setSelectedPayment(heldSale.selectedPayment || 'Cash')
     setAmountPaid(heldSale.amountPaid || 0)
-    setMobileMoneyNumber(heldSale.mobileMoneyNumber || '')
-    setMobileMoneyProvider(heldSale.mobileMoneyProvider || 'MTN')
-    setGiftCardCode(heldSale.giftCardCode || '')
     setShowHeldSalesModal(false)
 
-    // Delete from DB when retrieved
+    // Delete from backend when recalled
     const holdId = heldSale.id
     if (holdId) {
       deleteHeldSale(holdId)
@@ -2172,7 +2263,7 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary-600 mb-1">
-                        ₵{sale.total.toFixed(2)}
+                        ₵{(sale.total || 0).toFixed(2)}
                       </div>
                       {sale.cartDiscount && sale.cartDiscount.value > 0 && (
                         <div className="text-xs text-green-600">
@@ -2191,7 +2282,7 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
                       {sale.items.slice(0, 5).map((item, idx) => (
                         <div key={idx} className="flex justify-between text-xs text-gray-600">
                           <span>{item.qty} {item.unitLabel || 'pc'} x {item.itemName}</span>
-                          <span>₵{item.extPrice.toFixed(2)}</span>
+                          <span>₵{(item.extPrice || 0).toFixed(2)}</span>
                         </div>
                       ))}
                       {sale.items.length > 5 && (
