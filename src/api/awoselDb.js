@@ -3,11 +3,22 @@
  * Paths are relative to that base: /auth/register, /login, /settings, /products, etc.
  */
 const API_BASE = typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.VITE_API_URL || '') : ''
+const REQUEST_TIMEOUT = 30000 // 30 second timeout
+
+/** Sanitize a path segment to prevent path traversal / injection */
+function sanitizePath(segment) {
+  if (segment == null) return ''
+  return String(segment).replace(/[^a-zA-Z0-9_\-.:@]/g, '')
+}
 
 async function fetchApi(method, path, body = undefined) {
   const token = localStorage.getItem('token')
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
+
   const opts = {
     method,
+    signal: controller.signal,
     headers: {
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
@@ -16,10 +27,32 @@ async function fetchApi(method, path, body = undefined) {
   if (body !== undefined) {
     opts.body = JSON.stringify(body)
   }
-  const res = await fetch(`${API_BASE}${path}`, opts)
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || data.message || res.statusText || 'Request failed')
-  return data
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, opts)
+    clearTimeout(timeoutId)
+    const data = await res.json().catch(() => ({}))
+
+    // Auto-logout on 401 Unauthorized (expired/invalid token)
+    if (res.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('isAuthenticated')
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login'
+      }
+      throw new Error('Session expired. Please login again.')
+    }
+
+    if (!res.ok) throw new Error(data.error || data.message || res.statusText || 'Request failed')
+    return data
+  } catch (err) {
+    clearTimeout(timeoutId)
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection and try again.')
+    }
+    throw err
+  }
 }
 
 // ---- Auth ----
@@ -51,7 +84,7 @@ export async function updateSettings(body) {
 
 // ---- Employees ----
 export async function listEmployees(branchId) {
-  return fetchApi('GET', `/employees/branch/${branchId}`)
+  return fetchApi('GET', `/employees/branch/${sanitizePath(branchId)}`)
 }
 
 export async function createEmployee(body) {
@@ -59,11 +92,11 @@ export async function createEmployee(body) {
 }
 
 export async function updateEmployee(id, body) {
-  return fetchApi('PATCH', `/employees/${id}`, body)
+  return fetchApi('PATCH', `/employees/${sanitizePath(id)}`, body)
 }
 
 export async function deleteEmployee(id) {
-  return fetchApi('DELETE', `/employees/${id}`)
+  return fetchApi('DELETE', `/employees/${sanitizePath(id)}`)
 }
 
 // ---- Products ----
@@ -73,11 +106,11 @@ export async function listProducts(query = {}) {
 }
 
 export async function listProductsByBranch(branchId) {
-  return fetchApi('GET', `/products/branch/${branchId}`)
+  return fetchApi('GET', `/products/branch/${sanitizePath(branchId)}`)
 }
 
 export async function getProduct(id) {
-  return fetchApi('GET', '/products/' + id)
+  return fetchApi('GET', '/products/' + sanitizePath(id))
 }
 
 export async function createProduct(body) {
@@ -85,11 +118,11 @@ export async function createProduct(body) {
 }
 
 export async function updateProduct(id, body) {
-  return fetchApi('PATCH', '/products/' + id, body)
+  return fetchApi('PATCH', '/products/' + sanitizePath(id), body)
 }
 
 export async function deleteProduct(id) {
-  return fetchApi('DELETE', '/products/' + id)
+  return fetchApi('DELETE', '/products/' + sanitizePath(id))
 }
 
 export async function bulkImportProducts(body) {
@@ -97,34 +130,34 @@ export async function bulkImportProducts(body) {
 }
 
 export async function listProductUnits(productId) {
-  return fetchApi('GET', '/products/' + productId + '/units')
+  return fetchApi('GET', '/products/' + sanitizePath(productId) + '/units')
 }
 
 export async function addProductUnit(productId, body) {
-  return fetchApi('POST', '/products/' + productId + '/units', body)
+  return fetchApi('POST', '/products/' + sanitizePath(productId) + '/units', body)
 }
 
 export async function updateProductUnit(productId, unitId, body) {
-  return fetchApi('PUT', '/products/' + productId + '/units/' + unitId, body)
+  return fetchApi('PUT', '/products/' + sanitizePath(productId) + '/units/' + sanitizePath(unitId), body)
 }
 
 export async function deleteProductUnit(productId, unitId) {
-  return fetchApi('DELETE', '/products/' + productId + '/units/' + unitId)
+  return fetchApi('DELETE', '/products/' + sanitizePath(productId) + '/units/' + sanitizePath(unitId))
 }
 
 // ---- Suppliers ----
 export async function listSuppliers(branchId) {
-  return fetchApi('GET', '/suppliers/branch/' + branchId)
+  return fetchApi('GET', '/suppliers/branch/' + sanitizePath(branchId))
 }
 
 export async function listSuppliersByBranch(branchId) {
-  return fetchApi('GET', '/suppliers/branch/' + branchId)
+  return fetchApi('GET', '/suppliers/branch/' + sanitizePath(branchId))
 }
 
 export async function getSupplier(id, query = {}) {
   const params = new URLSearchParams(query)
   const qs = params.toString()
-  return fetchApi('GET', '/suppliers/details/' + id + (qs ? '?' + qs : ''))
+  return fetchApi('GET', '/suppliers/details/' + sanitizePath(id) + (qs ? '?' + qs : ''))
 }
 
 export async function createSupplier(body) {
@@ -132,19 +165,19 @@ export async function createSupplier(body) {
 }
 
 export async function updateSupplier(id, body) {
-  return fetchApi('PUT', '/suppliers/' + id, body)
+  return fetchApi('PUT', '/suppliers/' + sanitizePath(id), body)
 }
 
 export async function deleteSupplier(id) {
-  return fetchApi('DELETE', '/suppliers/' + id)
+  return fetchApi('DELETE', '/suppliers/' + sanitizePath(id))
 }
 
 export async function postDebtPayment(supplierId, body) {
-  return fetchApi('POST', '/suppliers/' + supplierId + '/debt-payment', body)
+  return fetchApi('POST', '/suppliers/' + sanitizePath(supplierId) + '/debt-payment', body)
 }
 
 export async function listDebtPayments(supplierId) {
-  return fetchApi('GET', '/suppliers/' + supplierId + '/debt-payments')
+  return fetchApi('GET', '/suppliers/' + sanitizePath(supplierId) + '/debt-payments')
 }
 
 // ---- Stock receipts ----
@@ -162,17 +195,17 @@ export async function createReceiptBulk(body) {
 }
 
 export async function getReceipt(id) {
-  return fetchApi('GET', '/stock-receipts/' + id)
+  return fetchApi('GET', '/stock-receipts/' + sanitizePath(id))
 }
 
 export async function getReceivedStock(branchId, receiptId) {
-  const params = new URLSearchParams({ branchId })
-  if (receiptId) params.set('receiptId', receiptId)
+  const params = new URLSearchParams({ branchId: sanitizePath(branchId) })
+  if (receiptId) params.set('receiptId', sanitizePath(receiptId))
   return fetchApi('GET', '/stock-receipts/received?' + params.toString())
 }
 
 export async function addReceiptItem(receiptId, body) {
-  return fetchApi('POST', '/stock-receipts/' + receiptId + '/items', body)
+  return fetchApi('POST', '/stock-receipts/' + sanitizePath(receiptId) + '/items', body)
 }
 
 export async function receiveReceipt(body) {
@@ -180,7 +213,7 @@ export async function receiveReceipt(body) {
 }
 
 export async function deleteReceipt(id) {
-  return fetchApi('DELETE', '/stock-receipts/' + id)
+  return fetchApi('DELETE', '/stock-receipts/' + sanitizePath(id))
 }
 
 // ---- Sales ----
@@ -200,11 +233,11 @@ export async function createSale(body) {
 export async function listCustomers(branchId, query = {}) {
   if (!branchId) throw new Error('branchId is required to list customers')
   const q = query.q ? '?q=' + encodeURIComponent(query.q) : ''
-  return fetchApi('GET', '/customers/branch/' + branchId + q)
+  return fetchApi('GET', '/customers/branch/' + sanitizePath(branchId) + q)
 }
 
 export async function getCustomer(id) {
-  return fetchApi('GET', '/customers/' + id)
+  return fetchApi('GET', '/customers/' + sanitizePath(id))
 }
 
 export async function createCustomer(body) {
@@ -212,16 +245,16 @@ export async function createCustomer(body) {
 }
 
 export async function updateCustomer(id, body) {
-  return fetchApi('PUT', '/customers/' + id, body)
+  return fetchApi('PUT', '/customers/' + sanitizePath(id), body)
 }
 
 export async function deleteCustomer(id) {
-  return fetchApi('DELETE', '/customers/' + id)
+  return fetchApi('DELETE', '/customers/' + sanitizePath(id))
 }
 
 // ---- Held sales ----
 export async function listHeldSales(branchId) {
-  return fetchApi('GET', '/held-sales/' + encodeURIComponent(branchId))
+  return fetchApi('GET', '/held-sales/' + sanitizePath(branchId))
 }
 
 export async function createHeldSale(body) {
@@ -229,5 +262,5 @@ export async function createHeldSale(body) {
 }
 
 export async function deleteHeldSale(id) {
-  return fetchApi('DELETE', '/held-sales/' + encodeURIComponent(id))
+  return fetchApi('DELETE', '/held-sales/' + sanitizePath(id))
 }

@@ -631,7 +631,6 @@ const Inventory = () => {
       setProductSaving(true)
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
-        console.log('Updating product:', productId, JSON.stringify(payload, null, 2))
         await updateProduct(productId, payload)
         setSuccessProduct({ ...payload, id: productId, action: 'updated' })
       } else {
@@ -1549,6 +1548,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
     { value: 'bag', label: 'Bag', abbreviation: 'bag' },
     { value: 'bucket', label: 'Bucket', abbreviation: 'bkt' },
     { value: 'sack', label: 'Sack', abbreviation: 'sck' },
+    { value: 'strip', label: 'Strip', abbreviation: 'stp' },
     { value: 'box', label: 'Box', abbreviation: 'box' },
     { value: 'carton', label: 'Carton', abbreviation: 'ctn' },
     { value: '6in1', label: '6 in 1', abbreviation: '6in1' },

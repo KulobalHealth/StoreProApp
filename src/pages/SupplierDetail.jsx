@@ -179,7 +179,6 @@ const SupplierDetail = () => {
         organizationId: getSessionOrgId(),
       })
       const receipt = res?.data || res
-      console.log('[DEBUG] createReceipt response:', JSON.stringify(receipt))
       setCreatePOOpen(false)
       setPoPaymentType('credit')
       await fetchSupplierData()

@@ -141,7 +141,7 @@ const BranchDashboard = () => {
                 <Store size={18} strokeWidth={2} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">{branch.name}</h1>
+                <h1 className="text-sm font-bold text-gray-900 tracking-tight">{branch.name}</h1>
                 <p className="text-gray-500 text-xs flex items-center gap-1">
                   {branch.location && <><MapPin size={10} /> {branch.location} · </>}
                   <span className="capitalize">{user?.role || 'user'}</span>

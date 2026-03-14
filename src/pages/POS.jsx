@@ -664,7 +664,6 @@ const POS = () => {
           product_unit: item.unitUuid || null
         }))
       }
-      console.log('[POS] Sale payload:', JSON.stringify(salePayload, null, 2))
       setSavingState(print ? 'print' : email ? 'email' : 'save')
       await createSale(salePayload)
 
@@ -697,8 +696,7 @@ const POS = () => {
       }
 
       if (email && customer?.email) {
-        // In real app, send email
-        console.log('Emailing receipt to:', customer.email)
+        // TODO: Integrate email service to send receipt
       }
 
       // Show success modal

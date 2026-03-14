@@ -19,20 +19,13 @@ import SupplierDetail from './pages/SupplierDetail'
 import Customers from './pages/Customers'
 import Cashiers from './pages/Cashiers'
 import SalesHistory from './pages/SalesHistory'
+import { useAuth } from './contexts/AuthContext'
 
 // Role guard — blocks specific roles from accessing a route
-// Uses AuthContext so the role is always in sync after refresh
+// Uses AuthContext so the role is always in sync and can't be spoofed via localStorage
 const RoleGuard = ({ blockedRoles = [], allowedRoles = [], children }) => {
-  // Read from AuthContext first; fall back to localStorage for the brief
-  // moment before context hydrates (shouldn't happen with synchronous init).
-  let role = ''
-  try {
-    // We can't call useAuth() here because this is not inside AuthProvider
-    // when defined at module level. Read localStorage which is the source of truth.
-    const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
-    role = (savedUser.role || '').toLowerCase()
-  } catch { /* allow through */ }
-
+  const { user } = useAuth()
+  const role = (user?.role || '').toLowerCase()
   const fallback = role === 'sales' ? '/pos' : '/branch-dashboard'
 
   // If allowedRoles is specified, only those roles may access
@@ -50,11 +43,8 @@ const RoleGuard = ({ blockedRoles = [], allowedRoles = [], children }) => {
 
 // Redirect index route based on role
 const RoleAwareRedirect = () => {
-  let role = ''
-  try {
-    const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
-    role = (savedUser.role || '').toLowerCase()
-  } catch { /* ignore */ }
+  const { user } = useAuth()
+  const role = (user?.role || '').toLowerCase()
 
   if (role === 'sales') return <Navigate to="/pos" replace />
   return <Navigate to="/branch-dashboard" replace />

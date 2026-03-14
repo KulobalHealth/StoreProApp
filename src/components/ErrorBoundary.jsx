@@ -25,23 +25,20 @@ class ErrorBoundary extends React.Component {
       errorCount: prevState.errorCount + 1
     }))
 
-    // Save error to localStorage for debugging
+    // Save minimal error info to localStorage (no stack traces in production)
     try {
       const errorLog = {
         timestamp: new Date().toISOString(),
         message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        url: window.location.href,
-        userAgent: navigator.userAgent
+        url: window.location.pathname
       }
       
       const existingErrors = JSON.parse(localStorage.getItem('error_log') || '[]')
       existingErrors.unshift(errorLog)
-      // Keep only last 10 errors
-      localStorage.setItem('error_log', JSON.stringify(existingErrors.slice(0, 10)))
+      // Keep only last 5 errors
+      localStorage.setItem('error_log', JSON.stringify(existingErrors.slice(0, 5)))
     } catch (logError) {
-      console.error('Failed to log error:', logError)
+      // Silently fail
     }
   }
 

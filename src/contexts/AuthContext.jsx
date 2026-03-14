@@ -145,7 +145,6 @@ export const AuthProvider = ({ children }) => {
 
       const { login: apiLogin } = await import('../api/awoselDb.js')
       const response = await apiLogin({ email: sanitizedEmail, password })
-      console.log('Login API response:', response)
 
       // Handle both { data: { user, token } } and { user, token } structures
       const userData = response.data?.user || response.user

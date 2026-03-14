@@ -36,9 +36,8 @@ const Register = () => {
       const trimmedFirstName = firstName.trim()
       const trimmedLastName = lastName.trim()
       const trimmedStoreName = storeName.trim()
-      const trimmedPassword = password.trim()
 
-      if (!trimmedEmail || !trimmedPassword) {
+      if (!trimmedEmail || !password) {
         setError('Please enter email and password')
         setIsLoading(false)
         return
@@ -63,7 +62,7 @@ const Register = () => {
         setIsLoading(false)
         return
       }
-      if (trimmedPassword.length < 8) {
+      if (password.length < 8) {
         setError('Password must be at least 8 characters')
         setIsLoading(false)
         return
@@ -75,7 +74,7 @@ const Register = () => {
         firstName: trimmedFirstName,
         lastName: trimmedLastName,
         storeName: trimmedStoreName,
-        password: trimmedPassword,
+        password: password,
       })
 
       alert('You have registered successfully.')
