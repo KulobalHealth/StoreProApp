@@ -383,7 +383,8 @@ const POS = () => {
           baseUnitPrice: typeof product.price === 'number' ? product.price : unitPrice,
           conversion: typeof unit.conversion === 'number' ? unit.conversion : 1,
           extPrice: unitPrice,
-          discount: 0
+          discount: 0,
+          stock: typeof product.stock === 'number' ? product.stock : 0
         }
         setItems(prevItems => [...prevItems, newItem])
       }
@@ -1222,7 +1223,18 @@ const POS = () => {
                     onClick={() => handleAddItem(product)}
                     className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
                   >
-                    <div className="font-medium">{product.itemName}</div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{product.itemName}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        (product.stock || 0) <= 0
+                          ? 'bg-red-100 text-red-700'
+                          : (product.stock || 0) <= 5
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-green-100 text-green-700'
+                      }`}>
+                        Stock: {product.stock || 0}
+                      </span>
+                    </div>
                     <div className="text-sm text-gray-600">{product.department} - ₵{product.price.toFixed(2)}</div>
                   </div>
                 ))
@@ -1326,6 +1338,7 @@ const POS = () => {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Item #</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Department</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Item Name</th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">In Stock</th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Qty</th>
                     <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">Ext Price</th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Action</th>
@@ -1349,6 +1362,17 @@ const POS = () => {
                         {item.discount > 0 && (
                           <span className="ml-2 text-xs text-green-600">(-₵{item.discount.toFixed(2)})</span>
                         )}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          (item.stock || 0) <= 0
+                            ? 'bg-red-100 text-red-700'
+                            : (item.stock || 0) <= 5
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-green-100 text-green-700'
+                        }`}>
+                          {item.stock || 0}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center gap-1">
