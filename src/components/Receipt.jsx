@@ -23,7 +23,7 @@ const Receipt = ({ transaction, storeInfo, onClose }) => {
     }}>
       {/* Store Header */}
       <div style={{ textAlign: 'center', marginBottom: '4px' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: '1px' }}>
+        <div style={{ fontWeight: '900', fontSize: '16px', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           {storeInfo.name || 'Awosel OS Store'}
         </div>
         {storeInfo.branch && (
@@ -137,6 +137,7 @@ const Receipt = ({ transaction, storeInfo, onClose }) => {
 
       {/* Footer */}
       <div style={{ textAlign: 'center', fontSize: '9px', marginTop: '3px' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Goods once Sold, Cannot be returned or Exchanged</div>
         <div>{storeInfo.footer || 'Thank you for your business!'}</div>
         {storeInfo.website && <div style={{ marginTop: '2px' }}>{storeInfo.website}</div>}
       </div>
