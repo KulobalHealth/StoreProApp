@@ -43,10 +43,10 @@ const Settings = () => {
       retentionDays: '30',
     },
     billing: {
-      plan: 'Professional',
+      plan: 'Standard',
       billingCycle: 'monthly',
       nextBillingDate: '2024-02-15',
-      amount: 99.00,
+      amount: 300.00,
       status: 'active',
       paymentMethod: 'mobile_money',
       creditCard: {
@@ -72,9 +72,9 @@ const Settings = () => {
   ])
 
   const [billingHistory] = useState([
-    { id: 1, date: '2024-01-15', amount: 99.00, status: 'paid', invoice: 'INV-2024-001', paymentMethod: 'mobile_money', provider: 'MTN' },
-    { id: 2, date: '2023-12-15', amount: 99.00, status: 'paid', invoice: 'INV-2023-012', paymentMethod: 'credit_card', provider: null },
-    { id: 3, date: '2023-11-15', amount: 99.00, status: 'paid', invoice: 'INV-2023-011', paymentMethod: 'mobile_money', provider: 'Vodafone' },
+    { id: 1, date: '2024-01-15', amount: 300.00, status: 'paid', invoice: 'INV-2024-001', paymentMethod: 'mobile_money', provider: 'MTN' },
+    { id: 2, date: '2023-12-15', amount: 300.00, status: 'paid', invoice: 'INV-2023-012', paymentMethod: 'credit_card', provider: null },
+    { id: 3, date: '2023-11-15', amount: 300.00, status: 'paid', invoice: 'INV-2023-011', paymentMethod: 'mobile_money', provider: 'Vodafone' },
   ])
 
   const [isCreatingBackup, setIsCreatingBackup] = useState(false)
@@ -479,117 +479,6 @@ const Settings = () => {
                   </div>
                 </div>
 
-                {/* Payment method */}
-                <div>
-                  <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
-                    <Wallet size={16} className="text-primary-500" /> Payment Method
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-                    <button
-                      onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'credit_card' } })}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                        settings.billing.paymentMethod === 'credit_card'
-                          ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <CreditCard size={20} className={settings.billing.paymentMethod === 'credit_card' ? 'text-primary-600' : 'text-gray-400'} />
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-900">Credit / Debit Card</p>
-                        <p className="text-xs text-gray-500">Pay with card</p>
-                      </div>
-                      {settings.billing.paymentMethod === 'credit_card' && <CheckCircle size={18} className="ml-auto text-primary-600" />}
-                    </button>
-                    <button
-                      onClick={() => setSettings({ ...settings, billing: { ...settings.billing, paymentMethod: 'mobile_money' } })}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                        settings.billing.paymentMethod === 'mobile_money'
-                          ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <Smartphone size={20} className={settings.billing.paymentMethod === 'mobile_money' ? 'text-green-600' : 'text-gray-400'} />
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-gray-900">Mobile Money</p>
-                        <p className="text-xs text-gray-500">MTN, Vodafone, AirtelTigo</p>
-                      </div>
-                      {settings.billing.paymentMethod === 'mobile_money' && <CheckCircle size={18} className="ml-auto text-green-600" />}
-                    </button>
-                  </div>
-
-                  {settings.billing.paymentMethod === 'credit_card' ? (
-                    <div className="p-5 bg-primary-50 rounded-xl border border-primary-100 space-y-3">
-                      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <CreditCard size={16} className="text-primary-600" /> Card Details
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="p-3 bg-white rounded-lg">
-                          <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
-                          <p className="text-sm font-medium text-gray-900">{'\u2022\u2022\u2022\u2022'} {'\u2022\u2022\u2022\u2022'} {'\u2022\u2022\u2022\u2022'} {settings.billing.creditCard.last4}</p>
-                        </div>
-                        <div className="p-3 bg-white rounded-lg">
-                          <p className="text-xs text-gray-500 mb-0.5">Brand</p>
-                          <p className="text-sm font-medium text-gray-900">{settings.billing.creditCard.brand}</p>
-                        </div>
-                        <div className="p-3 bg-white rounded-lg">
-                          <p className="text-xs text-gray-500 mb-0.5">Expires</p>
-                          <p className="text-sm font-medium text-gray-900">{settings.billing.creditCard.expiryMonth}/{settings.billing.creditCard.expiryYear}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-5 bg-green-50 rounded-xl border border-green-100 space-y-4">
-                      <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <Smartphone size={16} className="text-green-600" /> Mobile Money Details
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Provider</label>
-                          <select
-                            value={settings.billing.mobileMoney.provider}
-                            onChange={e => setSettings({
-                              ...settings,
-                              billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, provider: e.target.value } }
-                            })}
-                            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
-                          >
-                            <option value="MTN">MTN Mobile Money</option>
-                            <option value="Vodafone">Vodafone Cash</option>
-                            <option value="AirtelTigo">AirtelTigo Money</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
-                          <div className="relative">
-                            <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="tel"
-                              value={settings.billing.mobileMoney.phoneNumber}
-                              onChange={e => setSettings({
-                                ...settings,
-                                billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, phoneNumber: e.target.value } }
-                              })}
-                              className="w-full pl-9 pr-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
-                              placeholder="+233 24 123 4567"
-                            />
-                          </div>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <label className="block text-xs font-medium text-gray-700 mb-1">Account Name</label>
-                          <input
-                            type="text"
-                            value={settings.billing.mobileMoney.accountName}
-                            onChange={e => setSettings({
-                              ...settings,
-                              billing: { ...settings.billing, mobileMoney: { ...settings.billing.mobileMoney, accountName: e.target.value } }
-                            })}
-                            className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
-                            placeholder="Account holder name"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 {/* Next billing */}
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                   <Calendar size={18} className="text-primary-600" />
@@ -610,24 +499,24 @@ const Settings = () => {
                 <h3 className="text-sm font-bold text-gray-900">Billing History</h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm border-collapse border border-gray-200">
                   <thead>
                     <tr className="bg-gray-50 text-gray-600">
-                      <th className="text-left py-3 px-5 font-medium">Date</th>
-                      <th className="text-left py-3 px-5 font-medium">Invoice</th>
-                      <th className="text-right py-3 px-5 font-medium">Amount</th>
-                      <th className="text-left py-3 px-5 font-medium">Method</th>
-                      <th className="text-left py-3 px-5 font-medium">Status</th>
-                      <th className="text-center py-3 px-5 font-medium">Actions</th>
+                      <th className="text-left py-3 px-5 font-medium border border-gray-200">Date</th>
+                      <th className="text-left py-3 px-5 font-medium border border-gray-200">Invoice</th>
+                      <th className="text-right py-3 px-5 font-medium border border-gray-200">Amount</th>
+                      <th className="text-left py-3 px-5 font-medium border border-gray-200">Method</th>
+                      <th className="text-left py-3 px-5 font-medium border border-gray-200">Status</th>
+                      <th className="text-center py-3 px-5 font-medium border border-gray-200">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {billingHistory.map(inv => (
-                      <tr key={inv.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="py-3 px-5 text-gray-700">{new Date(inv.date).toLocaleDateString('en-GB')}</td>
-                        <td className="py-3 px-5 font-medium text-gray-900">{inv.invoice}</td>
-                        <td className="py-3 px-5 text-right font-semibold text-gray-900">{'\u20B5'}{inv.amount.toFixed(2)}</td>
-                        <td className="py-3 px-5">
+                      <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-5 text-gray-700 border border-gray-200">{new Date(inv.date).toLocaleDateString('en-GB')}</td>
+                        <td className="py-3 px-5 font-medium text-gray-900 border border-gray-200">{inv.invoice}</td>
+                        <td className="py-3 px-5 text-right font-semibold text-gray-900 border border-gray-200">{'\u20B5'}{inv.amount.toFixed(2)}</td>
+                        <td className="py-3 px-5 border border-gray-200">
                           <div className="flex items-center gap-1.5">
                             {inv.paymentMethod === 'mobile_money'
                               ? <><Smartphone size={14} className="text-green-600" /><span className="text-gray-700">{inv.provider}</span></>
@@ -635,7 +524,7 @@ const Settings = () => {
                             }
                           </div>
                         </td>
-                        <td className="py-3 px-5">
+                        <td className="py-3 px-5 border border-gray-200">
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                             inv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                           }`}>
@@ -643,7 +532,7 @@ const Settings = () => {
                             {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
                           </span>
                         </td>
-                        <td className="py-3 px-5 text-center">
+                        <td className="py-3 px-5 text-center border border-gray-200">
                           <button
                             onClick={() => handleDownloadInvoice(inv.invoice)}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-primary-600 hover:bg-primary-50 transition-colors"
