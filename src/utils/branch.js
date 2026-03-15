@@ -4,13 +4,13 @@
  * Works for all roles — managers have branch_id in their user/token, admins select a branch.
  */
 export function getSessionBranchId() {
-  // 1. Check the active branch selected in the UI (always has the uuid)
+  // 1. Check the active branch selected in the UI — always prefer uuid over numeric id
   try {
     const saved = localStorage.getItem('awosel_active_branch')
     if (saved) {
       const branch = JSON.parse(saved)
+      // Always return uuid (not the numeric id)
       if (branch?.uuid) return branch.uuid
-      if (branch?.id) return branch.id
     }
   } catch {}
 

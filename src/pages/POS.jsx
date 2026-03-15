@@ -129,7 +129,8 @@ const POS = () => {
 
   // Keep ref in sync with selected customer so save always has current value
   useEffect(() => {
-    selectedCustomerIdRef.current = (customer && customer.id != null && Number(customer.id) > 0) ? Number(customer.id) : null
+    // Backend expects UUID for customer_id
+    selectedCustomerIdRef.current = (customer && (customer.uuid || customer.id)) ? (customer.uuid || customer.id) : null
   }, [customer])
 
   // Alert helper — pushes a styled toast notification
@@ -225,17 +226,50 @@ const POS = () => {
         const data = res?.data || res
         const list = Array.isArray(data) ? data : []
 
-        // Map API response items back to cart-compatible shape using allProducts for lookup
+        // Map API response items back to cart-compatible shape
+        // API returns nested product & unit objects inside each item
         const mapped = list.map(sale => {
           const saleItems = Array.isArray(sale.items) ? sale.items : []
           const cartItems = saleItems.map(apiItem => {
-            // Find the product in our cached products list
-            const productId = apiItem.product_id || apiItem.productId || apiItem.id
-            const product = allProducts.find(p => p.id === productId || p.uuid === productId)
             const qty = Number(apiItem.quantity ?? apiItem.qty ?? 1)
+            const productId = apiItem.product_id || apiItem.productId || apiItem.id
 
+            // Use embedded product/unit objects from the API response (primary source)
+            const embeddedProduct = apiItem.product || null
+            const embeddedUnit = apiItem.unit || null
+
+            if (embeddedProduct) {
+              // Determine unit info from embedded unit object
+              const unitName = embeddedUnit?.unit_name || embeddedProduct.base_unit || 'piece'
+              const unitUuid = embeddedUnit?.uuid || apiItem.product_unit || null
+              const unitPrice = Number(embeddedUnit?.unit_price ?? embeddedProduct.selling_price ?? 0)
+              const baseCost = Number(embeddedProduct.cost_price ?? 0)
+              const basePrice = Number(embeddedProduct.selling_price ?? 0)
+              const conversion = Number(embeddedUnit?.conversion_quantity ?? embeddedUnit?.base_quantity ?? 1)
+              const unitLabel = UNITS_OF_MEASURE.find(u => u.value === unitName)?.abbreviation || unitName || 'pc'
+
+              return {
+                id: embeddedProduct.id,
+                uuid: embeddedProduct.uuid || productId,
+                itemNumber: embeddedProduct.sku || String(embeddedProduct.id || ''),
+                department: embeddedProduct.category || 'General',
+                itemName: embeddedProduct.name || 'Unknown',
+                qty,
+                unit: unitName,
+                unitUuid,
+                unitLabel,
+                unitPrice,
+                baseUnitPrice: basePrice,
+                conversion,
+                extPrice: unitPrice * qty,
+                discount: 0,
+                stock: Number(embeddedProduct.quantity_available ?? embeddedProduct.quantity ?? 0)
+              }
+            }
+
+            // Fallback: try to match from allProducts cache
+            const product = allProducts.find(p => p.id === productId || p.uuid === productId)
             if (product) {
-              // Resolve the unit info
               const unitUuid = apiItem.product_unit || apiItem.unitUuid || null
               const matchedUnit = unitUuid && product.units
                 ? product.units.find(u => u.uuid === unitUuid)
@@ -262,21 +296,21 @@ const POS = () => {
               }
             }
 
-            // Fallback if product not found in cache — use whatever data the API gave us
+            // Last resort fallback — use raw API fields
             return {
               id: productId,
               uuid: productId,
-              itemNumber: apiItem.itemNumber || apiItem.sku || '',
-              department: apiItem.department || 'General',
-              itemName: apiItem.itemName || apiItem.product_name || apiItem.name || 'Unknown',
+              itemNumber: apiItem.sku || '',
+              department: 'General',
+              itemName: apiItem.product_name || apiItem.name || 'Unknown',
               qty,
               unit: apiItem.unit || 'piece',
               unitUuid: apiItem.product_unit || null,
-              unitLabel: apiItem.unitLabel || 'pc',
-              unitPrice: Number(apiItem.unitPrice ?? apiItem.unit_price ?? apiItem.price ?? 0),
-              baseUnitPrice: Number(apiItem.unitPrice ?? apiItem.price ?? 0),
-              conversion: Number(apiItem.conversion ?? 1),
-              extPrice: Number(apiItem.extPrice ?? apiItem.unitPrice ?? 0) * qty,
+              unitLabel: 'pc',
+              unitPrice: Number(apiItem.unit_price ?? apiItem.price ?? 0),
+              baseUnitPrice: Number(apiItem.price ?? 0),
+              conversion: 1,
+              extPrice: Number(apiItem.unit_price ?? apiItem.price ?? 0) * qty,
               discount: 0,
               stock: 0
             }
@@ -288,7 +322,8 @@ const POS = () => {
           const saleDiscount = Number(sale.discount ?? 0)
 
           return {
-            id: sale.id || sale.uuid,
+            id: sale.id,
+            uuid: sale.uuid || sale.id,
             timestamp: sale.created_at || sale.createdAt || sale.timestamp || new Date().toISOString(),
             customer: sale.customer || null,
             items: cartItems,
@@ -835,11 +870,13 @@ const POS = () => {
       createHeldSale(holdPayload)
         .then(res => {
           const data = res?.data || res
-          const holdId = data?.id || data?.uuid || `HOLD-${Date.now()}`
+          const holdId = data?.id || `HOLD-${Date.now()}`
+          const holdUuid = data?.uuid || holdId
 
           // Build local held sale object for the modal (includes full cart items for recall)
           const heldSale = {
             id: holdId,
+            uuid: holdUuid,
             timestamp: data?.created_at || data?.createdAt || new Date().toISOString(),
             customer: customer ? { ...customer } : null,
             items: items.map(item => ({ ...item })),
@@ -913,7 +950,7 @@ const POS = () => {
     setAmountPaid(heldSale.amountPaid || 0)
     setShowHeldSalesModal(false)
 
-    // Delete from backend when recalled
+    // Delete from backend when recalled (use numeric id for API)
     const holdId = heldSale.id
     if (holdId) {
       deleteHeldSale(holdId)
@@ -1397,7 +1434,7 @@ const POS = () => {
                   key={c.id}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => {
-                    setCustomer({ id: Number(c.id), name: c.name || '', phone: c.phone || '', email: c.email || '' })
+                    setCustomer({ id: c.id, uuid: c.uuid || c.id, name: c.name || '', phone: c.phone || '', email: c.email || '' })
                     setCustomerSearch(c.name || '')
                     setCustomerDropdownOpen(false)
                   }}
@@ -2253,7 +2290,7 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="font-bold text-gray-900">{sale.id}</span>
+                        <span className="font-bold text-gray-900">HOLD-{sale.id}</span>
                         <span className="text-sm text-gray-500">{formatDate(sale.timestamp)}</span>
                       </div>
                       {sale.customer && (

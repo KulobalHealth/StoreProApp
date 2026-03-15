@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
@@ -61,6 +61,8 @@ const Inventory = () => {
   const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false)
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const allProductsCache = useRef([]) // Cache all products to avoid refetching on search
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
   const [showImportModal, setShowImportModal] = useState(false)
@@ -118,10 +120,19 @@ const Inventory = () => {
     setTimeout(() => setAlertQueue(prev => prev.filter(a => a.id !== id)), duration)
   }
   
+  // Debounce search term - wait 300ms after user stops typing before triggering search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
   // Get departments for filter dropdown
   const getDepartments = () => loadDepartments()
 
-  const fetchProducts = async (page) => {
+  // Fetch all products from API (only re-fetches when branch changes or manual refresh)
+  const fetchProducts = useCallback(async (page) => {
     const pageToFetch = page !== undefined && page !== null ? page : currentPage
     setProductsLoading(true)
     setProductsError(null)
@@ -130,33 +141,22 @@ const Inventory = () => {
       const branchId = activeBranch?.uuid || activeBranch?.id
       let data
       if (branchId) {
-        // Use branch-specific endpoint
+        // Use branch-specific endpoint - fetch ALL products once
         const res = await listProductsByBranch(branchId)
         data = res?.data || res
       } else {
-        // Fallback to generic products list
+        // Fallback to generic products list with server-side search
         const query = { page: pageToFetch, limit: PAGE_SIZE }
-        if (searchTerm.trim()) query.search = searchTerm.trim()
+        if (debouncedSearchTerm.trim()) query.search = debouncedSearchTerm.trim()
         if (selectedDepartmentFilter && selectedDepartmentFilter !== 'all') query.category = selectedDepartmentFilter
         data = await listProducts(query)
       }
       const list = Array.isArray(data) ? data : (data.products || [])
-      // Client-side search/filter when using branch endpoint
-      let filtered = list
-      if (branchId && searchTerm.trim()) {
-        const q = searchTerm.trim().toLowerCase()
-        filtered = list.filter(p =>
-          (p.name || '').toLowerCase().includes(q) ||
-          (p.sku || '').toLowerCase().includes(q) ||
-          (p.barcode || '').toLowerCase().includes(q)
-        )
-      }
-      if (branchId && selectedDepartmentFilter && selectedDepartmentFilter !== 'all') {
-        filtered = filtered.filter(p => (p.category || '').toLowerCase() === selectedDepartmentFilter.toLowerCase())
-      }
-      setProducts(filtered.map(mapApiProductToDisplay))
-      setTotalProducts(filtered.length)
-      setTotalPages(1)
+      // Cache the full product list (mapped) for fast client-side filtering
+      const mapped = list.map(mapApiProductToDisplay)
+      allProductsCache.current = mapped
+      // Apply client-side filters from cache
+      applyFilters(mapped)
     } catch (err) {
       setProductsError(err.message || 'Could not load products')
       setProducts([])
@@ -165,46 +165,93 @@ const Inventory = () => {
     } finally {
       setProductsLoading(false)
     }
-  }
+  }, [currentPage, selectedDepartmentFilter, debouncedSearchTerm])
 
+  // Fast client-side filtering from cached products (no API call)
+  const applyFilters = useCallback((allProducts) => {
+    const source = allProducts || allProductsCache.current
+    if (!source.length) {
+      setProducts([])
+      setTotalProducts(0)
+      setTotalPages(1)
+      return
+    }
+    let filtered = source
+    // Search filter
+    if (debouncedSearchTerm.trim()) {
+      const q = debouncedSearchTerm.trim().toLowerCase()
+      filtered = source.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.sku || '').toLowerCase().includes(q) ||
+        (p.barcode || '').toLowerCase().includes(q)
+      )
+    }
+    // Department filter
+    if (selectedDepartmentFilter && selectedDepartmentFilter !== 'all') {
+      filtered = filtered.filter(p => (p.category || '').toLowerCase() === selectedDepartmentFilter.toLowerCase())
+    }
+    setProducts(filtered)
+    setTotalProducts(filtered.length)
+    setTotalPages(1)
+  }, [debouncedSearchTerm, selectedDepartmentFilter])
+
+  // Only re-fetch from API on initial load and page changes
+  const initialFetchDone = useRef(false)
+  useEffect(() => {
+    if (!initialFetchDone.current) {
+      initialFetchDone.current = true
+      fetchProducts(1)
+    }
+  }, [])
+
+  // Re-filter from cache when search/department changes (instant, no API call)
   const prevSearchRef = useRef(null)
   const prevDeptRef = useRef(null)
   useEffect(() => {
-    const searchOrDeptChanged = prevSearchRef.current !== searchTerm || prevDeptRef.current !== selectedDepartmentFilter
-    if (searchOrDeptChanged) {
-      prevSearchRef.current = searchTerm
-      prevDeptRef.current = selectedDepartmentFilter
+    const searchOrDeptChanged = prevSearchRef.current !== debouncedSearchTerm || prevDeptRef.current !== selectedDepartmentFilter
+    prevSearchRef.current = debouncedSearchTerm
+    prevDeptRef.current = selectedDepartmentFilter
+    if (!searchOrDeptChanged) return
+    const activeBranch = getActiveBranch()
+    const branchId = activeBranch?.uuid || activeBranch?.id
+    if (branchId && allProductsCache.current.length > 0) {
+      // Filter from cache — no API call needed
+      setTablePage(1)
+      applyFilters()
+    } else {
+      // Non-branch mode: use server-side search
       setCurrentPage(1)
       fetchProducts(1)
-    } else {
-      fetchProducts(currentPage)
     }
-  }, [currentPage, searchTerm, selectedDepartmentFilter])
+  }, [debouncedSearchTerm, selectedDepartmentFilter])
+
+  // Handle page changes (non-branch mode)
+  useEffect(() => {
+    if (currentPage > 1) fetchProducts(currentPage)
+  }, [currentPage])
 
   // Products are already filtered and paginated by the API (page size 100)
   const startIndex = totalProducts === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1
   const endIndex = (currentPage - 1) * PAGE_SIZE + products.length
 
-  const lowStockItems = products.filter(p => p.stock <= p.minStock)
+  const lowStockItems = useMemo(() => products.filter(p => p.stock <= p.minStock), [products])
   
-  const expiredStockItems = products.filter(p => {
+  const expiredStockItems = useMemo(() => products.filter(p => {
     if (!p.expiry) return false
     const expiryDate = new Date(p.expiry)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     return expiryDate < today
-  })
+  }), [products])
 
-  const outOfStockItems = products.filter(p => (Number(p.stock) || 0) === 0)
+  const outOfStockItems = useMemo(() => products.filter(p => (Number(p.stock) || 0) === 0), [products])
 
   // Apply stock filter to get display products
-  const displayProducts = (() => {
+  const displayProducts = useMemo(() => {
     switch (stockFilter) {
       case 'high_sale':
-        // High sale items = lowest stock remaining (most sold)
         return [...products].sort((a, b) => (Number(a.stock) || 0) - (Number(b.stock) || 0))
       case 'low_sale':
-        // Low sale items = highest stock remaining (least sold)
         return [...products].sort((a, b) => (Number(b.stock) || 0) - (Number(a.stock) || 0))
       case 'out_of_stock':
         return outOfStockItems
@@ -213,16 +260,16 @@ const Inventory = () => {
       default:
         return products
     }
-  })()
+  }, [products, stockFilter, outOfStockItems, expiredStockItems])
 
   // Client-side pagination: 10 items per table page
   const totalTablePages = Math.max(1, Math.ceil(displayProducts.length / TABLE_PAGE_SIZE))
-  const paginatedProducts = displayProducts.slice((tablePage - 1) * TABLE_PAGE_SIZE, tablePage * TABLE_PAGE_SIZE)
+  const paginatedProducts = useMemo(() => displayProducts.slice((tablePage - 1) * TABLE_PAGE_SIZE, tablePage * TABLE_PAGE_SIZE), [displayProducts, tablePage])
 
   // Reset table page when filters/search/products change
   useEffect(() => {
     setTablePage(1)
-  }, [stockFilter, searchTerm, selectedDepartmentFilter, products.length])
+  }, [stockFilter, debouncedSearchTerm, selectedDepartmentFilter, products.length])
 
   const deleteProduct = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return
@@ -2473,17 +2520,27 @@ const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSav
   const selectedSupplier = suppliers.find(s => (s.uuid || s.id) === supplierId)
   const debtOwing = selectedSupplier ? (Number(selectedSupplier.debt_owing) || 0) : 0
 
-  const filteredProductsForPO = (searchTerm, limit = 12) =>
-    products
-      .filter(p => {
-        if (!(searchTerm || '').trim()) return true
-        const term = (searchTerm || '').toLowerCase().trim()
-        return (p.name || '').toLowerCase().includes(term) ||
-          (p.sku || '').toLowerCase().includes(term) ||
-          (p.barcode || '').includes(term) ||
-          (p.category || '').toLowerCase().includes(term)
-      })
-      .slice(0, limit)
+  // Pre-compute lowercase fields once for faster PO product search
+  const productsSearchIndex = useMemo(() => products.map(p => ({
+    product: p,
+    name: (p.name || '').toLowerCase(),
+    sku: (p.sku || '').toLowerCase(),
+    barcode: (p.barcode || ''),
+    category: (p.category || '').toLowerCase(),
+  })), [products])
+
+  const filteredProductsForPO = useCallback((searchTerm, limit = 12) => {
+    if (!(searchTerm || '').trim()) return productsSearchIndex.slice(0, limit).map(i => i.product)
+    const term = (searchTerm || '').toLowerCase().trim()
+    const results = []
+    for (const item of productsSearchIndex) {
+      if (item.name.includes(term) || item.sku.includes(term) || item.barcode.includes(term) || item.category.includes(term)) {
+        results.push(item.product)
+        if (results.length >= limit) break
+      }
+    }
+    return results
+  }, [productsSearchIndex])
 
   const filteredSuppliers = suppliers.filter(s => {
     if (!supplierSearch.trim()) return true

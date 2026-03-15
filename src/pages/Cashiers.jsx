@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getActiveBranch, getSessionBranchId } from '../utils/branch'
-import { listEmployees, listSales } from '../api/awoselDb.js'
+import { getCashierSales } from '../api/awoselDb.js'
 import {
   Users, Search, Calendar, TrendingUp, Wallet,
   ShoppingCart, Clock, ChevronDown, Loader2, AlertTriangle,
-  Receipt, BarChart3, CalendarDays, CalendarRange, Filter, LogOut
+  Receipt, BarChart3, CalendarDays, CalendarRange, Filter, LogOut,
+  RefreshCw, DollarSign, ArrowUpRight, ArrowDownRight
 } from 'lucide-react'
 
 const AVATAR_COLORS = [
@@ -20,163 +21,93 @@ const AVATAR_COLORS = [
   'from-orange-400 to-primary-600',
 ]
 
+const PERIODS = [
+  { key: 'today', label: 'Today', icon: Clock },
+  { key: 'range', label: 'Range', icon: CalendarDays },
+  { key: 'month', label: 'This Month', icon: CalendarRange },
+  { key: 'year', label: 'This Year', icon: Calendar },
+  { key: 'custom', label: 'Date', icon: Filter },
+]
+
 const Cashiers = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [employees, setEmployees] = useState([])
-  const [sales, setSales] = useState([])
+  const [cashierData, setCashierData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [dateFilter, setDateFilter] = useState('today') // today, week, month, year, custom
+  const [period, setPeriod] = useState('month')
   const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0])
-  const [salesLoading, setSalesLoading] = useState(false)
+  const [rangeStart, setRangeStart] = useState(new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0])
+  const [rangeEnd, setRangeEnd] = useState(new Date().toISOString().split('T')[0])
+  const [refreshing, setRefreshing] = useState(false)
 
   const activeBranch = getActiveBranch()
   const branchId = activeBranch?.uuid || activeBranch?.id || getSessionBranchId()
 
-  // Fetch employees
-  const fetchEmployees = async () => {
+  // Fetch cashier sales from /sales/cashiers?branch_id=...&period=... or &date=...
+  const fetchCashierSales = useCallback(async (showRefresh = false) => {
     try {
       if (!branchId) { setError('No branch selected'); return }
-      const res = await listEmployees(branchId)
-      const data = Array.isArray(res) ? res : (res?.data || [])
-      // Filter to sales role employees only
-      const salesUsers = data.filter(e => (e.role || '').toLowerCase() === 'sales')
-      setEmployees(salesUsers)
-    } catch (err) {
-      setError(err.message || 'Could not load employees')
-    }
-  }
+      if (showRefresh) setRefreshing(true)
+      else setLoading(true)
+      setError('')
 
-  // Fetch all sales for the branch
-  const fetchSales = async () => {
-    try {
-      setSalesLoading(true)
-      if (!branchId) return
-      const res = await listSales({ branch_id: branchId })
+      const params = period === 'custom'
+        ? { date: customDate }
+        : period === 'range'
+          ? { start_date: rangeStart, end_date: rangeEnd }
+          : { period }
+      const res = await getCashierSales(branchId, params)
       const payload = res?.data || res
-      const salesList = payload?.sales || (Array.isArray(payload) ? payload : [])
-      setSales(salesList)
+      const list = Array.isArray(payload) ? payload : (payload?.cashiers || payload?.sales || payload?.dashboard || [])
+      setCashierData(list)
     } catch (err) {
-      console.error('Could not load sales:', err)
+      console.error('Could not load cashier sales:', err)
+      setError(err.message || 'Could not load cashier sales')
     } finally {
-      setSalesLoading(false)
+      setLoading(false)
+      setRefreshing(false)
     }
-  }
+  }, [branchId, period, customDate, rangeStart, rangeEnd])
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(true)
-      await fetchEmployees()
-      await fetchSales()
-      setLoading(false)
-    }
-    init()
-  }, [branchId])
+    fetchCashierSales()
+  }, [fetchCashierSales])
 
-  // Date helpers
-  const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
+  const handleRefresh = () => fetchCashierSales(true)
 
-  const startOfWeek = (() => {
-    const d = new Date(today)
-    d.setDate(d.getDate() - d.getDay()) // Sunday
-    d.setHours(0, 0, 0, 0)
-    return d
-  })()
-
-  const isSameDay = (d1, d2) => {
-    return d1.getFullYear() === d2.getFullYear() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getDate() === d2.getDate()
-  }
-
-  // Compute cashier stats from sales
+  // Map API response rows into display-ready cashier objects
+  // API shape: { id, email, phone, first_name, last_name, name, role, sales_count, total_sold, total_profit }
   const cashierStats = useMemo(() => {
-    const statsMap = {}
+    return cashierData.map(row => {
+      const userId = row.id || row.user_id || row.employee_id || ''
 
-    employees.forEach(emp => {
-      const empId = emp.uuid || emp.id || emp.employee_id
-      statsMap[empId] = {
-        employee: emp,
-        todaySales: 0,
-        todayCount: 0,
-        todayProfit: 0,
-        weekSales: 0,
-        weekCount: 0,
-        weekProfit: 0,
-        monthSales: 0,
-        monthCount: 0,
-        monthProfit: 0,
-        yearSales: 0,
-        yearCount: 0,
-        yearProfit: 0,
-        customSales: 0,
-        customCount: 0,
-        customProfit: 0,
-        totalSales: 0,
-        totalCount: 0,
-        totalProfit: 0,
+      const employee = {
+        uuid: row.id || '',
+        id: row.id || '',
+        first_name: row.first_name || row.name?.split(' ')[0] || 'Unknown',
+        last_name: row.last_name || row.name?.split(' ').slice(1).join(' ') || '',
+        email: row.email || '',
+        phone: row.phone || '',
+        role: row.role || 'sales',
+      }
+
+      const totalSales = Number(row.total_sold || row.total_sales || row.total || 0)
+      const totalCount = Number(row.sales_count || row.total_transactions || row.count || 0)
+      const totalProfit = Number(row.total_profit || row.profit || 0)
+
+      return {
+        userId: String(userId),
+        employee,
+        totalSales,
+        totalCount,
+        totalProfit,
       }
     })
+  }, [cashierData])
 
-    sales.forEach(sale => {
-      // Match sale to employee — try employee_id, user_id, sold_by, created_by
-      const saleEmpId = sale.employee_id || sale.user_id || sale.sold_by || sale.created_by
-      if (!saleEmpId || !statsMap[saleEmpId]) return
-
-      const saleDate = sale.created_at ? new Date(sale.created_at) : null
-      const amount = Number(sale.total) || 0
-      const profit = Number(sale.total_profit) || 0
-      const stats = statsMap[saleEmpId]
-
-      stats.totalSales += amount
-      stats.totalCount += 1
-      stats.totalProfit += profit
-
-      if (!saleDate) return
-
-      // Today
-      if (isSameDay(saleDate, today)) {
-        stats.todaySales += amount
-        stats.todayCount += 1
-        stats.todayProfit += profit
-      }
-
-      // This week
-      if (saleDate >= startOfWeek) {
-        stats.weekSales += amount
-        stats.weekCount += 1
-        stats.weekProfit += profit
-      }
-
-      // This month
-      if (saleDate.getFullYear() === today.getFullYear() && saleDate.getMonth() === today.getMonth()) {
-        stats.monthSales += amount
-        stats.monthCount += 1
-        stats.monthProfit += profit
-      }
-
-      // This year
-      if (saleDate.getFullYear() === today.getFullYear()) {
-        stats.yearSales += amount
-        stats.yearCount += 1
-        stats.yearProfit += profit
-      }
-
-      // Custom date
-      if (customDate && isSameDay(saleDate, new Date(customDate + 'T00:00:00'))) {
-        stats.customSales += amount
-        stats.customCount += 1
-        stats.customProfit += profit
-      }
-    })
-
-    return Object.values(statsMap)
-  }, [employees, sales, customDate])
-
-  // Filtered cashiers
+  // Filtered & sorted
   const filteredCashiers = useMemo(() => {
     let result = cashierStats
     if (searchTerm.trim()) {
@@ -187,28 +118,19 @@ const Cashiers = () => {
         return name.includes(q) || email.includes(q)
       })
     }
-    // Sort by the selected period's sales (descending)
-    const key = dateFilter === 'today' ? 'todaySales'
-      : dateFilter === 'week' ? 'weekSales'
-      : dateFilter === 'month' ? 'monthSales'
-      : dateFilter === 'year' ? 'yearSales'
-      : dateFilter === 'custom' ? 'customSales'
-      : 'totalSales'
-    result.sort((a, b) => b[key] - a[key])
+    result.sort((a, b) => b.totalSales - a.totalSales)
     return result
-  }, [cashierStats, searchTerm, dateFilter])
+  }, [cashierStats, searchTerm])
 
-  // Get stats for selected period
-  const getStats = (cashier) => {
-    switch (dateFilter) {
-      case 'today': return { sales: cashier.todaySales, count: cashier.todayCount, profit: cashier.todayProfit }
-      case 'week': return { sales: cashier.weekSales, count: cashier.weekCount, profit: cashier.weekProfit }
-      case 'month': return { sales: cashier.monthSales, count: cashier.monthCount, profit: cashier.monthProfit }
-      case 'year': return { sales: cashier.yearSales, count: cashier.yearCount, profit: cashier.yearProfit }
-      case 'custom': return { sales: cashier.customSales, count: cashier.customCount, profit: cashier.customProfit }
-      default: return { sales: cashier.totalSales, count: cashier.totalCount, profit: cashier.totalProfit }
-    }
-  }
+  // Summary totals
+  const summaryTotals = useMemo(() => {
+    return filteredCashiers.reduce((acc, c) => {
+      acc.sales += c.totalSales
+      acc.count += c.totalCount
+      acc.profit += c.totalProfit
+      return acc
+    }, { sales: 0, count: 0, profit: 0 })
+  }, [filteredCashiers])
 
   const getInitials = (emp) => {
     const f = (emp.first_name || '')[0] || ''
@@ -216,23 +138,18 @@ const Cashiers = () => {
     return (f + l).toUpperCase() || 'U'
   }
 
-  const periodLabel = dateFilter === 'today' ? "Today's"
-    : dateFilter === 'week' ? "This Week's"
-    : dateFilter === 'month' ? "This Month's"
-    : dateFilter === 'year' ? "This Year's"
-    : dateFilter === 'custom' ? `${new Date(customDate + 'T00:00:00').toLocaleDateString(undefined, { dateStyle: 'medium' })}`
-    : 'All Time'
+  const formatCurrency = (val) => {
+    if (val >= 1000) return '₵' + (val / 1000).toFixed(1) + 'k'
+    return '₵' + val.toFixed(2)
+  }
 
-  // Summary totals for selected period
-  const summaryTotals = useMemo(() => {
-    return filteredCashiers.reduce((acc, c) => {
-      const s = getStats(c)
-      acc.sales += s.sales
-      acc.count += s.count
-      acc.profit += s.profit
-      return acc
-    }, { sales: 0, count: 0, profit: 0 })
-  }, [filteredCashiers, dateFilter, customDate])
+  const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
+  const periodLabel = period === 'custom'
+    ? fmtDate(customDate)
+    : period === 'range'
+      ? `${fmtDate(rangeStart)} – ${fmtDate(rangeEnd)}`
+      : (PERIODS.find(p => p.key === period)?.label || 'This Month')
 
   if (loading) {
     return (
@@ -256,73 +173,166 @@ const Cashiers = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900 tracking-tight">Cashiers</h1>
-              <p className="text-gray-500 text-xs">Monitor cashier performance and sales</p>
+              <p className="text-gray-500 text-xs">
+                {activeBranch?.name ? `${activeBranch.name} — ` : ''}{periodLabel} sales per cashier
+              </p>
             </div>
           </div>
-          <button
-            onClick={() => { logout(); navigate('/login') }}
-            className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-            title="Logout"
-          >
-            <LogOut size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors disabled:opacity-50"
+              title="Refresh"
+            >
+              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+            <button
+              onClick={() => { logout(); navigate('/login') }}
+              className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="Logout"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="px-4 sm:px-6 py-5">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">₵{summaryTotals.sales.toFixed(2)}</p>
-              </div>
+      <div className="px-4 sm:px-6 py-5 space-y-5">
+        {/* Period Tabs */}
+        <div className="flex items-center gap-1 bg-white rounded-xl border border-gray-200 p-1">
+          {PERIODS.map(p => {
+            const Icon = p.icon
+            const isActive = period === p.key
+            return (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <Icon size={14} />
+                <span className="hidden sm:inline">{p.label}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Date Range Picker — shown when 'Range' tab is active */}
+        {period === 'range' && (
+          <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3">
+            <CalendarDays size={16} className="text-primary-500 shrink-0" />
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <label className="text-sm font-medium text-gray-700 shrink-0">From:</label>
+              <input
+                type="date"
+                value={rangeStart}
+                onChange={e => setRangeStart(e.target.value)}
+                max={rangeEnd}
+                className="flex-1 min-w-[130px] px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <label className="text-sm font-medium text-gray-700 shrink-0">To:</label>
+              <input
+                type="date"
+                value={rangeEnd}
+                onChange={e => setRangeEnd(e.target.value)}
+                min={rangeStart}
+                max={new Date().toISOString().split('T')[0]}
+                className="flex-1 min-w-[130px] px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Custom Date Picker — shown when 'Date' tab is active */}
+        {period === 'custom' && (
+          <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3">
+            <Calendar size={16} className="text-primary-500 shrink-0" />
+            <label className="text-sm font-medium text-gray-700 shrink-0">Select date:</label>
+            <input
+              type="date"
+              value={customDate}
+              onChange={e => setCustomDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+        )}
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
                 <span className="text-lg font-bold text-primary-600">₵</span>
               </div>
+              <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full uppercase">{periodLabel}</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">{periodLabel} across all cashiers</p>
+            <p className="text-2xl font-bold text-gray-900">₵{summaryTotals.sales.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 mt-1">Total revenue</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Transactions</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{summaryTotals.count}</p>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                <Receipt size={20} className="text-orange-600" />
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <Receipt size={20} className="text-primary-500" />
-              </div>
+              <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full uppercase">Transactions</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">{periodLabel} sales count</p>
+            <p className="text-2xl font-bold text-gray-900">{summaryTotals.count}</p>
+            <p className="text-xs text-gray-500 mt-1">{periodLabel} sales count</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Profit</p>
-                <p className="text-2xl font-bold text-primary-600 mt-1">₵{summaryTotals.profit.toFixed(2)}</p>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <TrendingUp size={20} className="text-green-600" />
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                <TrendingUp size={20} className="text-primary-600" />
-              </div>
+              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase">Profit</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">{periodLabel} profit earned</p>
+            <p className="text-2xl font-bold text-green-600">₵{summaryTotals.profit.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 mt-1">{periodLabel} profit</p>
           </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <Users size={20} className="text-amber-600" />
+              </div>
+              <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase">Active</span>
+            </div>
+            <p className="text-2xl font-bold text-gray-900">{filteredCashiers.filter(c => c.totalCount > 0).length}<span className="text-base font-medium text-gray-400">/{filteredCashiers.length}</span></p>
+            <p className="text-xs text-gray-500 mt-1">Cashiers with sales</p>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search cashiers by name or email..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
             <AlertTriangle size={20} className="text-red-500 shrink-0" />
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
-        {/* Sales Loading Indicator */}
-        {salesLoading && (
-          <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
+        {/* Refreshing Indicator */}
+        {refreshing && (
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <Loader2 size={16} className="animate-spin" />
-            Refreshing sales data...
+            Refreshing...
           </div>
         )}
 
@@ -332,23 +342,33 @@ const Cashiers = () => {
             <Users size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-700">No cashiers found</h3>
             <p className="text-sm text-gray-500 mt-1">
-              {searchTerm ? 'Try a different search term.' : 'No sales users found in this branch.'}
+              {searchTerm ? 'Try a different search term.' : `No cashier sales for ${periodLabel.toLowerCase()}.`}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {filteredCashiers.map((cashier, idx) => {
               const emp = cashier.employee
-              const stats = getStats(cashier)
               const colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length]
-              const avgSale = stats.count > 0 ? stats.sales / stats.count : 0
+              const avgSale = cashier.totalCount > 0 ? cashier.totalSales / cashier.totalCount : 0
+              // Rank badge for top 3
+              const rank = idx + 1
 
               return (
-                <div key={emp.uuid || emp.id || idx} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all duration-200">
+                <div key={cashier.userId || emp.uuid || emp.id || idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all duration-200">
                   {/* Card Header */}
                   <div className="px-5 py-4 flex items-center gap-4 border-b border-gray-100">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
-                      {getInitials(emp)}
+                    <div className="relative">
+                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
+                        {getInitials(emp)}
+                      </div>
+                      {rank <= 3 && cashier.totalCount > 0 && (
+                        <span className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow ${
+                          rank === 1 ? 'bg-yellow-500' : rank === 2 ? 'bg-gray-400' : 'bg-amber-700'
+                        }`}>
+                          {rank}
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-bold text-gray-900 truncate">
@@ -357,62 +377,58 @@ const Cashiers = () => {
                       {emp.email && (
                         <p className="text-xs text-gray-500 truncate">{emp.email}</p>
                       )}
-                      {emp.phone && (
-                        <p className="text-xs text-gray-500 truncate">{emp.phone}</p>
-                      )}
                     </div>
-                    <span className="inline-flex px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 text-[10px] font-bold uppercase tracking-wider border border-primary-200">
-                      Sales
-                    </span>
+                    {cashier.totalCount > 0 ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider border border-green-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        {cashier.totalCount} sale{cashier.totalCount !== 1 ? 's' : ''}
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-1 rounded-full bg-gray-50 text-gray-500 text-[10px] font-bold uppercase tracking-wider border border-gray-200">
+                        No Sales
+                      </span>
+                    )}
                   </div>
 
-                  {/* Selected Period Stats */}
+                  {/* Period Stats */}
                   <div className="px-5 py-4">
                     <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">{periodLabel} Performance</p>
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-gray-50 rounded-lg p-3 text-center">
-                        <span className="block text-base font-bold text-primary-500 mb-1 mx-auto">₵</span>
-                        <p className="text-lg font-bold text-gray-900">₵{stats.sales.toFixed(0)}</p>
+                      <div className="bg-primary-50 rounded-lg p-3 text-center">
+                        <span className="block text-base font-bold text-primary-500 mb-1">₵</span>
+                        <p className="text-lg font-bold text-gray-900">{formatCurrency(cashier.totalSales)}</p>
                         <p className="text-[10px] text-gray-500 font-medium">Revenue</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3 text-center">
-                        <ShoppingCart size={16} className="mx-auto text-primary-500 mb-1" />
-                        <p className="text-lg font-bold text-gray-900">{stats.count}</p>
+                      <div className="bg-orange-50 rounded-lg p-3 text-center">
+                        <ShoppingCart size={16} className="mx-auto text-orange-500 mb-1" />
+                        <p className="text-lg font-bold text-gray-900">{cashier.totalCount}</p>
                         <p className="text-[10px] text-gray-500 font-medium">Sales</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3 text-center">
-                        <TrendingUp size={16} className="mx-auto text-primary-600 mb-1" />
-                        <p className="text-lg font-bold text-primary-600">₵{stats.profit.toFixed(0)}</p>
-                        <p className="text-[10px] text-gray-500 font-medium">Profit</p>
+                      <div className="bg-green-50 rounded-lg p-3 text-center">
+                        <BarChart3 size={16} className="mx-auto text-green-600 mb-1" />
+                        <p className="text-lg font-bold text-gray-900">₵{avgSale.toFixed(0)}</p>
+                        <p className="text-[10px] text-gray-500 font-medium">Avg Sale</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Quick Comparison Row */}
-                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <BarChart3 size={12} className="text-gray-400" />
-                        <span className="text-gray-500">Avg Sale:</span>
-                        <span className="font-semibold text-gray-800">₵{avgSale.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    {/* All-period mini summary */}
-                    <div className="mt-2 grid grid-cols-4 gap-2">
-                      {[
-                        { label: 'Today', value: cashier.todaySales },
-                        { label: 'Week', value: cashier.weekSales },
-                        { label: 'Month', value: cashier.monthSales },
-                        { label: 'Year', value: cashier.yearSales },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="text-center">
-                          <p className="text-[10px] text-gray-500 font-medium">{label}</p>
-                          <p className="text-xs font-bold text-gray-700">₵{value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toFixed(0)}</p>
+                  {/* Profit row */}
+                  {cashier.totalProfit > 0 && (
+                    <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <TrendingUp size={12} className="text-green-600" />
+                          <span className="text-gray-500">Profit:</span>
+                          <span className="font-bold text-green-600">₵{cashier.totalProfit.toFixed(2)}</span>
                         </div>
-                      ))}
+                        {cashier.totalSales > 0 && (
+                          <span className="text-[10px] font-semibold text-gray-500">
+                            {((cashier.totalProfit / cashier.totalSales) * 100).toFixed(1)}% margin
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )
             })}

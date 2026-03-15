@@ -229,6 +229,22 @@ export async function createSale(body) {
   return fetchApi('POST', '/sales', body)
 }
 
+export async function getSalesDashboard(branchId) {
+  return fetchApi('GET', '/sales/dashboard?branch_id=' + sanitizePath(branchId))
+}
+
+export async function getCashierSales(branchId, { period, date, start_date, end_date } = {}) {
+  let url = '/sales/cashiers?branch_id=' + sanitizePath(branchId)
+  if (start_date && end_date) {
+    url += '&start_date=' + encodeURIComponent(start_date) + '&end_date=' + encodeURIComponent(end_date)
+  } else if (date) {
+    url += '&date=' + encodeURIComponent(date)
+  } else if (period) {
+    url += '&period=' + encodeURIComponent(period)
+  }
+  return fetchApi('GET', url)
+}
+
 // ---- Customers ----
 export async function listCustomers(branchId, query = {}) {
   if (!branchId) throw new Error('branchId is required to list customers')
