@@ -3,6 +3,7 @@ import { Users, Plus, Edit, Trash2, Phone, Mail, MapPin, X, Eye, Search, DollarS
 import { listCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer as apiDeleteCustomer } from '../api/awoselDb.js'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
+import Tooltip from '../components/Tooltip'
 
 const Avatar = ({ name, size = 'md' }) => {
   const initials = (name || '?')
@@ -194,22 +195,25 @@ const Customers = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={fetchCustomers}
-                className="p-2.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-                title="Refresh"
-              >
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              </button>
-              <button
-                type="button"
-                onClick={openAdd}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-md shadow-primary-500/25 active:scale-[0.98]"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                Add Customer
-              </button>
+              <Tooltip text="Reload customer list">
+                <button
+                  type="button"
+                  onClick={fetchCustomers}
+                  className="p-2.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                >
+                  <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                </button>
+              </Tooltip>
+              <Tooltip text="Add a new customer to your database">
+                <button
+                  type="button"
+                  onClick={openAdd}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-md shadow-primary-500/25 active:scale-[0.98]"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Add Customer
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -409,30 +413,33 @@ const Customers = () => {
                           </td>
                           <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-center gap-0.5">
-                              <button
-                                type="button"
-                                onClick={() => handleViewDetails(c)}
-                                className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
-                                title="View details"
-                              >
-                                <Eye size={15} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openEdit(c)}
-                                className="p-2 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
-                                title="Edit"
-                              >
-                                <Edit size={15} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(c.uuid || c.id)}
-                                className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 size={15} />
-                              </button>
+                              <Tooltip text="View customer details & transaction history">
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewDetails(c)}
+                                  className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+                                >
+                                  <Eye size={15} />
+                                </button>
+                              </Tooltip>
+                              <Tooltip text="Edit customer information">
+                                <button
+                                  type="button"
+                                  onClick={() => openEdit(c)}
+                                  className="p-2 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
+                                >
+                                  <Edit size={15} />
+                                </button>
+                              </Tooltip>
+                              <Tooltip text="Delete this customer">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(c.uuid || c.id)}
+                                  className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </Tooltip>
                             </div>
                           </td>
                         </tr>

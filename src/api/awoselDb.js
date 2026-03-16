@@ -221,6 +221,11 @@ export async function listSales(query = {}) {
   const params = new URLSearchParams()
   if (query.branch_id) params.set('branch_id', query.branch_id)
   if (query.date) params.set('date', query.date)
+  if (query.user_id) params.set('user_id', query.user_id)
+  if (query.cashier_id) params.set('cashier_id', query.cashier_id)
+  if (query.start_date) params.set('start_date', query.start_date)
+  if (query.end_date) params.set('end_date', query.end_date)
+  if (query.period) params.set('period', query.period)
   const qs = params.toString()
   return fetchApi('GET', '/sales' + (qs ? '?' + qs : ''))
 }

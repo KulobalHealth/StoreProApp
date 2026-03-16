@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { listSales, listProductsByBranch, listEmployees, listSuppliers, listCustomers } from '../api/awoselDb'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
+import Tooltip from '../components/Tooltip'
 
 const BranchDashboard = () => {
   const { user } = useAuth()
@@ -149,22 +150,26 @@ const BranchDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-                Refresh
-              </button>
-              {!isManager && (
+              <Tooltip text="Reload dashboard data">
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={handleRefresh}
+                  disabled={refreshing}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <ArrowLeft size={14} />
-                  Switch Branch
+                  <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                  Refresh
                 </button>
+              </Tooltip>
+              {!isManager && (
+                <Tooltip text="Go back to branch selection">
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    <ArrowLeft size={14} />
+                    Switch Branch
+                  </button>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -190,91 +195,101 @@ const BranchDashboard = () => {
 
         {/* Activity Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <button
-            onClick={() => navigate('/inventory')}
-            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Inventory</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{productCount}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {lowStockCount > 0
-                    ? <span className="text-red-500 font-medium">{lowStockCount} low stock</span>
-                    : 'All stocked'
-                  }
-                </p>
+          <Tooltip text="Go to Inventory — view products & stock levels" position="bottom">
+            <button
+              onClick={() => navigate('/inventory')}
+              className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group w-full"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Inventory</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{productCount}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {lowStockCount > 0
+                      ? <span className="text-red-500 font-medium">{lowStockCount} low stock</span>
+                      : 'All stocked'
+                    }
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                  <Package className="text-primary-500" size={20} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                <Package className="text-primary-500" size={20} />
+            </button>
+          </Tooltip>
+          <Tooltip text="Go to Staff — manage your team members" position="bottom">
+            <button
+              onClick={() => navigate('/users')}
+              className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group w-full"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Staff</p>
+                  <p className="text-2xl font-bold text-primary-500 mt-1">{staffCount}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Team members</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                  <Users className="text-primary-500" size={20} />
+                </div>
               </div>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate('/users')}
-            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Staff</p>
-                <p className="text-2xl font-bold text-primary-500 mt-1">{staffCount}</p>
-                <p className="text-xs text-gray-500 mt-0.5">Team members</p>
+            </button>
+          </Tooltip>
+          <Tooltip text="Go to Suppliers — manage debts & purchase orders" position="bottom">
+            <button
+              onClick={() => navigate('/suppliers')}
+              className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group w-full"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Suppliers</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{supplierCount}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Active suppliers</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                  <Truck className="text-primary-500" size={20} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                <Users className="text-primary-500" size={20} />
+            </button>
+          </Tooltip>
+          <Tooltip text="Go to Customers — view balances & purchase history" position="bottom">
+            <button
+              onClick={() => navigate('/customers')}
+              className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group w-full"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Customers</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{customerCount}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {customersOwing > 0
+                      ? <span className="text-primary-500 font-medium">{customersOwing} owing</span>
+                      : 'No balances'
+                    }
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+                  <UserCircle className="text-primary-500" size={20} />
+                </div>
               </div>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate('/suppliers')}
-            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Suppliers</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{supplierCount}</p>
-                <p className="text-xs text-gray-500 mt-0.5">Active suppliers</p>
+            </button>
+          </Tooltip>
+          <Tooltip text="Go to Sales History — view all today's transactions" position="bottom">
+            <button
+              onClick={() => navigate('/sales')}
+              className="rounded-lg border border-gray-200 p-4 text-left bg-primary-500 hover:bg-primary-600 transition-all group w-full"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Transactions</p>
+                  <p className="text-2xl font-bold text-white mt-1">{totalTransactions}</p>
+                  <p className="text-xs text-white/60 mt-0.5">Sales today</p>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Receipt className="text-white" size={20} />
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                <Truck className="text-primary-500" size={20} />
-              </div>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate('/customers')}
-            className="bg-white rounded-lg border border-gray-200 p-4 text-left hover:border-primary-300 hover:shadow-sm transition-all group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Customers</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{customerCount}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {customersOwing > 0
-                    ? <span className="text-primary-500 font-medium">{customersOwing} owing</span>
-                    : 'No balances'
-                  }
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                <UserCircle className="text-primary-500" size={20} />
-              </div>
-            </div>
-          </button>
-          <button
-            onClick={() => navigate('/sales')}
-            className="rounded-lg border border-gray-200 p-4 text-left bg-primary-500 hover:bg-primary-600 transition-all group"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Transactions</p>
-                <p className="text-2xl font-bold text-white mt-1">{totalTransactions}</p>
-                <p className="text-xs text-white/60 mt-0.5">Sales today</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <Receipt className="text-white" size={20} />
-              </div>
-            </div>
-          </button>
+            </button>
+          </Tooltip>
         </div>
 
         {/* Quick Actions — Icon Only Grid */}

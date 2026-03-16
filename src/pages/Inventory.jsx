@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
 import * as XLSX from 'xlsx'
 import { Search, Plus, Edit, Trash2, AlertTriangle, Upload, Download, Package, X, Trash, CheckCircle, Check, ChevronLeft, ChevronRight, ChevronDown, ShoppingCart, FileText, Clock, CheckCircle2, ClipboardList, Scan, TrendingUp, TrendingDown, Minus, Building2, FolderOpen, Save, Filter, XCircle, Loader2, RotateCcw } from 'lucide-react'
+import Tooltip from '../components/Tooltip'
 import {
   listProducts,
   listProductsByBranch,
@@ -25,12 +26,13 @@ function mapApiProductToDisplay(p) {
   const baseUnit = p.base_unit || 'piece'
   const defaultPrice = p.selling_price ?? p.price ?? 0
   const defaultCost = p.cost_price ?? p.cost ?? 0
+  const safeNum = (v, fallback) => { const n = Number(v); return Number.isFinite(n) ? n : fallback }
   const units = (p.units && p.units.length > 0)
     ? p.units.map(u => ({
         unit: u.unit_name,
-        conversion: u.conversion_quantity ?? u.base_quantity ?? 1,
-        price: Number(u.unit_price) ?? Number(u.price) ?? defaultPrice,
-        cost: Number(u.cost_price) ?? Number(u.cost) ?? defaultCost
+        conversion: safeNum(u.conversion_quantity ?? u.base_quantity, 1),
+        price: safeNum(u.unit_price ?? u.price, defaultPrice),
+        cost: safeNum(u.cost_price ?? u.cost, defaultCost)
       }))
     : [{ unit: baseUnit, conversion: 1, price: defaultPrice, cost: defaultCost }]
   return {
@@ -646,7 +648,7 @@ const Inventory = () => {
     // Build product_units from the form's units array
     const productUnits = Array.isArray(productData.units) && productData.units.length > 0
       ? productData.units
-          .filter(u => u.unit && u.unit !== productData.baseUnit) // exclude the base unit
+          .filter(u => u.unit) // keep all units including base unit
           .map(u => ({
             unit_name: u.unit,
             base_quantity: parseFloat(u.conversion) || 1,
@@ -654,7 +656,13 @@ const Inventory = () => {
             unit_price: parseFloat(u.price) || 0,
             cost_price: parseFloat(u.cost) || 0,
           }))
-      : []
+      : [{
+          unit_name: productData.baseUnit || 'piece',
+          base_quantity: 1,
+          conversion_quantity: 1,
+          unit_price: parseFloat(productData.price) || 0,
+          cost_price: parseFloat(productData.cost) || 0,
+        }]
 
     const payload = {
       name: (productData.name || '').trim() || 'Untitled',
@@ -855,52 +863,60 @@ const Inventory = () => {
               style={{ display: 'none' }}
             />
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setShowPurchaseOrderList(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-                title="View and receive purchase orders"
-              >
-                <FileText size={16} className="text-primary-500" />
-                Purchase Orders
-              </button>
-              <button
-                onClick={handleImportClick}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-                title="Upload CSV or Excel to add products in bulk"
-              >
-                <Upload size={16} className="text-primary-500" />
-                Import
-              </button>
-              <button
-                onClick={handleDownloadTemplate}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
-                title="Download a blank CSV template for bulk import"
-              >
-                <Download size={16} className="text-gray-400" />
-                Template
-              </button>
-              <button
-                onClick={() => setShowExportModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <Download size={16} className="text-primary-500" />
-                Export
-              </button>
-              <button
-                onClick={() => setShowReturnModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium hover:bg-orange-100 transition-colors"
-                title="Return items back to inventory"
-              >
-                <RotateCcw size={16} className="text-orange-500" />
-                Return Item
-              </button>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                Add Product
-              </button>
+              <Tooltip text="View and manage purchase orders from suppliers">
+                <button
+                  onClick={() => setShowPurchaseOrderList(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <FileText size={16} className="text-primary-500" />
+                  Purchase Orders
+                </button>
+              </Tooltip>
+              <Tooltip text="Upload a CSV or Excel file to add products in bulk">
+                <button
+                  onClick={handleImportClick}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Upload size={16} className="text-primary-500" />
+                  Import
+                </button>
+              </Tooltip>
+              <Tooltip text="Download a blank CSV template for bulk product import">
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Download size={16} className="text-gray-400" />
+                  Template
+                </button>
+              </Tooltip>
+              <Tooltip text="Export your product list to CSV or Excel">
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Download size={16} className="text-primary-500" />
+                  Export
+                </button>
+              </Tooltip>
+              <Tooltip text="Return items from a sale back to inventory stock">
+                <button
+                  onClick={() => setShowReturnModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium hover:bg-orange-100 transition-colors"
+                >
+                  <RotateCcw size={16} className="text-orange-500" />
+                  Return Item
+                </button>
+              </Tooltip>
+              <Tooltip text="Add a single new product to inventory">
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Add Product
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -1014,65 +1030,75 @@ const Inventory = () => {
               <Filter size={14} />
               <span className="text-xs font-medium">Quick Filters:</span>
             </div>
-            <button
-              onClick={() => setStockFilter('all')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
-                stockFilter === 'all'
-                  ? 'bg-gray-900 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              All Items
-              <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
-                stockFilter === 'all' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>{products.length}</span>
-            </button>
-            <button
-              onClick={() => setStockFilter('high_sale')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
-                stockFilter === 'high_sale'
-                  ? 'bg-primary-500 text-white shadow-sm'
-                  : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
-              }`}
-            >
-              High Sale
-            </button>
-            <button
-              onClick={() => setStockFilter('low_sale')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
-                stockFilter === 'low_sale'
-                  ? 'bg-primary-500 text-white shadow-sm'
-                  : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
-              }`}
-            >
-              Low Sale
-            </button>
-            <button
-              onClick={() => setStockFilter('out_of_stock')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
-                stockFilter === 'out_of_stock'
-                  ? 'bg-red-600 text-white shadow-sm'
-                  : 'bg-red-50 text-red-700 hover:bg-red-100'
-              }`}
-            >
-              Out of Stock
-              <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
-                stockFilter === 'out_of_stock' ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'
-              }`}>{outOfStockItems.length}</span>
-            </button>
-            <button
-              onClick={() => setStockFilter('expired')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
-                stockFilter === 'expired'
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-              }`}
-            >
-              Expired
-              <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
-                stockFilter === 'expired' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-600'
-              }`}>{expiredStockItems.length}</span>
-            </button>
+            <Tooltip text="Show all products">
+              <button
+                onClick={() => setStockFilter('all')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
+                  stockFilter === 'all'
+                    ? 'bg-gray-900 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                All Items
+                <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
+                  stockFilter === 'all' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>{products.length}</span>
+              </button>
+            </Tooltip>
+            <Tooltip text="Products with lowest remaining stock (most sold)">
+              <button
+                onClick={() => setStockFilter('high_sale')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
+                  stockFilter === 'high_sale'
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
+                }`}
+              >
+                High Sale
+              </button>
+            </Tooltip>
+            <Tooltip text="Products with highest remaining stock (least sold)">
+              <button
+                onClick={() => setStockFilter('low_sale')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
+                  stockFilter === 'low_sale'
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
+                }`}
+              >
+                Low Sale
+              </button>
+            </Tooltip>
+            <Tooltip text="Products with zero remaining stock">
+              <button
+                onClick={() => setStockFilter('out_of_stock')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
+                  stockFilter === 'out_of_stock'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'bg-red-50 text-red-700 hover:bg-red-100'
+                }`}
+              >
+                Out of Stock
+                <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
+                  stockFilter === 'out_of_stock' ? 'bg-white/20 text-white' : 'bg-red-100 text-red-600'
+                }`}>{outOfStockItems.length}</span>
+              </button>
+            </Tooltip>
+            <Tooltip text="Products whose expiry date has passed">
+              <button
+                onClick={() => setStockFilter('expired')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${
+                  stockFilter === 'expired'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                }`}
+              >
+                Expired
+                <span className={`ml-0.5 px-1.5 py-0.5 rounded-sm text-[10px] font-bold ${
+                  stockFilter === 'expired' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-600'
+                }`}>{expiredStockItems.length}</span>
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -1168,20 +1194,22 @@ const Inventory = () => {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex justify-center gap-1">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleEditClick(product) }}
-                              className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={15} />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); deleteProduct(product.uuid || product.id) }}
-                              className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={15} />
-                            </button>
+                            <Tooltip text="Edit this product">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleEditClick(product) }}
+                                className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+                              >
+                                <Edit size={15} />
+                              </button>
+                            </Tooltip>
+                            <Tooltip text="Delete this product">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); deleteProduct(product.uuid || product.id) }}
+                                className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </Tooltip>
                           </div>
                         </td>
                       </tr>
@@ -1665,7 +1693,14 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
           reorderPoint: parseInt(data.reorder_quantity ?? data.reorderPoint ?? data.reorderLevel ?? data.minStock ?? 0),
           expiry: data.expiry_date ?? data.expiry ?? data.expiryDate ?? '',
           baseUnit: data.base_unit ?? data.baseUnit ?? data.unit ?? 'piece',
-          units: data.units || [{ unit: data.base_unit || data.baseUnit || 'piece', conversion: 1, price: parseFloat(data.selling_price ?? data.price ?? 0), cost: parseFloat(data.cost_price ?? data.cost ?? 0) }]
+          units: (data.units && data.units.length > 0)
+            ? data.units.map(u => ({
+                unit: u.unit_name ?? u.unit ?? (data.base_unit || 'piece'),
+                conversion: parseFloat(u.conversion_quantity ?? u.base_quantity ?? 1) || 1,
+                price: parseFloat(u.unit_price ?? u.price ?? data.selling_price ?? 0) || 0,
+                cost: parseFloat(u.cost_price ?? u.cost ?? data.cost_price ?? 0) || 0,
+              }))
+            : [{ unit: data.base_unit || data.baseUnit || 'piece', conversion: 1, price: parseFloat(data.selling_price ?? data.price ?? 0) || 0, cost: parseFloat(data.cost_price ?? data.cost ?? 0) || 0 }]
         })
         
       } catch (error) {
@@ -1810,30 +1845,33 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
       return
     }
 
-    // Ensure base unit is in units array
-        const baseUnitExists = formData.units.some(u => u.unit === formData.baseUnit)
+    // Ensure base unit is in units array — work on a copy, never mutate state directly
+    let finalUnits = [...formData.units]
+    const baseUnitExists = finalUnits.some(u => u.unit === formData.baseUnit)
     if (!baseUnitExists) {
-      // Add base unit if not present
-      const baseUnitPrice = formData.units[0]?.price || formData.price
-      const baseUnitCost = formData.units[0]?.cost ?? formData.cost ?? 0
-      formData.units.unshift({
+      finalUnits.unshift({
         unit: formData.baseUnit,
         conversion: 1,
-        price: baseUnitPrice,
-        cost: baseUnitCost
+        price: formData.price,
+        cost: formData.cost
       })
     }
 
+    // Use the base unit row as the canonical price/cost (keeps top field & unit row in sync)
+    const bi = findBaseIndex(finalUnits, formData.baseUnit)
+    const canonicalPrice = parseFloat(finalUnits[bi]?.price ?? formData.price) || parseFloat(formData.price) || 0
+    const canonicalCost  = parseFloat(finalUnits[bi]?.cost  ?? formData.cost)  || parseFloat(formData.cost)  || 0
+
     onSave({
       ...formData,
-      price: parseFloat(formData.price),
-      cost: parseFloat(formData.cost),
+      price: canonicalPrice,
+      cost: canonicalCost,
       stock: parseInt(formData.stock),
       minStock: parseInt(formData.minStock),
       reorderPoint: parseInt(formData.reorderPoint) || parseInt(formData.minStock),
       expiry: formData.expiry || null,
       baseUnit: formData.baseUnit,
-      units: formData.units.map(u => ({
+      units: finalUnits.map(u => ({
         unit: u.unit,
         conversion: parseFloat(u.conversion) || 1,
         price: parseFloat(u.price) || 0,
@@ -1925,7 +1963,8 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
         manualPriceEdits.current.add(`${index}-cost`)
       }
 
-      // When base unit row's price/cost changes, cascade to other unit rows (but NOT to main form)
+      // When base unit row's price/cost changes, sync BACK to main formData.price/cost
+      // AND cascade to other unit rows
       if ((field === 'price' || field === 'cost') && isBase) {
         const newBasePrice = field === 'price' ? (parseFloat(value) || 0) : basePrice
         const newBaseCost = field === 'cost' ? (parseFloat(value) || 0) : baseCost
@@ -1941,6 +1980,14 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
               updatedUnits[i] = { ...updatedUnits[i], cost: parseFloat((newBaseCost * conv).toFixed(2)) }
             }
           }
+        }
+
+        // Keep top-level price/cost in sync with the base unit row (single source of truth)
+        return {
+          ...prev,
+          price: field === 'price' ? newBasePrice : prev.price,
+          cost: field === 'cost' ? newBaseCost : prev.cost,
+          units: updatedUnits
         }
       }
 

@@ -24,6 +24,7 @@ import { useAuth } from '../contexts/AuthContext'
 import Footer from './Footer'
 import AppGuide from './AppGuide'
 import logo from '../logo.png'
+import Tooltip from './Tooltip'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -129,12 +130,14 @@ const Layout = () => {
           ) : (
             <img src={logo} alt="Awosel OS" className="h-10 w-10 object-contain" />
           )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <Tooltip text={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} position="right">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100"
+            >
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </Tooltip>
         </div>
 
         {/* Active Branch */}
@@ -152,13 +155,15 @@ const Layout = () => {
               )}
             </div>
             {sidebarOpen && !isManager && !isSales && (
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700 font-medium w-full"
-              >
-                <ArrowLeftRight size={12} />
-                Switch Branch
-              </button>
+              <Tooltip text="Switch to a different branch" position="right">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="mt-2 flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-700 font-medium w-full"
+                >
+                  <ArrowLeftRight size={12} />
+                  Switch Branch
+                </button>
+              </Tooltip>
             )}
           </div>
         )}
@@ -167,30 +172,33 @@ const Layout = () => {
         <nav className="flex-1 py-4">
           {/* Go Back Button */}
           {canGoBack && (
-            <button
-              onClick={handleGoBack}
-              className="flex items-center px-4 py-3 mx-2 mb-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100 w-full text-left"
-            >
-              <ArrowLeft size={20} className="mr-3" />
-              {sidebarOpen && <span>Go Back</span>}
-            </button>
+            <Tooltip text="Go to previous page" position="right">
+              <button
+                onClick={handleGoBack}
+                className="flex items-center px-4 py-3 mx-2 mb-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100 w-full text-left"
+              >
+                <ArrowLeft size={20} className="mr-3" />
+                {sidebarOpen && <span>Go Back</span>}
+              </button>
+            </Tooltip>
           )}
           
           {menuItems.map((item) => {
             const Icon = item.icon
             return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center px-4 py-3 mx-2 mb-1 rounded-lg transition-colors ${
-                  isActive(item.path)
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <Icon size={20} className="mr-3" />
-                {sidebarOpen && <span>{item.label}</span>}
-              </Link>
+              <Tooltip key={item.path} text={!sidebarOpen ? item.label : ''} position="right">
+                <Link
+                  to={item.path}
+                  className={`flex items-center px-4 py-3 mx-2 mb-1 rounded-lg transition-colors ${
+                    isActive(item.path)
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Icon size={20} className="mr-3" />
+                  {sidebarOpen && <span>{item.label}</span>}
+                </Link>
+              </Tooltip>
             )
           })}
         </nav>
@@ -215,9 +223,11 @@ const Layout = () => {
           </div>
         ) : (
           <div className="mx-auto mb-3">
-            <button className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white hover:shadow-lg transition-shadow" title="Upgrade to StorePro Plus">
-              <Sparkles size={18} className="text-yellow-300" />
-            </button>
+            <Tooltip text="Upgrade to StorePro Plus" position="right">
+              <button className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white hover:shadow-lg transition-shadow">
+                <Sparkles size={18} className="text-yellow-300" />
+              </button>
+            </Tooltip>
           </div>
         )}
 
@@ -234,13 +244,15 @@ const Layout = () => {
               </div>
             )}
           </div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center text-gray-700 hover:text-red-600 transition-colors text-sm w-full"
-          >
-            <LogOut size={16} className="mr-2" />
-            {sidebarOpen && <span>Logout</span>}
-          </button>
+          <Tooltip text="Sign out of your account" position="right">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center text-gray-700 hover:text-red-600 transition-colors text-sm w-full"
+            >
+              <LogOut size={16} className="mr-2" />
+              {sidebarOpen && <span>Logout</span>}
+            </button>
+          </Tooltip>
         </div>
       </aside>
 

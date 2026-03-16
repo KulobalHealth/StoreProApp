@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Building2, Plus, Edit, Trash2, Phone, MapPin, X, Eye, Search, DollarSign, AlertTriangle, Users, TrendingUp } from 'lucide-react'
 import { listSuppliers, createSupplier, updateSupplier, deleteSupplier } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
+import Tooltip from '../components/Tooltip'
 
 const Suppliers = () => {
   const navigate = useNavigate()
@@ -153,14 +154,16 @@ const Suppliers = () => {
                 <p className="text-gray-500 text-xs">Manage your suppliers and track debts</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={openAdd}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              Add Supplier
-            </button>
+            <Tooltip text="Add a new supplier to your list">
+              <button
+                type="button"
+                onClick={openAdd}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                Add Supplier
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -326,30 +329,33 @@ const Suppliers = () => {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex justify-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
-                              className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
-                              title="View details"
-                            >
-                              <Eye size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openEdit(s)}
-                              className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={15} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(s.uuid || s.id)}
-                              className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={15} />
-                            </button>
+                            <Tooltip text="View supplier details & purchase history">
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
+                                className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+                              >
+                                <Eye size={15} />
+                              </button>
+                            </Tooltip>
+                            <Tooltip text="Edit supplier information">
+                              <button
+                                type="button"
+                                onClick={() => openEdit(s)}
+                                className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+                              >
+                                <Edit size={15} />
+                              </button>
+                            </Tooltip>
+                            <Tooltip text="Delete this supplier">
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(s.uuid || s.id)}
+                                className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </Tooltip>
                           </div>
                         </td>
                       </tr>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import Tooltip from '../components/Tooltip'
 import {
   Calendar,
   TrendingUp,
@@ -205,22 +206,26 @@ const SalesHistory = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={fetchSales}
-                disabled={loading}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                <RefreshCw size={16} className={`text-primary-500 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-              <button
-                onClick={handleExportCSV}
-                disabled={processedSales.length === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Download size={16} className="text-primary-500" />
-                Export CSV
-              </button>
+              <Tooltip text="Reload sales data from the server">
+                <button
+                  onClick={fetchSales}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <RefreshCw size={16} className={`text-primary-500 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </button>
+              </Tooltip>
+              <Tooltip text="Download all visible sales as a CSV file">
+                <button
+                  onClick={handleExportCSV}
+                  disabled={processedSales.length === 0}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Download size={16} className="text-primary-500" />
+                  Export CSV
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -536,14 +541,15 @@ const SalesHistory = () => {
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSale(sale)}
-                            title="View details"
-                            className="inline-flex items-center justify-center p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors opacity-70 group-hover:opacity-100"
-                          >
-                            <Eye size={16} />
-                          </button>
+                          <Tooltip text="View sale details & line items">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSale(sale)}
+                              className="inline-flex items-center justify-center p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors opacity-70 group-hover:opacity-100"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          </Tooltip>
                         </td>
                       </tr>
                     ))}
@@ -605,116 +611,226 @@ const SalesHistory = () => {
         {/* Sale Detail Modal */}
         {selectedSale && (
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3"
             onClick={() => setSelectedSale(null)}
           >
             <div
-              className="bg-white rounded-xl w-full max-w-5xl max-h-[92vh] min-h-[400px] flex flex-col shadow-2xl border border-gray-200 overflow-hidden"
+              className="bg-white rounded-2xl w-full max-w-[96vw] h-[94vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center">
-                    <Receipt size={18} />
+              <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <Receipt size={22} className="text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold">Sale Details</h2>
-                    <p className="text-gray-500 text-xs mt-0.5">
-                      {selectedSale.receipt_number || '—'} · {selectedSale.created_at ? new Date(selectedSale.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+                    <h2 className="text-xl font-bold tracking-tight text-gray-900">Sale Details</h2>
+                    <p className="text-gray-400 text-sm mt-0.5">
+                      Receipt <span className="text-primary-500 font-semibold">{selectedSale.receipt_number || '—'}</span>
+                      &nbsp;·&nbsp;
+                      {selectedSale.created_at ? new Date(selectedSale.created_at).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' }) : '—'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedSale(null)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-700"
                 >
-                  <X size={20} />
+                  <X size={22} />
                 </button>
               </div>
 
-              {/* Modal Summary Strip */}
-              <div className="px-6 py-3 border-b border-gray-200 bg-gray-50 flex flex-wrap gap-x-8 gap-y-2 text-sm shrink-0">
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Customer</p>
-                  <p className="text-gray-900 font-medium">{selectedSale.customer_name || 'Walk-in'}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Payment</p>
-                  <p className="text-gray-900 font-medium capitalize">{selectedSale.payment_method || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Subtotal</p>
-                  <p className="text-gray-900 font-medium">₵{(Number(selectedSale.subtotal) || 0).toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Discount</p>
-                  <p className="text-orange-600 font-medium">-₵{(Number(selectedSale.discount) || 0).toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Tax</p>
-                  <p className="text-gray-700 font-medium">₵{(Number(selectedSale.tax) || 0).toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Total</p>
-                  <p className="text-primary-500 font-bold text-base">₵{(Number(selectedSale.total) || 0).toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Profit</p>
-                  <p className="text-emerald-600 font-bold">₵{(Number(selectedSale.total_profit) || 0).toFixed(2)}</p>
-                </div>
-              </div>
+              {/* Body — two columns: left sidebar + right items table */}
+              <div className="flex-1 min-h-0 flex overflow-hidden">
 
-              {/* Modal Line Items */}
-              <div className="flex-1 min-h-0 overflow-auto p-6">
-                <h3 className="text-xs font-semibold text-gray-700 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                  <Package size={16} className="text-primary-500" /> Line Items ({(selectedSale.items || []).length})
-                </h3>
-                {(selectedSale.items || []).length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-8">No items recorded.</p>
-                ) : (
-                  <div className="rounded-lg border border-gray-200 overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm min-w-[640px]">
-                        <thead>
-                          <tr className="bg-gray-900 text-white text-xs font-semibold uppercase tracking-wider">
-                            <th className="py-3 px-4 text-left">Product</th>
-                            <th className="py-3 px-4 text-right w-16">Qty</th>
-                            <th className="py-3 px-4 w-20 text-left">Unit</th>
-                            <th className="py-3 px-4 text-right w-16">Pieces</th>
-                            <th className="py-3 px-4 text-right">Price</th>
-                            <th className="py-3 px-4 text-right">Cost</th>
-                            <th className="py-3 px-4 text-right">Discount</th>
-                            <th className="py-3 px-4 text-right">Line Total</th>
-                            <th className="py-3 px-4 text-right">Profit</th>
+                {/* Left — Sale Summary Panel */}
+                <div className="w-72 shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col overflow-y-auto">
+                  <div className="p-6 space-y-5">
+
+                    {/* Customer */}
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Customer</p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+                          <User size={15} className="text-primary-600" />
+                        </div>
+                        <p className="text-gray-900 font-semibold text-sm">{selectedSale.customer_name || 'Walk-in'}</p>
+                      </div>
+                    </div>
+
+                    <hr className="border-gray-200" />
+
+                    {/* Payment Method */}
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Payment Method</p>
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-semibold capitalize ${
+                        (selectedSale.payment_method || '').toLowerCase() === 'cash'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : (selectedSale.payment_method || '').toLowerCase().includes('mobile') || (selectedSale.payment_method || '').toLowerCase() === 'momo'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-primary-100 text-primary-700'
+                      }`}>
+                        {selectedSale.payment_method || '—'}
+                      </span>
+                    </div>
+
+                    <hr className="border-gray-200" />
+
+                    {/* Financials */}
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Financials</p>
+                      <div className="space-y-2.5 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">Subtotal</span>
+                          <span className="font-medium text-gray-900">₵{(Number(selectedSale.subtotal) || 0).toFixed(2)}</span>
+                        </div>
+                        {(Number(selectedSale.discount) || 0) > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Discount</span>
+                            <span className="font-medium text-orange-600">-₵{(Number(selectedSale.discount) || 0).toFixed(2)}</span>
+                          </div>
+                        )}
+                        {(Number(selectedSale.tax) || 0) > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Tax</span>
+                            <span className="font-medium text-gray-700">₵{(Number(selectedSale.tax) || 0).toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                          <span className="font-bold text-gray-900">Total</span>
+                          <span className="font-extrabold text-primary-600 text-lg">₵{(Number(selectedSale.total) || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">Profit</span>
+                          <span className="font-bold text-emerald-600">₵{(Number(selectedSale.total_profit) || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr className="border-gray-200" />
+
+                    {/* Stats */}
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Summary</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                          <p className="text-2xl font-extrabold text-gray-900">{(selectedSale.items || []).length}</p>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">Products</p>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-3 text-center">
+                          <p className="text-2xl font-extrabold text-gray-900">
+                            {(selectedSale.items || []).reduce((s, it) => s + (Number(it.quantity_sold) || 0), 0)}
+                          </p>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-wide mt-0.5">Units Sold</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Profit Margin */}
+                    {(Number(selectedSale.total) || 0) > 0 && (
+                      <>
+                        <hr className="border-gray-200" />
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Margin</p>
+                            <span className="text-sm font-bold text-emerald-600">
+                              {(((Number(selectedSale.total_profit) || 0) / (Number(selectedSale.total) || 1)) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-500 rounded-full transition-all"
+                              style={{ width: `${Math.min(100, ((Number(selectedSale.total_profit) || 0) / (Number(selectedSale.total) || 1)) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right — Line Items Table */}
+                <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+                  <div className="px-8 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
+                    <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2 uppercase tracking-wider">
+                      <Package size={16} className="text-primary-500" />
+                      Line Items
+                      <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold">
+                        {(selectedSale.items || []).length}
+                      </span>
+                    </h3>
+                  </div>
+                  <div className="flex-1 overflow-auto">
+                    {(selectedSale.items || []).length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <Package size={48} className="mb-3 opacity-30" />
+                        <p className="text-sm font-medium">No items recorded</p>
+                      </div>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="sticky top-0 z-10">
+                          <tr className="bg-white text-gray-500 text-xs font-semibold uppercase tracking-wider border-b border-gray-200">
+                            <th className="py-3.5 px-6 text-left">#</th>
+                            <th className="py-3.5 px-6 text-left">Product</th>
+                            <th className="py-3.5 px-6 text-right">Qty</th>
+                            <th className="py-3.5 px-4 text-left">Unit</th>
+                            <th className="py-3.5 px-6 text-right">Pieces</th>
+                            <th className="py-3.5 px-6 text-right">Unit Price</th>
+                            <th className="py-3.5 px-6 text-right">Unit Cost</th>
+                            <th className="py-3.5 px-6 text-right">Discount</th>
+                            <th className="py-3.5 px-6 text-right">Line Total</th>
+                            <th className="py-3.5 px-6 text-right">Profit</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                          {(selectedSale.items || []).map((item, i) => (
-                            <tr key={item.id || i} className="hover:bg-primary-50/30 transition-colors">
-                              <td className="py-3 px-4 font-medium text-gray-900">
-                                <div className="flex items-center gap-2">
-                                  <Package size={14} className="text-primary-500 shrink-0" />
-                                  {item.product_name || '—'}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4 text-right text-gray-700">{Number(item.quantity_sold)}</td>
-                              <td className="py-3 px-4 text-gray-600">{item.unit_name || '—'}</td>
-                              <td className="py-3 px-4 text-right text-gray-600">{item.quantity_in_pieces != null ? Number(item.quantity_in_pieces) : '—'}</td>
-                              <td className="py-3 px-4 text-right text-gray-700 font-medium">₵{(Number(item.unit_price) || 0).toFixed(2)}</td>
-                              <td className="py-3 px-4 text-right text-gray-500">₵{(Number(item.unit_cost) || 0).toFixed(2)}</td>
-                              <td className="py-3 px-4 text-right text-orange-600">
-                                {(Number(item.line_discount) || 0) > 0 ? `-₵${(Number(item.line_discount) || 0).toFixed(2)}` : '—'}
-                              </td>
-                              <td className="py-3 px-4 text-right font-bold text-gray-900">₵{(Number(item.line_total) || 0).toFixed(2)}</td>
-                              <td className="py-3 px-4 text-right font-semibold text-emerald-600">₵{(Number(item.line_profit) || 0).toFixed(2)}</td>
-                            </tr>
-                          ))}
+                          {(selectedSale.items || []).map((item, i) => {
+                            const lineProfit = Number(item.line_profit) || 0
+                            return (
+                              <tr key={item.id || i} className={`hover:bg-primary-50/40 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                <td className="py-4 px-6 text-gray-400 text-xs font-medium">{i + 1}</td>
+                                <td className="py-4 px-6">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                                      <Package size={14} className="text-primary-500" />
+                                    </div>
+                                    <span className="font-semibold text-gray-900">{item.product_name || '—'}</span>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-800 font-bold text-sm">
+                                    {Number(item.quantity_sold)}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-4 text-gray-500 text-sm">{item.unit_name || '—'}</td>
+                                <td className="py-4 px-6 text-right text-gray-500">{item.quantity_in_pieces != null ? Number(item.quantity_in_pieces) : '—'}</td>
+                                <td className="py-4 px-6 text-right font-medium text-gray-900">₵{(Number(item.unit_price) || 0).toFixed(2)}</td>
+                                <td className="py-4 px-6 text-right text-gray-500">₵{(Number(item.unit_cost) || 0).toFixed(2)}</td>
+                                <td className="py-4 px-6 text-right text-orange-600 font-medium">
+                                  {(Number(item.line_discount) || 0) > 0 ? `-₵${(Number(item.line_discount) || 0).toFixed(2)}` : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="py-4 px-6 text-right font-bold text-gray-900 text-base">₵{(Number(item.line_total) || 0).toFixed(2)}</td>
+                                <td className="py-4 px-6 text-right">
+                                  <span className={`font-bold ${lineProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                    ₵{lineProfit.toFixed(2)}
+                                  </span>
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
+                        {/* Totals footer */}
+                        <tfoot>
+                          <tr className="bg-gray-900 text-white text-sm font-bold">
+                            <td colSpan={8} className="py-4 px-6 text-right uppercase tracking-wider text-gray-400 text-xs">Grand Total</td>
+                            <td className="py-4 px-6 text-right text-base text-primary-400">₵{(Number(selectedSale.total) || 0).toFixed(2)}</td>
+                            <td className="py-4 px-6 text-right text-emerald-400">₵{(Number(selectedSale.total_profit) || 0).toFixed(2)}</td>
+                          </tr>
+                        </tfoot>
                       </table>
-                    </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>

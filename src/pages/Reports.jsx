@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Download, Calendar, Filter, FileText, BarChart3, Package, TrendingUp, DollarSign, X, List, LayoutGrid, ShoppingBag, Users, CreditCard, Percent, ArrowUp, ArrowDown, Minus, AlertTriangle } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts'
+import UiTooltip from '../components/Tooltip'
 
 const Reports = () => {
   const [reportType, setReportType] = useState('sales')
@@ -246,43 +247,51 @@ const Reports = () => {
             <div className="flex items-center gap-2">
               {/* View Mode Toggle */}
               <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('simple')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    viewMode === 'simple'
-                      ? 'bg-white text-primary-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <List size={16} className="mr-1.5" />
-                  Simple
-                </button>
-                <button
-                  onClick={() => setViewMode('charts')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
-                    viewMode === 'charts'
-                      ? 'bg-white text-primary-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <BarChart3 size={16} className="mr-1.5" />
-                  Charts
-                </button>
+                <UiTooltip text="Simple list view">
+                  <button
+                    onClick={() => setViewMode('simple')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                      viewMode === 'simple'
+                        ? 'bg-white text-primary-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <List size={16} className="mr-1.5" />
+                    Simple
+                  </button>
+                </UiTooltip>
+                <UiTooltip text="Visual charts view">
+                  <button
+                    onClick={() => setViewMode('charts')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                      viewMode === 'charts'
+                        ? 'bg-white text-primary-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <BarChart3 size={16} className="mr-1.5" />
+                    Charts
+                  </button>
+                </UiTooltip>
               </div>
-              <button 
-                onClick={handleExportCSV}
-                className="btn-secondary flex items-center"
-              >
-                <Download size={18} className="mr-2" />
-                Export CSV
-              </button>
-              <button 
-                onClick={handleExportPDF}
-                className="btn-secondary flex items-center"
-              >
-                <FileText size={18} className="mr-2" />
-                Export PDF
-              </button>
+              <UiTooltip text="Export current report data as a CSV spreadsheet">
+                <button 
+                  onClick={handleExportCSV}
+                  className="btn-secondary flex items-center"
+                >
+                  <Download size={18} className="mr-2" />
+                  Export CSV
+                </button>
+              </UiTooltip>
+              <UiTooltip text="Print or save report as PDF using browser print">
+                <button 
+                  onClick={handleExportPDF}
+                  className="btn-secondary flex items-center"
+                >
+                  <FileText size={18} className="mr-2" />
+                  Export PDF
+                </button>
+              </UiTooltip>
             </div>
           </div>
         </div>

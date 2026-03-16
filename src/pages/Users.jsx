@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { listEmployees, createEmployee, updateEmployee, deleteEmployee, listBranches } from '../api/awoselDb.js'
 import { getActiveBranch, getSessionBranchId, getSessionOrgId } from '../utils/branch'
+import Tooltip from '../components/Tooltip'
 
 const ROLES = ['manager', 'sales', 'account']
 
@@ -282,22 +283,25 @@ const Users = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={fetchEmployees}
-                className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
-                title="Refresh"
-              >
-                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-              </button>
-              <button
-                type="button"
-                onClick={openAddModal}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all"
-              >
-                <UserPlus size={18} />
-                <span className="font-medium">Add Employee</span>
-              </button>
+              <Tooltip text="Reload employee list from the server">
+                <button
+                  type="button"
+                  onClick={fetchEmployees}
+                  className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                </button>
+              </Tooltip>
+              <Tooltip text="Add a new employee to this branch">
+                <button
+                  type="button"
+                  onClick={openAddModal}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all"
+                >
+                  <UserPlus size={18} />
+                  <span className="font-medium">Add Employee</span>
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -459,23 +463,25 @@ const Users = () => {
 
                       {/* Actions */}
                       <div className="col-span-2 flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(u)}
-                          className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition-colors"
-                          title="Edit user"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteUser(u)}
-                          disabled={isCurrentUser || submitting}
-                          className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          title={isCurrentUser ? 'Cannot delete yourself' : 'Delete user'}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <Tooltip text="Edit this employee's details or role" position="left">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(u)}
+                            className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text={isCurrentUser ? 'You cannot delete your own account' : 'Delete this employee'} position="left">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteUser(u)}
+                            disabled={isCurrentUser || submitting}
+                            className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </Tooltip>
                       </div>
                     </div>
                   </div>
