@@ -1697,11 +1697,11 @@ const POS = () => {
         {/* Right Side - Summary and Payment */}
         <div className="w-88 bg-gray-50 border-l border-gray-200 flex flex-col min-h-0 shrink-0 overflow-hidden" style={{width:'22rem'}}>
           {/* Transaction Summary */}
-          <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0">
-            <div className="flex items-center justify-between mb-2">
+          <div className="px-5 py-4 border-b border-gray-200 bg-white shrink-0">
+            <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Summary</h2>
             </div>
-            <div className="space-y-1.5 text-xs">
+            <div className="space-y-2.5 text-sm">
               <div className="flex justify-between text-gray-500">
                 <span>Products / Qty</span>
                 <span className="font-semibold text-gray-700">{items.length} / {items.reduce((sum, item) => sum + item.qty, 0)}</span>
@@ -1722,9 +1722,9 @@ const POS = () => {
                   <span className="font-semibold text-gray-700">₵{tax.toFixed(2)}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center pt-1.5 border-t border-gray-200">
-                <span className="font-bold text-gray-900 text-sm">Total</span>
-                <span className="font-extrabold text-primary-600 text-xl">₵{total.toFixed(2)}</span>
+              <div className="flex justify-between items-center pt-2 mt-1.5 border-t border-gray-200 bg-primary-50 -mx-5 px-5 py-3 rounded-b-lg">
+                <span className="font-bold text-gray-900 text-base">Total</span>
+                <span className="font-extrabold text-primary-600 text-2xl">₵{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -1732,24 +1732,24 @@ const POS = () => {
           {/* Payment Options */}
           <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0">
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment</h3>
-            <div className="grid grid-cols-3 gap-1.5 mb-2">
-              {['Cash', 'Mobile Money', 'Cheque'].map((method) => (
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {[{ value: 'Cash', label: 'Cash' }, { value: 'Mobile Money', label: 'Momo' }, { value: 'Cheque', label: 'Cheque' }].map(({ value, label }) => (
                 <button
-                  key={method}
+                  key={value}
                   onClick={() => {
-                    setSelectedPayment(method)
+                    setSelectedPayment(value)
                     setAmountPaid(total)
                   }}
-                  className={`px-2 py-3 rounded-[3px] text-xs font-semibold transition-all relative border-2 ${
-                    selectedPayment === method
+                  className={`px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all relative border-2 ${
+                    selectedPayment === value
                       ? 'bg-primary-500 text-white border-primary-500 shadow-sm'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'
                   }`}
                 >
-                  {selectedPayment === method && (
-                    <Check className="absolute top-1 right-1" size={10} />
+                  {selectedPayment === value && (
+                    <Check className="absolute top-1.5 right-1.5" size={11} />
                   )}
-                  {method}
+                  {label}
                 </button>
               ))}
             </div>

@@ -23,13 +23,13 @@ import {
 } from '../api/awoselDb.js'
 
 function mapApiProductToDisplay(p) {
-  const baseUnit = p.base_unit || 'piece'
+  const baseUnit = (p.base_unit || p.baseUnit || 'piece').toLowerCase()
   const defaultPrice = p.selling_price ?? p.price ?? 0
   const defaultCost = p.cost_price ?? p.cost ?? 0
   const safeNum = (v, fallback) => { const n = Number(v); return Number.isFinite(n) ? n : fallback }
   const units = (p.units && p.units.length > 0)
     ? p.units.map(u => ({
-        unit: u.unit_name,
+        unit: (u.unit_name || u.unit || baseUnit).toLowerCase(),
         conversion: safeNum(u.conversion_quantity ?? u.base_quantity, 1),
         price: safeNum(u.unit_price ?? u.price, defaultPrice),
         cost: safeNum(u.cost_price ?? u.cost, defaultCost)
@@ -1692,15 +1692,15 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
           minStock: parseInt(data.min_stock_quantity ?? data.minStock ?? data.minimumStock ?? 0),
           reorderPoint: parseInt(data.reorder_quantity ?? data.reorderPoint ?? data.reorderLevel ?? data.minStock ?? 0),
           expiry: data.expiry_date ?? data.expiry ?? data.expiryDate ?? '',
-          baseUnit: data.base_unit ?? data.baseUnit ?? data.unit ?? 'piece',
+          baseUnit: (data.base_unit ?? data.baseUnit ?? data.unit ?? 'piece').toLowerCase(),
           units: (data.units && data.units.length > 0)
             ? data.units.map(u => ({
-                unit: u.unit_name ?? u.unit ?? (data.base_unit || 'piece'),
+                unit: (u.unit_name ?? u.unit ?? data.base_unit ?? 'piece').toLowerCase(),
                 conversion: parseFloat(u.conversion_quantity ?? u.base_quantity ?? 1) || 1,
                 price: parseFloat(u.unit_price ?? u.price ?? data.selling_price ?? 0) || 0,
                 cost: parseFloat(u.cost_price ?? u.cost ?? data.cost_price ?? 0) || 0,
               }))
-            : [{ unit: data.base_unit || data.baseUnit || 'piece', conversion: 1, price: parseFloat(data.selling_price ?? data.price ?? 0) || 0, cost: parseFloat(data.cost_price ?? data.cost ?? 0) || 0 }]
+            : [{ unit: (data.base_unit || data.baseUnit || 'piece').toLowerCase(), conversion: 1, price: parseFloat(data.selling_price ?? data.price ?? 0) || 0, cost: parseFloat(data.cost_price ?? data.cost ?? 0) || 0 }]
         })
         
       } catch (error) {
@@ -1711,11 +1711,14 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
       }
     }
 
-    // Check if we have a product ID to fetch (from URL or product prop)
-    const productId = product?.id || product?.productId
-    
-    if (productId && typeof productId === 'string' && productId.includes('-')) {
-      // Looks like a UUID, fetch from API
+    // Only fetch from API if we have an ID but units are NOT already mapped
+    // (i.e. units come in as raw API shape with unit_name instead of unit)
+    const productId = product?.uuid || product?.id || product?.productId
+    const unitsAlreadyMapped = Array.isArray(product?.units) &&
+      product.units.length > 0 &&
+      product.units[0].unit !== undefined   // mapped shape has `unit`, raw API has `unit_name`
+
+    if (productId && !unitsAlreadyMapped) {
       fetchProductFromAPI(productId)
     }
   }, [product])
