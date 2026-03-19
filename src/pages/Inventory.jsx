@@ -416,44 +416,112 @@ const Inventory = () => {
     const branchName = activeBranch?.name || 'Store'
     const today = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
     const rows = exportProducts.map((p, i) => `
-      <tr style="background:${i % 2 === 0 ? '#fff' : '#f9fafb'}">
-        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#111">${(p.name || '—')}</td>
-        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#555">${(p.brand || p.brand_name || '—')}</td>
-        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:center;color:#111">${Number(p.quantity || p.stock) || 0}</td>
-        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;color:#16a34a;font-weight:600">&#8373;${(Number(p.selling_price || p.price) || 0).toFixed(2)}</td>
-        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;color:#dc2626;font-weight:600">&#8373;${(Number(p.cost_price || p.cost) || 0).toFixed(2)}</td>
+      <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8f9fa'}">
+        <td style="padding:9px 12px;border:1px solid #d1d5db;font-size:12px;color:#111827"><span style="color:#9ca3af;font-size:10px;margin-right:6px;font-weight:600">${i + 1}.</span>${(p.name || '—')}</td>
+        <td style="padding:9px 12px;border:1px solid #d1d5db;font-size:12px;color:#4b5563">${(p.brand || p.brand_name || '—')}</td>
+        <td style="padding:9px 12px;border:1px solid #d1d5db;font-size:12px;text-align:center;color:#111827;font-weight:600">${Number(p.quantity || p.stock) || 0}</td>
+        <td style="padding:9px 12px;border:1px solid #d1d5db;font-size:12px;text-align:right;color:#15803d;font-weight:700">&#8373;${(Number(p.selling_price || p.price) || 0).toFixed(2)}</td>
+        <td style="padding:9px 12px;border:1px solid #d1d5db;font-size:12px;text-align:right;color:#b91c1c;font-weight:700">&#8373;${(Number(p.cost_price || p.cost) || 0).toFixed(2)}</td>
       </tr>`).join('')
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Price List — ${branchName}</title>
       <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fff; color:#111; }
-        .header { background:#FF7521; color:#fff; padding:20px 24px 16px; }
-        .header h1 { font-size:20px; font-weight:700; }
-        .header p { font-size:12px; opacity:0.85; margin-top:3px; }
-        .meta { display:flex; justify-content:space-between; padding:10px 24px; background:#f3f4f6; font-size:11px; color:#555; border-bottom:1px solid #e5e7eb; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background:#fff; color:#111; }
+
+        .page-wrapper { padding: 24px 28px; }
+
+        /* Header banner */
+        .header { background:#FF7521; color:#fff; padding:18px 24px; border-radius:6px 6px 0 0; display:flex; justify-content:space-between; align-items:flex-end; }
+        .header-left h1 { font-size:22px; font-weight:800; letter-spacing:-0.3px; }
+        .header-left p { font-size:11px; opacity:0.88; margin-top:4px; }
+        .header-right { text-align:right; font-size:11px; opacity:0.88; line-height:1.6; }
+
+        /* Meta bar */
+        .meta { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:#1f2937; color:#d1d5db; font-size:10.5px; border-left:1px solid #374151; border-right:1px solid #374151; }
+        .meta span { display:flex; align-items:center; gap:5px; }
+        .meta .dot { width:5px; height:5px; border-radius:50%; background:#FF7521; display:inline-block; }
+
+        /* Table */
+        .table-wrap { border:1px solid #d1d5db; border-top:none; border-radius:0 0 6px 6px; overflow:hidden; }
         table { width:100%; border-collapse:collapse; }
-        thead th { background:#111827; color:#fff; padding:9px 10px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; }
-        thead th:nth-child(3) { text-align:center; }
-        thead th:nth-child(4), thead th:nth-child(5) { text-align:right; }
-        @media print { @page { margin:15mm; } }
+
+        thead tr { background:#1f2937; }
+        thead th {
+          padding:10px 12px;
+          color:#f9fafb;
+          font-size:10px;
+          font-weight:700;
+          text-transform:uppercase;
+          letter-spacing:0.07em;
+          border-right:1px solid #374151;
+          text-align:left;
+        }
+        thead th:last-child { border-right:none; }
+        thead th.center { text-align:center; }
+        thead th.right { text-align:right; }
+
+        tbody tr:last-child td { border-bottom:none; }
+        tbody td { border-bottom:1px solid #e5e7eb; border-right:1px solid #e5e7eb; }
+        tbody td:last-child { border-right:none; }
+
+        /* Footer summary */
+        .footer { margin-top:14px; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#9ca3af; border-top:1px solid #e5e7eb; padding-top:10px; }
+        .footer strong { color:#374151; }
+
+        /* Column widths */
+        col.c-name  { width:36%; }
+        col.c-brand { width:18%; }
+        col.c-stock { width:12%; }
+        col.c-sell  { width:17%; }
+        col.c-cost  { width:17%; }
+
+        @media print {
+          @page { size: A4; margin: 14mm 12mm; }
+          .page-wrapper { padding: 0; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
       </style>
     </head><body>
-      <div class="header">
-        <h1>Price List — ${branchName}</h1>
-        <p>${exportDepartmentFilter !== 'all' ? `Department: ${exportDepartmentFilter} &middot; ` : ''}${exportProducts.length} products</p>
+      <div class="page-wrapper">
+        <div class="header">
+          <div class="header-left">
+            <h1>&#128233; Price List</h1>
+            <p>${branchName}${exportDepartmentFilter !== 'all' ? ` &mdash; ${exportDepartmentFilter}` : ''}</p>
+          </div>
+          <div class="header-right">
+            <div>${today}</div>
+            <div>${exportProducts.length} product${exportProducts.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+
+        <div class="meta">
+          <span><span class="dot"></span> OFFICIAL STORE PRICE LIST</span>
+          <span>Confidential &mdash; Internal Use Only</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <colgroup>
+              <col class="c-name"><col class="c-brand"><col class="c-stock"><col class="c-sell"><col class="c-cost">
+            </colgroup>
+            <thead><tr>
+              <th>#&nbsp; Product Name</th>
+              <th>Brand</th>
+              <th class="center">Stock</th>
+              <th class="right">Selling Price</th>
+              <th class="right">Cost Price</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+
+        <div class="footer">
+          <span>Generated by StorePro &mdash; ${branchName}</span>
+          <span><strong>${exportProducts.length}</strong> total items exported</span>
+        </div>
       </div>
-      <div class="meta">
-        <span>Generated: ${today}</span>
-        <span>Total items: ${exportProducts.length}</span>
-      </div>
-      <table>
-        <thead><tr>
-          <th>Product Name</th><th>Brand</th><th>Stock</th><th>Selling Price</th><th>Cost Price</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
     </body></html>`
 
     const win = window.open('', '_blank', 'width=900,height=700')
