@@ -373,6 +373,99 @@ const Inventory = () => {
     setExportSaleFilter('all')
   }
 
+  // Export Price List to CSV (name, brand, stock, selling price, cost price only)
+  const handleExportPriceListCSV = () => {
+    const exportProducts = getFilteredExportProducts()
+    if (exportProducts.length === 0) {
+      showAlert('No products match the selected filters.', 'warning')
+      return
+    }
+    const headers = ['Product Name', 'Brand', 'Stock', 'Selling Price', 'Cost Price']
+    const csvRows = [
+      headers.join(','),
+      ...exportProducts.map(p => [
+        `"${(p.name || '').replace(/"/g, '""')}"`,
+        `"${(p.brand || p.brand_name || '').replace(/"/g, '""')}"`,
+        Number(p.quantity || p.stock) || 0,
+        (Number(p.selling_price || p.price) || 0).toFixed(2),
+        (Number(p.cost_price || p.cost) || 0).toFixed(2),
+      ].join(','))
+    ]
+    const deptSuffix = exportDepartmentFilter !== 'all' ? `_${exportDepartmentFilter}` : ''
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.setAttribute('href', URL.createObjectURL(blob))
+    link.setAttribute('download', `price_list${deptSuffix}_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setShowExportModal(false)
+    setExportDepartmentFilter('all')
+    setExportSaleFilter('all')
+  }
+
+  // Export Price List to PDF via browser print
+  const handleExportPriceListPDF = () => {
+    const exportProducts = getFilteredExportProducts()
+    if (exportProducts.length === 0) {
+      showAlert('No products match the selected filters.', 'warning')
+      return
+    }
+    const activeBranch = getActiveBranch()
+    const branchName = activeBranch?.name || 'Store'
+    const today = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+    const rows = exportProducts.map((p, i) => `
+      <tr style="background:${i % 2 === 0 ? '#fff' : '#f9fafb'}">
+        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#111">${(p.name || '—')}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;color:#555">${(p.brand || p.brand_name || '—')}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:center;color:#111">${Number(p.quantity || p.stock) || 0}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;color:#16a34a;font-weight:600">&#8373;${(Number(p.selling_price || p.price) || 0).toFixed(2)}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #e5e7eb;font-size:12px;text-align:right;color:#dc2626;font-weight:600">&#8373;${(Number(p.cost_price || p.cost) || 0).toFixed(2)}</td>
+      </tr>`).join('')
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Price List — ${branchName}</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#fff; color:#111; }
+        .header { background:#FF7521; color:#fff; padding:20px 24px 16px; }
+        .header h1 { font-size:20px; font-weight:700; }
+        .header p { font-size:12px; opacity:0.85; margin-top:3px; }
+        .meta { display:flex; justify-content:space-between; padding:10px 24px; background:#f3f4f6; font-size:11px; color:#555; border-bottom:1px solid #e5e7eb; }
+        table { width:100%; border-collapse:collapse; }
+        thead th { background:#111827; color:#fff; padding:9px 10px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; }
+        thead th:nth-child(3) { text-align:center; }
+        thead th:nth-child(4), thead th:nth-child(5) { text-align:right; }
+        @media print { @page { margin:15mm; } }
+      </style>
+    </head><body>
+      <div class="header">
+        <h1>Price List — ${branchName}</h1>
+        <p>${exportDepartmentFilter !== 'all' ? `Department: ${exportDepartmentFilter} &middot; ` : ''}${exportProducts.length} products</p>
+      </div>
+      <div class="meta">
+        <span>Generated: ${today}</span>
+        <span>Total items: ${exportProducts.length}</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Product Name</th><th>Brand</th><th>Stock</th><th>Selling Price</th><th>Cost Price</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body></html>`
+
+    const win = window.open('', '_blank', 'width=900,height=700')
+    win.document.write(html)
+    win.document.close()
+    win.focus()
+    setTimeout(() => { win.print(); win.close() }, 400)
+    setShowExportModal(false)
+    setExportDepartmentFilter('all')
+    setExportSaleFilter('all')
+  }
+
   // Download a blank CSV template for bulk import
   const handleDownloadTemplate = () => {
     const headers = ['Name', 'Brand', 'SKU', 'Barcode', 'Category', 'Price', 'Cost', 'Stock', 'Base Unit', 'Min Stock', 'Reorder Point', 'Expiry', 'Product Units']
@@ -1287,7 +1380,7 @@ const Inventory = () => {
       {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md shadow-2xl">
+          <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl">
             {/* Header */}
             <div className="bg-gray-900 rounded-t-xl px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1296,7 +1389,7 @@ const Inventory = () => {
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">Export Products</h2>
-                  <p className="text-gray-500 text-xs mt-0.5">Filter before exporting to CSV</p>
+                  <p className="text-gray-500 text-xs mt-0.5">Filter then choose what to export</p>
                 </div>
               </div>
               <button
@@ -1372,10 +1465,38 @@ const Inventory = () => {
                 <span className="text-sm text-gray-600">Products to export</span>
                 <span className="text-sm font-bold text-gray-900">{getFilteredExportProducts().length} items</span>
               </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-200" />
+
+              {/* Price List export */}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold text-gray-800">Export Price List</span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 uppercase tracking-wide">Name · Brand · Stock · Price · Cost</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3">Compact view — only essential pricing columns</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleExportPriceListCSV}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
+                  >
+                    <Download size={15} />
+                    Price List CSV
+                  </button>
+                  <button
+                    onClick={handleExportPriceListPDF}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-red-200 bg-red-50 text-red-700 text-sm font-semibold hover:border-red-400 hover:bg-red-100 transition-all"
+                  >
+                    <FileText size={15} />
+                    Price List PDF
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between gap-3">
               <button
                 onClick={() => { setShowExportModal(false); setExportDepartmentFilter('all'); setExportSaleFilter('all') }}
                 className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -1387,7 +1508,7 @@ const Inventory = () => {
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
               >
                 <Download size={16} />
-                Export CSV
+                Full Export CSV
               </button>
             </div>
           </div>
