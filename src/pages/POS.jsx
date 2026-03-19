@@ -59,6 +59,7 @@ function mapApiProductToPOS(p) {
     itemNumber: p.sku || String(p.id),
     department: p.category || 'General',
     itemName: p.name || 'Unknown',
+    brand: p.brand || '',
     price,
     stock: Number(p.quantity) || Number(p.stock) || 0,
     barcode: p.barcode || '',
@@ -217,7 +218,8 @@ const POS = () => {
       (p.itemName || '').toLowerCase().includes(q) ||
       (p.itemNumber || '').toLowerCase().includes(q) ||
       (p.barcode || '').toLowerCase().includes(q) ||
-      (p.department || '').toLowerCase().includes(q)
+      (p.department || '').toLowerCase().includes(q) ||
+      (p.brand || '').toLowerCase().includes(q)
     )
     setProductsFromApi(filtered)
   }, [itemSearch, allProducts])
@@ -1406,7 +1408,13 @@ const POS = () => {
                           {product.stock || 0} left
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400">{product.department} · <span className="font-semibold text-primary-600">₵{product.price.toFixed(2)}</span></div>
+                      <div className="text-xs text-gray-400">
+                        {product.department}
+                        {product.brand && product.brand !== 'N/A' && product.brand !== '-' && (
+                          <span className="text-gray-500 font-medium"> · {product.brand}</span>
+                        )}
+                        {' · '}<span className="font-semibold text-primary-600">₵{product.price.toFixed(2)}</span>
+                      </div>
                     </div>
                   </div>
                 ))
