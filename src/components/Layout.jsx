@@ -23,7 +23,7 @@ import { useNavigationHistory } from '../contexts/NavigationHistory'
 import { useAuth } from '../contexts/AuthContext'
 import Footer from './Footer'
 import AppGuide from './AppGuide'
-import logo from '../logo.png'
+import logo from '../MainLogo.jpeg'
 import Tooltip from './Tooltip'
 
 const Layout = () => {
@@ -124,11 +124,11 @@ const Layout = () => {
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b">
+        <div className="h-20 flex items-center justify-between px-4 border-b">
           {sidebarOpen ? (
-            <img src={logo} alt="Awosel OS" className="h-12 w-40 object-contain" />
+            <img src={logo} alt="StorePro" className="h-20 w-56 object-contain" />
           ) : (
-            <img src={logo} alt="Awosel OS" className="h-10 w-10 object-contain" />
+            <img src={logo} alt="StorePro" className="h-16 w-16 object-contain" />
           )}
           <Tooltip text={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} position="right">
             <button

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import logo from '../logo.png'
+import logo from '../MainLogo.jpeg'
 import bgImage from '../back.png'
 import { UserPlus, Mail, Phone, User, Store, Lock, Eye, EyeOff } from 'lucide-react'
 import { register as apiRegister } from '../api/awoselDb.js'
@@ -94,7 +94,7 @@ const Register = () => {
       <div className="absolute inset-0 bg-black/40" style={{ position: 'fixed' }} />
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8">
-          <img src={logo} alt="Awosel OS" className="h-20 object-contain" />
+          <img src={logo} alt="StorePro" className="h-40 object-contain" />
         </div>
 
         <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-8">

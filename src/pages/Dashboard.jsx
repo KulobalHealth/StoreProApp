@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import logo from '../MainLogo.jpeg'
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -145,10 +146,7 @@ const Dashboard = () => {
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Menu size={20} className="text-gray-700" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-green-600">awosel</span>
-              <span className="text-xl font-bold text-gray-900">OS</span>
-            </div>
+            <img src={logo} alt="StorePro" className="h-10 object-contain" />
           </div>
 
           {/* Right Side - Utility Icons and Controls */}

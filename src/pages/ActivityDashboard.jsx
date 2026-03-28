@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { listBranches, createBranch } from '../api/awoselDb'
-import logo from '../logo.png'
+import logo from '../MainLogo.jpeg'
 import {
   Store, Plus, MapPin, Building2, X,
   LogOut, Loader2, ArrowRight, Search, RefreshCw
@@ -124,7 +124,7 @@ const ActivityDashboard = () => {
       {/* Minimal top bar */}
       <header className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
-          <img src={logo} alt="StorePro" className="h-9 object-contain" />
+          <img src={logo} alt="StorePro" className="h-16 object-contain" />
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-gray-900">{orgName}</p>

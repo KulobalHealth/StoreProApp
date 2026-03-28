@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import logo from '../logo.png'
-import bgImage from '../back.png'
-import { Link } from 'react-router-dom'
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import logo from '../MainLogo.jpeg'
+import slide1 from '../mp.jpg'
+import slide2 from '../2.jpg'
+import slide3 from '../3.jpg'
+import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -14,6 +15,17 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+
+  // Slider
+  const slides = [slide1, slide2, slide3]
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % slides.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [slides.length])
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -117,125 +129,194 @@ const Login = () => {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
-    >
-      <div className="absolute inset-0 bg-black/40" style={{ position: 'fixed' }} />
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <img src={logo} alt="Awosel OS" className="h-20 object-contain" />
+    <div className="min-h-screen flex">
+      {/* Left Panel — Image Slider */}
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col justify-between p-10">
+        {/* Slide images */}
+        {slides.map((img, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+            style={{
+              backgroundImage: `url(${img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: currentSlide === i ? 1 : 0,
+            }}
+          />
+        ))}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/70" />
+
+        {/* Top spacer */}
+        <div className="relative z-10" />
+
+        {/* Center content */}
+        <div className="relative z-10 -mt-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-xs text-primary-300 font-medium mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Trusted by 500+ businesses
+          </div>
+          <h1 className="text-4xl font-extrabold text-white leading-tight mb-4">
+            Manage your store<br />
+            <span className="text-primary-400">smarter, not harder.</span>
+          </h1>
+          <p className="text-gray-300 text-base leading-relaxed max-w-sm">
+            Inventory, sales, invoicing, and analytics — all in one powerful platform built for growing businesses.
+          </p>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap gap-2 mt-8">
+            {['POS System', 'Inventory', 'Invoicing', 'Reports', 'Multi-Branch'].map(f => (
+              <span key={f} className="px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-xs text-white/80 font-medium">
+                {f}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account to continue</p>
+        {/* Bottom — Slide indicators */}
+        <div className="relative z-10 flex items-center justify-between">
+          <p className="text-white/40 text-xs">© 2026 MicroBiz. All rights reserved.</p>
+          <div className="flex items-center gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentSlide(i)}
+                className={`transition-all duration-300 rounded-full ${
+                  currentSlide === i
+                    ? 'w-6 h-2 bg-primary-400'
+                    : 'w-2 h-2 bg-white/30 hover:bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel — Login Form */}
+      <div className="flex-1 flex items-center justify-center bg-white px-6 py-12">
+        <div className="w-full max-w-[420px]">
+          {/* Logo */}
+          <div className="flex justify-start mb-6">
+            <img src={logo} alt="MicroBiz" className="h-14 object-contain" />
           </div>
 
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
+            <p className="text-gray-500 text-sm mt-1.5">Sign in to continue to your dashboard</p>
+          </div>
+
+          {/* Error */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-5 flex items-start gap-3 p-3.5 bg-red-50 border border-red-200 rounded-[3px]">
+              <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-red-600 text-xs font-bold">!</span>
+              </div>
+              <p className="text-sm text-red-700 leading-snug">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter your email"
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-[3px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="you@company.com"
                   autoComplete="email"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <a href="#" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                  Forgot password?
+                </a>
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-11 pr-12 py-3 bg-white border border-gray-200 rounded-[3px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="Enter your password"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-primary-600 hover:text-primary-700">
-                Forgot password?
-              </a>
+            {/* Remember me */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                className="w-4 h-4 text-primary-600 bg-white border-gray-300 rounded focus:ring-primary-500 focus:ring-offset-0"
+              />
+              <label htmlFor="remember" className="ml-2.5 text-sm text-gray-600">Keep me signed in</label>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all ${
+              className={`w-full py-3 px-4 rounded-[3px] font-semibold text-white text-sm transition-all flex items-center justify-center gap-2 ${
                 isLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-primary-600 hover:bg-primary-700 shadow-lg hover:shadow-xl'
-              } flex items-center justify-center`}
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98]'
+              }`}
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                  Signing in…
                 </>
               ) : (
                 <>
-                  <LogIn size={20} className="mr-2" />
                   Sign In
+                  <ArrowRight size={16} />
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
-              Register
-            </Link>
-          </p>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              © 2026 StorePro. All rights reserved.
-            </p>
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">New to StorePro?</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
+
+          {/* Register link */}
+          <Link
+            to="/register"
+            className="w-full py-3 px-4 rounded-[3px] font-semibold text-sm text-gray-700 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+          >
+            Create an account
+            <ArrowRight size={14} className="text-gray-400" />
+          </Link>
+
+          {/* Footer — mobile only */}
+          <p className="mt-8 text-center text-xs text-gray-400 lg:hidden">
+            © 2026 StorePro. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
