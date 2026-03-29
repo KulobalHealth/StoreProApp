@@ -13,9 +13,10 @@ export const printReceiptDirect = (receiptElement, storeName = 'Awosel OS') => {
     return
   }
 
-  const receiptHTML = receiptElement.innerHTML
-  if (!receiptHTML || receiptHTML.trim() === '') {
-    console.error('Receipt HTML is empty')
+  // Use cloneNode (deep) instead of innerHTML to prevent XSS from unsanitized content
+  const clonedContent = receiptElement.cloneNode(true)
+  if (!clonedContent.textContent || clonedContent.textContent.trim() === '') {
+    console.error('Receipt content is empty')
     alert('Receipt content is empty. Cannot print.')
     return
   }
@@ -43,7 +44,8 @@ export const printReceiptDirect = (receiptElement, storeName = 'Awosel OS') => {
 
   const printContainer = document.createElement('div')
   printContainer.id = printContainerId
-  printContainer.innerHTML = receiptHTML
+  // Append cloned DOM nodes instead of using innerHTML (XSS-safe)
+  printContainer.appendChild(clonedContent)
   document.body.appendChild(printContainer)
 
   const styleElement = document.createElement('style')

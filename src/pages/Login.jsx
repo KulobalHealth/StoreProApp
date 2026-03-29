@@ -7,6 +7,8 @@ import slide2 from '../2.jpg'
 import slide3 from '../3.jpg'
 import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
+const slides = [slide1, slide2, slide3]
+
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,7 +19,6 @@ const Login = () => {
   const navigate = useNavigate()
 
   // Slider
-  const slides = [slide1, slide2, slide3]
   const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
@@ -77,8 +78,8 @@ const Login = () => {
         return
       }
 
-      if (trimmedPassword.length < 4) {
-        setError('Password must be at least 4 characters')
+      if (trimmedPassword.length < 6) {
+        setError('Password must be at least 6 characters')
         setIsLoading(false)
         return
       }
@@ -86,28 +87,25 @@ const Login = () => {
       const result = await login(trimmedEmail, trimmedPassword)
 
       if (result.success) {
-        // Check role for redirect
+        // Use the user object from the login response — not localStorage (avoids race condition)
+        const loggedInUser = result.user || {}
+        const role = (loggedInUser.role || '').toLowerCase()
         try {
-          const savedUser = JSON.parse(localStorage.getItem('user') || '{}')
-          const role = (savedUser.role || '').toLowerCase()
           if (role === 'sales') {
-            // Sales users go straight to POS
-            if (savedUser.branch_id) {
+            if (loggedInUser.branch_id) {
               localStorage.setItem('awosel_active_branch', JSON.stringify({
-                uuid: savedUser.branch_id,
-                id: savedUser.branch_id,
-                name: savedUser.branch_name || 'My Branch',
+                uuid: loggedInUser.branch_id,
+                id: loggedInUser.branch_id,
+                name: loggedInUser.branch_name || 'My Branch',
               }))
             }
             navigate('/pos', { replace: true })
           } else if (role === 'manager') {
-            // Manager goes directly to their assigned branch dashboard
-            if (savedUser.branch_id) {
-              // Auto-set the manager's assigned branch as active
+            if (loggedInUser.branch_id) {
               localStorage.setItem('awosel_active_branch', JSON.stringify({
-                uuid: savedUser.branch_id,
-                id: savedUser.branch_id,
-                name: savedUser.branch_name || 'My Branch',
+                uuid: loggedInUser.branch_id,
+                id: loggedInUser.branch_id,
+                name: loggedInUser.branch_name || 'My Branch',
               }))
             }
             navigate('/branch-dashboard', { replace: true })

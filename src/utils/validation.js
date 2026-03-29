@@ -42,9 +42,25 @@ export const validateQuantity = (qty, min = 0.25, max = 10000) => {
 }
 
 /**
- * Sanitize string input
+ * Sanitize string input — trims, truncates, and escapes HTML entities
  */
 export const sanitizeString = (str, maxLength = 1000) => {
+  if (typeof str !== 'string') return ''
+  return str
+    .trim()
+    .slice(0, maxLength)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
+/**
+ * Sanitize string for display (trim + truncate only, no HTML escaping)
+ * Use this when the value will be set via React JSX (already escaped by React)
+ */
+export const sanitizeInput = (str, maxLength = 1000) => {
   if (typeof str !== 'string') return ''
   return str.trim().slice(0, maxLength)
 }

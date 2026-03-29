@@ -11,9 +11,21 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'esnext',
+    target: 'es2020',
     minify: 'esbuild',
     sourcemap: false,
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-motion': ['motion'],
+          'vendor-charts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-xlsx': ['xlsx'],
+        },
+      },
+    },
   },
   envPrefix: ['VITE_'],
 })

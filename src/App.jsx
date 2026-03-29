@@ -1,25 +1,41 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { NavigationHistoryProvider } from './contexts/NavigationHistory'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Layout from './components/Layout'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ActivityDashboard from './pages/ActivityDashboard'
-import BranchDashboard from './pages/BranchDashboard'
-import POS from './pages/POS'
-import Settings from './pages/Settings'
-import Inventory from './pages/Inventory'
-import PurchaseOrderDetail from './pages/PurchaseOrderDetail'
-import Users from './pages/Users'
-import Suppliers from './pages/Suppliers'
-import SupplierDetail from './pages/SupplierDetail'
-import Customers from './pages/Customers'
-import Cashiers from './pages/Cashiers'
-import SalesHistory from './pages/SalesHistory'
 import { useAuth } from './contexts/AuthContext'
+
+/* ─── Lazy-loaded pages (code-split into separate chunks) ─── */
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const DesktopDownload = lazy(() => import('./pages/DesktopDownload'))
+const ActivityDashboard = lazy(() => import('./pages/ActivityDashboard'))
+const BranchDashboard = lazy(() => import('./pages/BranchDashboard'))
+const POS = lazy(() => import('./pages/POS'))
+const Settings = lazy(() => import('./pages/Settings'))
+const Inventory = lazy(() => import('./pages/Inventory'))
+const PurchaseOrderDetail = lazy(() => import('./pages/PurchaseOrderDetail'))
+const Users = lazy(() => import('./pages/Users'))
+const Suppliers = lazy(() => import('./pages/Suppliers'))
+const SupplierDetail = lazy(() => import('./pages/SupplierDetail'))
+const Customers = lazy(() => import('./pages/Customers'))
+const Cashiers = lazy(() => import('./pages/Cashiers'))
+const SalesHistory = lazy(() => import('./pages/SalesHistory'))
+
+/* ─── Loading fallback ─── */
+const PageLoader = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f9fafb' }}>
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#FF751F', borderRadius: '50%', animation: 'spin 0.6s linear infinite', margin: '0 auto 12px' }} />
+      <p style={{ color: '#5a6a7e', fontSize: '0.85rem', fontFamily: 'Manrope, sans-serif' }}>Loading…</p>
+    </div>
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+)
 
 // Role guard — blocks specific roles from accessing a route
 // Uses AuthContext so the role is always in sync and can't be spoofed via localStorage
@@ -56,8 +72,13 @@ function App() {
       <Router>
         <AuthProvider>
           <NavigationHistoryProvider>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public Routes */}
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<PrivacyPolicy />} />
+              <Route path="/download" element={<DesktopDownload />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               
@@ -79,7 +100,11 @@ function App() {
                   <Route path="suppliers/:id" element={<RoleGuard blockedRoles={['sales']}><SupplierDetail /></RoleGuard>} />
                 </Route>
               </Route>
+
+              {/* 404 catch-all */}
+              <Route path="*" element={<Navigate to="/landing" replace />} />
             </Routes>
+            </Suspense>
           </NavigationHistoryProvider>
         </AuthProvider>
       </Router>

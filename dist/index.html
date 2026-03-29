@@ -8,9 +8,42 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Security headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://*.supabase.co https://*.awosel.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()" />
+
+    <!-- SEO -->
+    <meta name="description" content="StorePro — the all-in-one POS and store management platform. Inventory, sales, invoicing, multi-branch management, and offline-first desktop app for growing businesses in Ghana and beyond." />
+    <meta name="keywords" content="POS, point of sale, store management, inventory, invoicing, Ghana, offline POS, multi-branch" />
+    <link rel="canonical" href="https://storepro.app" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StorePro — POS & Store Management" />
+    <meta property="og:description" content="Inventory, sales, invoicing, and analytics — all in one powerful platform built for growing businesses." />
+    <meta property="og:url" content="https://storepro.app" />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="StorePro — POS & Store Management" />
+    <meta name="twitter:description" content="All-in-one POS and store management platform for growing businesses." />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
+
     <title>StorePro | POS Store Management</title>
-    <script type="module" crossorigin src="/assets/index-D2jSJ_Ly.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-30Oedk_u.css">
+    <script type="module" crossorigin src="/assets/index-CBlXXOBh.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-0YXfxJj6.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-icons-B58hqKNt.js">
+    <link rel="stylesheet" crossorigin href="/assets/index--RZP0lhT.css">
   </head>
   <body>
     <div id="root"></div>
