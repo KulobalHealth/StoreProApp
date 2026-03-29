@@ -74,7 +74,8 @@ function App() {
           <NavigationHistoryProvider>
             <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public Routes */}
+              {/* Public Routes — Landing page is the home page */}
+              <Route path="/" element={<LandingPage />} />
               <Route path="/landing" element={<LandingPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<PrivacyPolicy />} />
@@ -85,24 +86,23 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<RoleGuard blockedRoles={['sales']}><ActivityDashboard /></RoleGuard>} />
-                <Route path="/" element={<Layout />}>
-                  <Route path="branch-dashboard" element={<RoleGuard blockedRoles={['sales']}><BranchDashboard /></RoleGuard>} />
-                  <Route index element={<RoleAwareRedirect />} />
-                  <Route path="pos" element={<POS />} />
-                  <Route path="sales" element={<RoleGuard blockedRoles={['manager', 'sales']}><SalesHistory /></RoleGuard>} />
-                  <Route path="inventory" element={<RoleGuard blockedRoles={['sales']}><Inventory /></RoleGuard>} />
-                  <Route path="purchase-orders/:id" element={<RoleGuard blockedRoles={['sales']}><PurchaseOrderDetail /></RoleGuard>} />
-                  <Route path="settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />
-                  <Route path="users" element={<RoleGuard blockedRoles={['sales']}><Users /></RoleGuard>} />
-                  <Route path="customers" element={<RoleGuard blockedRoles={['sales']}><Customers /></RoleGuard>} />
-                  <Route path="cashiers" element={<RoleGuard blockedRoles={['sales']}><Cashiers /></RoleGuard>} />
-                  <Route path="suppliers" element={<RoleGuard blockedRoles={['sales']}><Suppliers /></RoleGuard>} />
-                  <Route path="suppliers/:id" element={<RoleGuard blockedRoles={['sales']}><SupplierDetail /></RoleGuard>} />
+                <Route element={<Layout />}>
+                  <Route path="/branch-dashboard" element={<RoleGuard blockedRoles={['sales']}><BranchDashboard /></RoleGuard>} />
+                  <Route path="/pos" element={<POS />} />
+                  <Route path="/sales" element={<RoleGuard blockedRoles={['manager', 'sales']}><SalesHistory /></RoleGuard>} />
+                  <Route path="/inventory" element={<RoleGuard blockedRoles={['sales']}><Inventory /></RoleGuard>} />
+                  <Route path="/purchase-orders/:id" element={<RoleGuard blockedRoles={['sales']}><PurchaseOrderDetail /></RoleGuard>} />
+                  <Route path="/settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />
+                  <Route path="/users" element={<RoleGuard blockedRoles={['sales']}><Users /></RoleGuard>} />
+                  <Route path="/customers" element={<RoleGuard blockedRoles={['sales']}><Customers /></RoleGuard>} />
+                  <Route path="/cashiers" element={<RoleGuard blockedRoles={['sales']}><Cashiers /></RoleGuard>} />
+                  <Route path="/suppliers" element={<RoleGuard blockedRoles={['sales']}><Suppliers /></RoleGuard>} />
+                  <Route path="/suppliers/:id" element={<RoleGuard blockedRoles={['sales']}><SupplierDetail /></RoleGuard>} />
                 </Route>
               </Route>
 
               {/* 404 catch-all */}
-              <Route path="*" element={<Navigate to="/landing" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             </Suspense>
           </NavigationHistoryProvider>

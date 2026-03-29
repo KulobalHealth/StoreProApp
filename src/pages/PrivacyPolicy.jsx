@@ -20,13 +20,13 @@ export default function PrivacyPolicy() {
 
       {/* NAV */}
       <nav className="pp-nav">
-        <Link to="/landing" className="pp-nav-logo">
+        <Link to="/" className="pp-nav-logo">
           <img src={logo} alt="StorePro" style={{ height: '32px', objectFit: 'contain' }} />
         </Link>
         <div className="pp-nav-links">
           <a href="#privacy">Privacy Policy</a>
           <a href="#terms">Terms of Use</a>
-          <Link to="/landing">← Back to Home</Link>
+          <Link to="/">← Back to Home</Link>
         </div>
       </nav>
 
@@ -342,8 +342,8 @@ export default function PrivacyPolicy() {
           <img src={logo} alt="StorePro" style={{ height: '28px', objectFit: 'contain' }} />
         </span>
         <ul className="pp-footer-links">
-          <li><Link to="/landing#features">Features</Link></li>
-          <li><Link to="/landing#pricing">Pricing</Link></li>
+          <li><Link to="/#features">Features</Link></li>
+          <li><Link to="/#pricing">Pricing</Link></li>
           <li><a href="#privacy">Privacy</a></li>
           <li><a href="#terms">Terms</a></li>
         </ul>

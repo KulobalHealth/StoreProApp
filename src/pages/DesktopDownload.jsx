@@ -25,10 +25,10 @@ export default function DesktopDownload() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Link to="/landing" className="dd-nav-logo">
+        <Link to="/" className="dd-nav-logo">
           <img src={logo} alt="StorePro" />
         </Link>
-        <Link to="/landing" className="dd-nav-back">← Back to Home</Link>
+        <Link to="/" className="dd-nav-back">← Back to Home</Link>
       </motion.nav>
 
       {/* HERO */}
@@ -232,8 +232,8 @@ export default function DesktopDownload() {
           <img src={logo} alt="StorePro" style={{ height: '28px', objectFit: 'contain' }} />
         </span>
         <ul className="dd-footer-links">
-          <li><Link to="/landing#features">Features</Link></li>
-          <li><Link to="/landing#pricing">Pricing</Link></li>
+          <li><Link to="/#features">Features</Link></li>
+          <li><Link to="/#pricing">Pricing</Link></li>
           <li><Link to="/privacy">Privacy</Link></li>
           <li><Link to="/terms">Terms</Link></li>
         </ul>
