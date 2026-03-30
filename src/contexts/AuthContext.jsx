@@ -159,7 +159,7 @@ export const AuthProvider = ({ children }) => {
       persistSession(userData, token)
       setAuth(true, userData)
 
-      return { success: true }
+      return { success: true, user: userData }
     } catch (error) {
       console.error('Login error:', error)
       return { success: false, message: error.message || 'Network error. Is the backend running?' }

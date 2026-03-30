@@ -39,6 +39,31 @@ export function getSessionBranchId() {
 }
 
 /**
+ * Get the numeric (bigint) branch ID for endpoints that require it
+ * (e.g. /sales where branch_id is a bigint column).
+ * Falls back to getSessionBranchId() if no numeric id is found.
+ */
+export function getNumericBranchId() {
+  // 1. Check the active branch object — it may have a separate numeric `id`
+  try {
+    const saved = localStorage.getItem('awosel_active_branch')
+    if (saved) {
+      const branch = JSON.parse(saved)
+      // If id is numeric (or numeric string) and different from uuid, use it
+      if (branch?.id != null && branch.id !== branch.uuid && !isNaN(Number(branch.id))) {
+        return branch.id
+      }
+      // If id is the same as uuid, this branch was stored without a separate numeric id
+      // Try to find a numeric_id field
+      if (branch?.numeric_id) return branch.numeric_id
+    }
+  } catch {}
+
+  // 2. Fall back to regular branch ID (might be uuid — let backend handle it)
+  return getSessionBranchId()
+}
+
+/**
  * Get the full active branch object (id, uuid, name) from localStorage.
  */
 export function getActiveBranch() {

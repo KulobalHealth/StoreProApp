@@ -69,18 +69,8 @@ const Register = () => {
         setIsLoading(false)
         return
       }
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters')
-        setIsLoading(false)
-        return
-      }
-      if (!/[A-Z]/.test(password)) {
-        setError('Password must contain at least one uppercase letter')
-        setIsLoading(false)
-        return
-      }
-      if (!/[0-9]/.test(password)) {
-        setError('Password must contain at least one number')
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters')
         setIsLoading(false)
         return
       }
@@ -233,7 +223,7 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-11 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
-                  placeholder="At least 8 characters"
+                  placeholder="At least 6 characters"
                   autoComplete="new-password"
                 />
                 <button

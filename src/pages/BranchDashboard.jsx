@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Activity, ArrowUpRight, RefreshCw, Zap
 } from 'lucide-react'
 import { listSales, listProductsByBranch, listEmployees, listSuppliers, listCustomers } from '../api/awoselDb'
-import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
+import { getSessionBranchId, getSessionOrgId, getActiveBranch } from '../utils/branch'
 import Tooltip from '../components/Tooltip'
 
 const BranchDashboard = () => {

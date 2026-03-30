@@ -1821,6 +1821,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
     { value: 'quarter', label: 'Quarter', abbreviation: '1/4' },
     { value: 'half', label: 'Half', abbreviation: '1/2' },
     { value: 'dozen', label: 'Dozen', abbreviation: 'dz' },
+    { value: 'wholesale', label: 'Wholesale', abbreviation: 'ws' },
     { value: 'kg', label: 'Kilogram', abbreviation: 'kg' },
     { value: 'g', label: 'Gram', abbreviation: 'g' },
     { value: 'lb', label: 'Pound', abbreviation: 'lb' },

@@ -56,6 +56,7 @@ const SalesHistory = () => {
   }
 
   const fetchSales = () => {
+    // Always use the branch UUID — backend expects UUID in branch_id param
     const branchId = getSessionBranchId()
     if (!branchId) {
       setError('No branch selected. Please select a branch first.')

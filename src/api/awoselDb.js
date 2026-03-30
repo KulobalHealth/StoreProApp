@@ -44,7 +44,17 @@ async function fetchApi(method, path, body = undefined) {
       throw new Error('Session expired. Please login again.')
     }
 
-    if (!res.ok) throw new Error(data.error || data.message || res.statusText || 'Request failed')
+    if (!res.ok) {
+      // Extract the most detailed error message available
+      let msg = data.error || data.message || res.statusText || 'Request failed'
+      // Some backends return an array of validation errors
+      if (Array.isArray(data.errors) && data.errors.length) {
+        msg = data.errors.map(e => (typeof e === 'string' ? e : e.message || e.msg || JSON.stringify(e))).join('. ')
+      } else if (data.details) {
+        msg = typeof data.details === 'string' ? data.details : JSON.stringify(data.details)
+      }
+      throw new Error(msg)
+    }
     return data
   } catch (err) {
     clearTimeout(timeoutId)
@@ -216,10 +226,18 @@ export async function deleteReceipt(id) {
   return fetchApi('DELETE', '/stock-receipts/' + sanitizePath(id))
 }
 
+/** Detect if a value looks like a UUID (contains hyphens and hex chars) */
+function isUUID(val) {
+  return typeof val === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val)
+}
+
 // ---- Sales ----
 export async function listSales(query = {}) {
   const params = new URLSearchParams()
-  if (query.branch_id) params.set('branch_id', query.branch_id)
+  if (query.branch_id) {
+    // Backend accepts the branch UUID in branch_id param
+    params.set('branch_id', query.branch_id)
+  }
   if (query.date) params.set('date', query.date)
   if (query.user_id) params.set('user_id', query.user_id)
   if (query.cashier_id) params.set('cashier_id', query.cashier_id)
@@ -235,11 +253,11 @@ export async function createSale(body) {
 }
 
 export async function getSalesDashboard(branchId) {
-  return fetchApi('GET', '/sales/dashboard?branch_id=' + sanitizePath(branchId))
+  return fetchApi('GET', '/sales/dashboard?branch_id=' + encodeURIComponent(branchId))
 }
 
 export async function getCashierSales(branchId, { period, date, start_date, end_date } = {}) {
-  let url = '/sales/cashiers?branch_id=' + sanitizePath(branchId)
+  let url = '/sales/cashiers?branch_id=' + encodeURIComponent(branchId)
   if (start_date && end_date) {
     url += '&start_date=' + encodeURIComponent(start_date) + '&end_date=' + encodeURIComponent(end_date)
   } else if (date) {
