@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import logo from '../MainLogo.jpeg'
+import MarketingFooter from '../components/MarketingFooter'
 import heroVideo from '../video /Professional bold we are hiring promo linkedin post  (Presentation).mp4'
 import client1 from '../clients/1662123687706.jpeg'
 import client2 from '../clients/client2.png'
@@ -25,6 +26,7 @@ const staggerContainer = {
 
 /* ─────────────────────── LANDING PAGE ─────────────────────── */
 const LandingPage = () => {
+  const navigate = useNavigate()
 
   /* ── DATA ── */
   const features = [
@@ -37,6 +39,7 @@ const LandingPage = () => {
       ),
       title: 'Inventory',
       bg: '#0B2247',
+      link: '/inventory-management',
     },
     {
       icon: (
@@ -47,25 +50,38 @@ const LandingPage = () => {
       ),
       title: 'Point of Sale',
       bg: '#FF751F',
+      link: '/point-of-sale',
     },
     {
       icon: (
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 20V10M12 20V4M6 20v-6" />
+          <path d="M4 5.5h16" />
+          <path d="M4 18.5h16" />
+          <rect x="4" y="3" width="16" height="18" rx="2" />
+          <path d="M8 9h8" />
+          <path d="M8 13h3" />
+          <path d="M15.5 12l1.5 1.5 2.5-3" />
+          <path d="M8 17h5" />
         </svg>
       ),
-      title: 'Analytics',
+      title: 'Accounting',
       bg: '#0B2247',
+      link: '/invoicing-accounting',
     },
     {
       icon: (
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+          <path d="M4 19h16" />
+          <path d="M7 16V10" />
+          <path d="M12 16V6" />
+          <path d="M17 16v-4" />
+          <path d="M5 8.5l4-3 3 2 5-3.5" />
+          <path d="M15 4h2.5v2.5" />
         </svg>
       ),
-      title: 'Staff Management',
+      title: 'Business Reports',
       bg: '#FF751F',
+      link: '/business-reports',
     },
     {
       icon: (
@@ -347,10 +363,20 @@ const LandingPage = () => {
             <motion.div
               key={i}
               className="lp-fcard"
-              style={{ background: f.bg }}
               variants={fadeUp}
               transition={{ duration: 0.4 }}
               whileHover={{ y: -4, scale: 1.03 }}
+              onClick={f.link ? () => navigate(f.link) : undefined}
+              onKeyDown={f.link ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  navigate(f.link)
+                }
+              } : undefined}
+              role={f.link ? 'button' : undefined}
+              tabIndex={f.link ? 0 : undefined}
+              aria-label={f.link ? `Open ${f.title}` : undefined}
+              style={{ background: f.bg, cursor: f.link ? 'pointer' : 'default' }}
             >
               <div className="lp-fcard-icon">{f.icon}</div>
               <span className="lp-fcard-title">{f.title}</span>
@@ -438,12 +464,29 @@ const LandingPage = () => {
               ))}
             </motion.div>
 
-            <motion.div variants={fadeUp} transition={{ duration: 0.5 }} style={{ marginTop: '2.5rem' }}>
-              <Link to="/register" className="lp-mobile-cta">
-                Get the App
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </Link>
+            <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="lp-mobile-store-links">
+              <a
+                href="https://play.google.com/store/apps/details?id=com.kulobal.micobiz"
+                target="_blank"
+                rel="noreferrer"
+                className="lp-mobile-cta"
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Google Play
+              </a>
+              <a
+                href="https://www.apple.com/app-store/"
+                target="_blank"
+                rel="noreferrer"
+                className="lp-mobile-cta lp-mobile-cta-secondary"
+              >
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M16.365 1.43c0 1.14-.467 2.254-1.166 3.051-.75.853-1.972 1.493-3.104 1.402-.145-1.078.41-2.213 1.128-2.99.78-.852 2.124-1.474 3.142-1.463zM20.984 17.233c-.31.71-.68 1.366-1.108 1.967-.584.821-1.06 1.39-1.43 1.707-.573.521-1.188.79-1.845.81-.473 0-1.044-.135-1.708-.406-.665-.27-1.276-.405-1.836-.405-.586 0-1.215.135-1.89.405-.675.27-1.22.416-1.636.437-.63.027-1.258-.253-1.881-.842-.398-.344-.895-.933-1.492-1.768-.64-.894-1.166-1.93-1.58-3.106-.443-1.27-.665-2.5-.665-3.69 0-1.362.294-2.537.881-3.524.46-.796 1.072-1.423 1.836-1.881.764-.458 1.59-.692 2.478-.705.486 0 1.125.151 1.918.452.792.302 1.3.452 1.523.452.167 0 .733-.177 1.697-.53.91-.327 1.677-.463 2.301-.411 1.69.136 2.959.802 3.805 1.998-1.511.916-2.26 2.2-2.247 3.85.011 1.286.48 2.356 1.406 3.208.42.397.888.704 1.406.923-.113.327-.232.64-.357.94z" />
+                </svg>
+                App Store
+              </a>
             </motion.div>
           </motion.div>
 
@@ -586,24 +629,7 @@ const LandingPage = () => {
       </motion.section>
 
       {/* ─── FOOTER ─── */}
-      <motion.footer
-        className="lp-footer"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <span className="lp-footer-logo">
-          <img src={logo} alt="StorePro" style={{ height: '28px', objectFit: 'contain' }} />
-        </span>
-        <ul className="lp-footer-links">
-          <li><a href="#features">Features</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#how">How It Works</a></li>
-          <li><a href="#testimonials">Reviews</a></li>
-        </ul>
-        <span className="lp-footer-copy">© 2026 MicroBiz. All rights reserved.</span>
-      </motion.footer>
+      <MarketingFooter />
 
       {/* ─── COOKIE BANNER ─── */}
       <AnimatePresence>
@@ -1120,6 +1146,21 @@ const landingStyles = `
 
 .lp-mobile-cta:hover {
   background: #e5680f;
+}
+
+.lp-mobile-store-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.lp-mobile-cta-secondary {
+  background: #0B2247;
+}
+
+.lp-mobile-cta-secondary:hover {
+  background: #091a36;
 }
 
 .lp-mobile-phones {

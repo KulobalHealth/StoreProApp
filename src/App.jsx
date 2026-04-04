@@ -11,6 +11,10 @@ import { useAuth } from './contexts/AuthContext'
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
+const InventoryManagementPage = lazy(() => import('./pages/InventoryManagementPage'))
+const InvoicingAccountingPage = lazy(() => import('./pages/InvoicingAccountingPage'))
+const BusinessReportsPage = lazy(() => import('./pages/BusinessReportsPage'))
+const PointOfSalePage = lazy(() => import('./pages/PointOfSalePage'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const DesktopDownload = lazy(() => import('./pages/DesktopDownload'))
 const ActivityDashboard = lazy(() => import('./pages/ActivityDashboard'))
@@ -77,6 +81,10 @@ function App() {
               {/* Public Routes — Landing page is the home page */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/landing" element={<LandingPage />} />
+              <Route path="/inventory-management" element={<InventoryManagementPage />} />
+              <Route path="/point-of-sale" element={<PointOfSalePage />} />
+              <Route path="/invoicing-accounting" element={<InvoicingAccountingPage />} />
+              <Route path="/business-reports" element={<BusinessReportsPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<PrivacyPolicy />} />
               <Route path="/download" element={<DesktopDownload />} />

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import logo from '../MainLogo.jpeg'
+import MarketingFooter from '../components/MarketingFooter'
 
 export default function PrivacyPolicy() {
   const { hash } = useLocation()
@@ -337,18 +338,7 @@ export default function PrivacyPolicy() {
       </article>
 
       {/* FOOTER */}
-      <footer className="pp-footer">
-        <span className="pp-footer-logo">
-          <img src={logo} alt="StorePro" style={{ height: '28px', objectFit: 'contain' }} />
-        </span>
-        <ul className="pp-footer-links">
-          <li><Link to="/#features">Features</Link></li>
-          <li><Link to="/#pricing">Pricing</Link></li>
-          <li><a href="#privacy">Privacy</a></li>
-          <li><a href="#terms">Terms</a></li>
-        </ul>
-        <span className="pp-footer-copy">© 2026 StorePro. All rights reserved.</span>
-      </footer>
+      <MarketingFooter />
     </div>
   )
 }

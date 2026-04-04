@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import logo from '../MainLogo.jpeg'
+import MarketingFooter from '../components/MarketingFooter'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
@@ -221,24 +222,7 @@ export default function DesktopDownload() {
       </motion.section>
 
       {/* FOOTER */}
-      <motion.footer
-        className="dd-footer"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <span className="dd-footer-logo">
-          <img src={logo} alt="StorePro" style={{ height: '28px', objectFit: 'contain' }} />
-        </span>
-        <ul className="dd-footer-links">
-          <li><Link to="/#features">Features</Link></li>
-          <li><Link to="/#pricing">Pricing</Link></li>
-          <li><Link to="/privacy">Privacy</Link></li>
-          <li><Link to="/terms">Terms</Link></li>
-        </ul>
-        <span className="dd-footer-copy">© 2026 StorePro. All rights reserved.</span>
-      </motion.footer>
+      <MarketingFooter />
     </div>
   )
 }
