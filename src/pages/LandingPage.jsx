@@ -7,6 +7,8 @@ import heroVideo from '../video /Professional bold we are hiring promo linkedin 
 import client1 from '../clients/1662123687706.jpeg'
 import client2 from '../clients/client2.png'
 import client3 from '../clients/download.jpeg'
+import client4 from '../clients/Boat Herbal Ventures.jpeg'
+import client5 from '../clients/Screenshot_2025-09-21_091610-removebg-preview.png'
 import reviewer1 from '../01.jpg'
 import reviewer2 from '../02.jpg'
 import reviewer3 from '../03.jpg'
@@ -90,8 +92,9 @@ const LandingPage = () => {
           <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
         </svg>
       ),
-      title: 'Purchase Orders',
+      title: 'Credit & Cashflow Management',
       bg: '#0B2247',
+      link: '/credit-cashflow-management',
     },
     {
       icon: (
@@ -99,8 +102,9 @@ const LandingPage = () => {
           <rect x="5" y="2" width="14" height="20" rx="2" ry="2" /><line x1="12" y1="18" x2="12.01" y2="18" />
         </svg>
       ),
-      title: 'Mobile-First',
+      title: 'Online & Offline Sync',
       bg: '#FF751F',
+      link: '/online-offline-sync',
     },
   ]
 
@@ -171,7 +175,55 @@ const LandingPage = () => {
     },
   ]
 
+  const trustedLogos = [
+    { src: client1, alt: 'Client logo 1' },
+    { src: client2, alt: 'Client logo 2' },
+    { src: client3, alt: 'Client logo 3' },
+    { src: client4, alt: 'Boat Herbal Ventures' },
+    { src: client5, alt: 'Client logo 5' },
+  ]
+
+  const featureMenuItems = [
+    {
+      title: 'Inventory',
+      description: 'Track stock levels, movement, and replenishment with confidence.',
+      link: '/inventory-management',
+      icon: features[0].icon,
+    },
+    {
+      title: 'Point of Sale',
+      description: 'Sell faster with connected checkout, payments, and receipts.',
+      link: '/point-of-sale',
+      icon: features[1].icon,
+    },
+    {
+      title: 'Accounting',
+      description: 'Manage invoicing, billing, receivables, and finance workflows.',
+      link: '/invoicing-accounting',
+      icon: features[2].icon,
+    },
+    {
+      title: 'Business Reports',
+      description: 'Turn daily store activity into clearer reporting and insight.',
+      link: '/business-reports',
+      icon: features[3].icon,
+    },
+    {
+      title: 'Credit & Cashflow Management',
+      description: 'Explore the upcoming tools for balances, due dates, and cash visibility.',
+      link: '/credit-cashflow-management',
+      icon: features[4].icon,
+    },
+    {
+      title: 'Online & Offline Sync',
+      description: 'Keep POS running through internet issues and sync later.',
+      link: '/online-offline-sync',
+      icon: features[5].icon,
+    },
+  ]
+
   const [showCookies, setShowCookies] = useState(false)
+  const [isFeaturesMenuOpen, setIsFeaturesMenuOpen] = useState(false)
 
   useEffect(() => {
     const consent = localStorage.getItem('lp-cookie-consent')
@@ -203,11 +255,76 @@ const LandingPage = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <Link to="/" className="lp-logo">
-          <img src={logo} alt="StorePro" className="lp-logo-img" />
+        <Link to="/" className="lp-logo" aria-label="MicroBiz home">
+          <motion.img
+            src={logo}
+            alt="MicroBiz"
+            className="lp-logo-img"
+            initial={{ x: -28, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.65, delay: 0.18, ease: 'easeOut' }}
+          />
         </Link>
         <ul className="lp-nav-links">
-          <li><a href="#features">Features</a></li>
+          <li
+            className="lp-nav-item lp-nav-item--mega"
+            onMouseEnter={() => setIsFeaturesMenuOpen(true)}
+            onMouseLeave={() => setIsFeaturesMenuOpen(false)}
+            onFocus={() => setIsFeaturesMenuOpen(true)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setIsFeaturesMenuOpen(false)
+              }
+            }}
+          >
+            <button
+              type="button"
+              className="lp-nav-menu-trigger"
+              aria-expanded={isFeaturesMenuOpen}
+              aria-haspopup="true"
+              onClick={() => setIsFeaturesMenuOpen((currentValue) => !currentValue)}
+            >
+              Features
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            <AnimatePresence>
+              {isFeaturesMenuOpen && (
+                <motion.div
+                  className="lp-mega-menu"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                >
+                  <div className="lp-mega-menu-intro">
+                    <span className="lp-mega-menu-label">Explore Features</span>
+                    <h3>Everything MicroBiz brings into one retail workflow.</h3>
+                    <p>Open any feature page to see how it supports day-to-day store operations.</p>
+                  </div>
+
+                  <div className="lp-mega-menu-grid">
+                    {featureMenuItems.map((item) => (
+                      <Link
+                        key={item.title}
+                        to={item.link}
+                        className="lp-mega-menu-card"
+                        onClick={() => setIsFeaturesMenuOpen(false)}
+                      >
+                        <span className="lp-mega-menu-icon">{item.icon}</span>
+                        <span className="lp-mega-menu-copy">
+                          <strong>{item.title}</strong>
+                          <span>{item.description}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </li>
           <li><a href="#how">How It Works</a></li>
           <li><a href="#pricing">Pricing</a></li>
           <li><a href="#testimonials">Reviews</a></li>
@@ -276,7 +393,7 @@ const LandingPage = () => {
                 </div>
                 <div className="lp-proof-text">
                   <span className="lp-proof-stars">★★★★★</span>
-                  <span>Trusted by <strong>2,400+</strong> store owners</span>
+                  <span>Trusted by <strong>10+</strong> store owners</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -316,20 +433,18 @@ const LandingPage = () => {
         variants={staggerContainer}
       >
         <motion.p variants={fadeUp} transition={{ duration: 0.5 }}>Trusted by stores across</motion.p>
-        <div className="lp-brand-row">
-          {[client1, client2, client3].map((src, i) => (
-            <motion.img
-              key={i}
-              src={src}
-              alt={`Client ${i + 1}`}
-              className="lp-client-logo"
-              loading="lazy"
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-            />
-          ))}
+        <div className="lp-brand-marquee">
+          <div className="lp-brand-row">
+            {[...trustedLogos, ...trustedLogos].map((item, index) => (
+              <img
+                key={`${item.alt}-${index}`}
+                src={item.src}
+                alt={item.alt}
+                className="lp-client-logo"
+                loading="lazy"
+              />
+            ))}
+          </div>
         </div>
       </motion.div>
 
@@ -693,18 +808,35 @@ const landingStyles = `
 /* ─── NAV ─── */
 .lp-nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
   padding: 1.1rem 5%;
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
 
-.lp-logo { display: flex; align-items: center; text-decoration: none; }
-.lp-logo-img { height: 36px; object-fit: contain; }
+.lp-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.lp-logo-img {
+  height: 36px;
+  object-fit: contain;
+  will-change: transform, opacity;
+}
 
 .lp-nav-links {
   display: flex; gap: 2.2rem; align-items: center;
+  justify-self: center;
+}
+
+.lp-nav-item {
+  position: relative;
 }
 
 .lp-nav-links a {
@@ -713,6 +845,141 @@ const landingStyles = `
   transition: color 0.2s;
 }
 .lp-nav-links a:hover { color: var(--ink); }
+
+.lp-nav-menu-trigger {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.lp-nav-menu-trigger:hover,
+.lp-nav-menu-trigger:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+.lp-nav-item--mega {
+  padding: 1rem 0;
+  margin: -1rem 0;
+}
+
+.lp-mega-menu {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 0;
+  transform: none;
+  width: min(760px, 78vw);
+  padding: 1.25rem;
+  border: 1px solid rgba(11, 34, 71, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.lp-mega-menu::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 18px;
+  width: 16px;
+  height: 16px;
+  transform: rotate(45deg);
+  background: rgba(255, 255, 255, 0.98);
+  border-left: 1px solid rgba(11, 34, 71, 0.08);
+  border-top: 1px solid rgba(11, 34, 71, 0.08);
+}
+
+.lp-mega-menu-intro {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(11, 34, 71, 0.08);
+}
+
+.lp-mega-menu-label {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  color: var(--amber);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lp-mega-menu-intro h3 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.lp-mega-menu-intro p {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.lp-mega-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.lp-mega-menu-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.95rem;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 34, 71, 0.06);
+  background: #fff;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lp-mega-menu-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 117, 31, 0.22);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+}
+
+.lp-mega-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 117, 31, 0.08);
+  color: var(--ink);
+  flex: 0 0 auto;
+}
+
+.lp-mega-menu-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lp-mega-menu-copy strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.lp-mega-menu-copy span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
 
 .lp-nav-signin {
   color: var(--ink) !important; font-weight: 600 !important;
@@ -1416,10 +1683,24 @@ const landingStyles = `
   text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem;
 }
 
-.lp-brand-row { display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; }
+.lp-brand-marquee {
+  overflow: hidden;
+  width: min(100%, 920px);
+  margin: 0 auto;
+}
+
+.lp-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  width: max-content;
+  animation: lpBrandSlide 22s linear infinite;
+}
 
 .lp-client-logo {
-  height: 72px; max-width: 200px;
+  height: 52px; max-width: 150px;
+  width: auto;
+  flex: 0 0 auto;
   object-fit: contain;
   filter: grayscale(100%) opacity(0.45);
   transition: filter 0.3s ease;
@@ -1427,6 +1708,11 @@ const landingStyles = `
 
 .lp-client-logo:hover {
   filter: grayscale(0%) opacity(1);
+}
+
+@keyframes lpBrandSlide {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 1.125rem)); }
 }
 
 /* ─── FOOTER ─── */

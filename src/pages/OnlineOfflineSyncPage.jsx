@@ -3,161 +3,152 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import MarketingFooter from '../components/MarketingFooter'
 import logo from '../MainLogo.jpeg'
-import accountingImage from '../mobile-mockups/06.png'
+import syncImage from '../mobile-mockups/pos.png'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },
 }
 
-const accountingMetrics = [
-  { value: 'Faster billing', label: 'Invoices in seconds' },
-  { value: 'Accurate', label: 'Receivables and payables tracked' },
-  { value: 'Flexible', label: 'Sales cycles and currencies supported' },
+const syncMetrics = [
+  { value: 'Works offline', label: 'Keep selling even when internet drops' },
+  { value: 'Syncs online', label: 'Updates reconnect and flow automatically' },
+  { value: 'Built for reliability', label: 'Helps businesses handle unstable networks' },
 ]
 
-const accountingSections = [
+const syncSections = [
   {
-    title: 'Create professional-looking invoices in seconds',
+    title: 'Keep POS running without internet',
     description:
-      'Create, print, and email polished invoices in seconds with layouts you can customize to match your business, logo, and billing preferences.',
+      'Microbiz POS continues to support sales even when the internet is unavailable, so your team can keep serving customers without waiting for connectivity to return.',
   },
   {
-    title: 'Flexible purchase and sales management',
+    title: 'Sync online and offline activity together',
     description:
-      'Microbiz adapts to simple or complex purchase and sales cycles, including party-specific workflows, orders, payments, receipts, and notes.',
+      'When the connection is restored, sales and related updates can sync back together so records stay aligned across your business workflows.',
   },
   {
-    title: 'Multiple billing formats',
+    title: 'Reduce disruption during network issues',
     description:
-      'Support different billing formats for products or services so your team can bill accurately with the right structure for every transaction.',
+      'Businesses in areas with unstable internet can keep operating more confidently because checkout does not stop every time the network becomes unreliable.',
   },
   {
-    title: 'Multi-currency support',
+    title: 'Protect day-to-day sales continuity',
     description:
-      'Record invoices, quotations, orders, and bills in foreign currencies while Microbiz automatically accounts for forex gains and losses.',
+      'Help cashiers complete transactions, issue receipts, and continue normal selling operations even during short outages or weak data coverage.',
   },
   {
-    title: 'Multiple price levels',
+    title: 'Support multi-device consistency',
     description:
-      'Create price levels for wholesalers, retailers, or customer groups with quantity-based rates and discounts to speed up accurate billing.',
+      'Once connectivity is available again, synced updates help teams maintain a more unified view of sales activity across devices and locations.',
   },
   {
-    title: 'Share invoices and orders via WhatsApp',
+    title: 'Stronger operations for growing businesses',
     description:
-      'Send invoices, orders, reminders, and reports directly through WhatsApp using formats like PDF, JPEG, or Excel with reusable templates.',
+      'Offline and online sync gives shops, pharmacies, and retail teams more resilience so internet issues do not interrupt business every day.',
   },
-  {
-    title: 'Multiple addresses for company and ledgers',
-    description:
-      'Store and apply multiple addresses for your company and parties so documents and reports always reflect the right location details.',
-  },
-]
-
-const additionalFeatures = [
-  'Multi-task without losing your progress while handling invoices and financial workflows.',
-  'Bills receivable and payable are automatically managed as soon as invoices are saved.',
-  'Pre-set duties, ledgers, and billing templates to reduce repetitive invoice entry.',
-  'Record and track post-dated transactions with a dedicated register for visibility.',
-  'Handle buy-one-get-one, free samples, actual and billed quantities, and zero-valued transactions with ease.',
 ]
 
 const workflowSteps = [
   {
-    title: 'Create the right bill quickly',
+    title: 'Sell normally while offline',
     description:
-      'Use the correct format, pricing level, and customer details without slowing down day-to-day invoicing.',
+      'Continue checkout, record transactions, and keep operations moving when your connection is weak or unavailable.',
   },
   {
-    title: 'Capture the full financial picture',
+    title: 'Reconnect and sync automatically',
     description:
-      'Track receipts, payables, receivables, currencies, and notes so every transaction stays complete and reliable.',
+      'When internet access returns, the system can sync saved activity so your data becomes current again without manual re-entry.',
   },
   {
-    title: 'Share and follow up effortlessly',
+    title: 'Stay accurate across the business',
     description:
-      'Send invoices and related documents instantly while keeping teams and customers aligned with the same source of truth.',
+      'Teams get a clearer shared picture of sales and activity after sync, helping managers stay informed and in control.',
   },
 ]
 
-const InvoicingAccountingPage = () => {
+const OnlineOfflineSyncPage = () => {
   return (
-    <div className="iap-page">
+    <div className="oos-page">
       <motion.nav
-        className="iap-nav"
+        className="oos-nav"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <Link to="/" className="iap-logo">
-          <img src={logo} alt="MicroBiz" className="iap-logo-img" />
+        <Link to="/" className="oos-logo">
+          <img src={logo} alt="MicroBiz" className="oos-logo-img" />
         </Link>
-        <ul className="iap-nav-links">
+        <ul className="oos-nav-links">
           <li><a href="/#features">Features</a></li>
           <li><a href="/#how">How It Works</a></li>
           <li><a href="/#pricing">Pricing</a></li>
           <li><a href="/#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="iap-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="iap-nav-cta">Get Started →</Link></li>
+          <li><Link to="/login" className="oos-nav-signin">Sign In</Link></li>
+          <li><Link to="/register" className="oos-nav-cta">Get Started →</Link></li>
         </ul>
       </motion.nav>
 
-      <section className="iap-hero">
-        <div className="iap-shell">
-          <div className="iap-hero-grid">
+      <section className="oos-hero">
+        <div className="oos-shell">
+          <div className="oos-hero-grid">
             <motion.div
-              className="iap-hero-copy"
+              className="oos-hero-copy"
               initial="hidden"
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.55, delay: 0.05 }}
             >
-              <div className="iap-kicker">Finance Suite</div>
-              <h1>Invoicing and accounting that stay fast and accurate.</h1>
+              <div className="oos-kicker">Online & Offline Sync</div>
+              <h1>Sell online or offline without breaking your daily workflow.</h1>
               <p>
-                Create polished invoices, adapt to complex billing flows, manage receivables and
-                payables, and keep financial records dependable as your business grows.
+                Microbiz POS can work both online and offline, then sync activity when the
+                internet is available again. That means your business can keep running even
+                when network issues show up during the day.
               </p>
 
-              <div className="iap-actions iap-actions--hero">
-                <Link to="/register" className="iap-cta">Get Started</Link>
-                <Link to="/" className="iap-cta iap-cta--ghost">Back to Homepage</Link>
+              <div className="oos-actions oos-actions--hero">
+                <Link to="/register" className="oos-cta">Get Started</Link>
+                <Link to="/" className="oos-cta oos-cta--ghost">Back to Homepage</Link>
               </div>
             </motion.div>
 
             <motion.div
-              className="iap-hero-visual"
+              className="oos-hero-visual"
               initial="hidden"
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.6, delay: 0.12 }}
             >
-              <div className="iap-side-card iap-side-card--left">
-                <div className="iap-side-card-label">Flexible billing</div>
-                <strong>Support products, services, currencies, and pricing structures</strong>
+              <div className="oos-orb oos-orb--orange" />
+              <div className="oos-orb oos-orb--navy" />
+
+              <div className="oos-side-card oos-side-card--left">
+                <div className="oos-side-card-label">Offline ready</div>
+                <strong>Keep selling when connectivity is unstable or unavailable</strong>
               </div>
 
-              <div className="iap-side-card iap-side-card--right">
-                <div className="iap-side-card-label">Faster follow-up</div>
-                <strong>Share invoices and reminders instantly across the channels you use</strong>
+              <div className="oos-side-card oos-side-card--right">
+                <div className="oos-side-card-label">Sync when reconnected</div>
+                <strong>Bring transactions back into one shared record when internet returns</strong>
               </div>
 
-              <div className="iap-hero-frame">
-                <img src={accountingImage} alt="Invoicing and accounting dashboard preview" loading="lazy" />
+              <div className="oos-hero-frame">
+                <img src={syncImage} alt="POS sync preview" loading="lazy" />
               </div>
             </motion.div>
           </div>
 
           <motion.div
-            className="iap-metrics"
+            className="oos-metrics"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.25 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            {accountingMetrics.map((item) => (
-              <div key={item.value} className="iap-metric-card">
+            {syncMetrics.map((item) => (
+              <div key={item.value} className="oos-metric-card">
                 <strong>{item.value}</strong>
                 <span>{item.label}</span>
               </div>
@@ -166,86 +157,86 @@ const InvoicingAccountingPage = () => {
         </div>
       </section>
 
-      <section className="iap-overview">
-        <div className="iap-shell iap-overview-grid">
+      <section className="oos-overview">
+        <div className="oos-shell oos-overview-grid">
           <motion.article
-            className="iap-overview-card iap-overview-card--feature"
+            className="oos-overview-card oos-overview-card--feature"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">Why teams choose it</span>
-            <h2>From invoice creation to cleaner financial control.</h2>
+            <span className="oos-section-label">Why it matters</span>
+            <h2>Internet problems should not stop sales or delay your business.</h2>
             <p>
-              Microbiz helps businesses bill faster, manage more billing complexity, and keep
-              accounting records accurate without slowing down sales operations.
+              Online and offline sync helps businesses keep serving customers during outages,
+              then reconnect operations smoothly once the network becomes available again.
             </p>
           </motion.article>
 
           <motion.article
-            className="iap-overview-card"
+            className="oos-overview-card"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45, delay: 0.06 }}
           >
-            <span className="iap-overview-eyebrow">Built for billing flexibility</span>
+            <span className="oos-overview-eyebrow">Built for real conditions</span>
             <p>
-              Handle multiple formats, currencies, addresses, and customer pricing structures with a
-              workflow that adapts to how your business really sells.
+              Support businesses that deal with unstable internet, data outages, or inconsistent
+              connectivity without forcing checkout to stop.
             </p>
           </motion.article>
 
           <motion.article
-            className="iap-overview-card"
+            className="oos-overview-card"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45, delay: 0.12 }}
           >
-            <span className="iap-overview-eyebrow">Designed for accuracy</span>
+            <span className="oos-overview-eyebrow">Designed for continuity</span>
             <p>
-              Keep receivables, payables, duties, and post-dated transactions connected so the books
-              stay reliable as transactions move faster.
+              Give teams a more reliable way to keep sales moving first, then restore synced data
+              when the connection comes back.
             </p>
           </motion.article>
         </div>
       </section>
 
-      <section className="iap-capabilities">
-        <div className="iap-shell">
+      <section className="oos-capabilities">
+        <div className="oos-shell">
           <motion.div
-            className="iap-section-head"
+            className="oos-section-head"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">Capabilities</span>
-            <h2>Everything you need to bill smarter and account with confidence.</h2>
+            <span className="oos-section-label">Capabilities</span>
+            <h2>POS continuity designed for both connected and disconnected environments.</h2>
             <p>
-              Explore the invoicing and accounting tools that help your team move faster while
-              keeping transactions, payments, and financial records in sync.
+              Explore how Microbiz helps businesses operate with more confidence when internet
+              access is unreliable, limited, or temporarily unavailable.
             </p>
           </motion.div>
 
-          <div className="iap-grid">
-            {accountingSections.map((section, index) => (
+          <div className="oos-grid">
+            {syncSections.map((section, index) => (
               <motion.article
                 key={section.title}
-                className="iap-card"
+                className="oos-card"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={fadeUp}
                 transition={{ duration: 0.45, delay: index * 0.04 }}
               >
-                <div className="iap-card-index">{String(index + 1).padStart(2, '0')}</div>
+                <div className="oos-card-index">{String(index + 1).padStart(2, '0')}</div>
                 <h3>{section.title}</h3>
                 <p>{section.description}</p>
               </motion.article>
@@ -254,65 +245,32 @@ const InvoicingAccountingPage = () => {
         </div>
       </section>
 
-      <section className="iap-extras">
-        <div className="iap-shell">
+      <section className="oos-workflow">
+        <div className="oos-shell">
           <motion.div
-            className="iap-section-head"
+            className="oos-section-head"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">More Features</span>
-            <h2>Extra controls that make daily billing and finance work easier.</h2>
+            <span className="oos-section-label">Workflow</span>
+            <h2>A smoother path from offline selling to synced business records.</h2>
           </motion.div>
 
-          <div className="iap-extra-grid">
-            {additionalFeatures.map((feature, index) => (
-              <motion.article
-                key={feature}
-                className="iap-extra-item"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={fadeUp}
-                transition={{ duration: 0.45, delay: index * 0.04 }}
-              >
-                <div className="iap-extra-badge">{String(index + 1).padStart(2, '0')}</div>
-                <p>{feature}</p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="iap-workflow">
-        <div className="iap-shell">
-          <motion.div
-            className="iap-section-head"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            transition={{ duration: 0.45 }}
-          >
-            <span className="iap-section-label">Workflow</span>
-            <h2>A finance workflow that stays smooth from invoice to follow-up.</h2>
-          </motion.div>
-
-          <div className="iap-workflow-grid">
+          <div className="oos-workflow-grid">
             {workflowSteps.map((step, index) => (
               <motion.article
                 key={step.title}
-                className="iap-workflow-card"
+                className="oos-workflow-card"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={fadeUp}
                 transition={{ duration: 0.45, delay: index * 0.06 }}
               >
-                <div className="iap-workflow-number">0{index + 1}</div>
+                <div className="oos-workflow-number">0{index + 1}</div>
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
               </motion.article>
@@ -320,7 +278,7 @@ const InvoicingAccountingPage = () => {
           </div>
 
           <motion.div
-            className="iap-footer-cta"
+            className="oos-footer-cta"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
@@ -328,16 +286,16 @@ const InvoicingAccountingPage = () => {
             transition={{ duration: 0.45 }}
           >
             <div>
-              <span className="iap-section-label iap-section-label--light">Ready to simplify billing and finance?</span>
-              <h3>Use Microbiz to invoice faster and keep every financial workflow cleaner.</h3>
+              <span className="oos-section-label oos-section-label--light">Ready for more reliable selling?</span>
+              <h3>Use Microbiz to keep POS active through internet issues and sync later.</h3>
               <p>
-                Bring invoicing, pricing, currencies, receivables, and accounting control into one
-                experience your team can rely on every day.
+                Give your business a more dependable way to sell, capture activity, and stay aligned
+                even when connectivity is not perfect every day.
               </p>
             </div>
-            <div className="iap-actions">
-              <Link to="/register" className="iap-cta">Create Account</Link>
-              <Link to="/login" className="iap-cta iap-cta--ghost-light">Sign In</Link>
+            <div className="oos-actions">
+              <Link to="/register" className="oos-cta">Create Account</Link>
+              <Link to="/login" className="oos-cta oos-cta--ghost-light">Sign In</Link>
             </div>
           </motion.div>
         </div>
@@ -346,7 +304,7 @@ const InvoicingAccountingPage = () => {
       <MarketingFooter />
 
       <style>{`
-        .iap-page {
+        .oos-page {
           min-height: 100vh;
           background:
             radial-gradient(circle at top left, rgba(255, 117, 31, 0.1), transparent 26%),
@@ -355,12 +313,12 @@ const InvoicingAccountingPage = () => {
           font-family: Manrope, sans-serif;
         }
 
-        .iap-shell {
+        .oos-shell {
           width: min(1160px, calc(100% - 48px));
           margin: 0 auto;
         }
 
-        .iap-nav {
+        .oos-nav {
           position: fixed;
           top: 0;
           left: 0;
@@ -375,18 +333,18 @@ const InvoicingAccountingPage = () => {
           border-bottom: 1px solid rgba(11, 34, 71, 0.08);
         }
 
-        .iap-logo {
+        .oos-logo {
           display: flex;
           align-items: center;
           text-decoration: none;
         }
 
-        .iap-logo-img {
+        .oos-logo-img {
           height: 36px;
           object-fit: contain;
         }
 
-        .iap-nav-links {
+        .oos-nav-links {
           display: flex;
           gap: 2.2rem;
           align-items: center;
@@ -395,7 +353,7 @@ const InvoicingAccountingPage = () => {
           padding: 0;
         }
 
-        .iap-nav-links a {
+        .oos-nav-links a {
           text-decoration: none;
           color: #5a6a7e;
           font-size: 0.92rem;
@@ -403,17 +361,17 @@ const InvoicingAccountingPage = () => {
           transition: color 0.2s ease;
         }
 
-        .iap-nav-links a:hover {
+        .oos-nav-links a:hover {
           color: #0B2247;
         }
 
-        .iap-nav-signin {
+        .oos-nav-signin {
           color: #0B2247 !important;
           font-weight: 700 !important;
         }
 
-        .iap-nav-cta,
-        .iap-cta {
+        .oos-nav-cta,
+        .oos-cta {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -423,25 +381,25 @@ const InvoicingAccountingPage = () => {
           transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
 
-        .iap-nav-cta {
+        .oos-nav-cta {
           background: #0B2247;
           color: #ffffff !important;
           padding: 0.55rem 1.3rem;
           font-size: 0.88rem !important;
         }
 
-        .iap-nav-cta:hover {
+        .oos-nav-cta:hover {
           background: #FF751F !important;
           transform: translateY(-1px);
         }
 
-        .iap-hero {
+        .oos-hero {
           position: relative;
           overflow: hidden;
           padding: 126px 0 36px;
         }
 
-        .iap-hero-grid {
+        .oos-hero-grid {
           display: grid;
           grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
           gap: 42px;
@@ -449,8 +407,8 @@ const InvoicingAccountingPage = () => {
           min-height: calc(100vh - 210px);
         }
 
-        .iap-kicker,
-        .iap-section-label {
+        .oos-kicker,
+        .oos-section-label {
           display: inline-flex;
           align-items: center;
           padding: 8px 12px;
@@ -463,27 +421,27 @@ const InvoicingAccountingPage = () => {
           text-transform: uppercase;
         }
 
-        .iap-section-label--light {
+        .oos-section-label--light {
           background: rgba(255, 255, 255, 0.12);
           color: #ffd7bd;
         }
 
-        .iap-kicker {
+        .oos-kicker {
           margin-bottom: 18px;
         }
 
-        .iap-hero-copy {
+        .oos-hero-copy {
           max-width: 650px;
         }
 
-        .iap-hero-copy h1 {
+        .oos-hero-copy h1 {
           margin: 0 0 18px;
-          font-size: clamp(2.5rem, 4.5vw, 4.9rem);
+          font-size: clamp(2.5rem, 4.5vw, 4.8rem);
           line-height: 0.95;
           letter-spacing: -0.05em;
         }
 
-        .iap-hero-copy p {
+        .oos-hero-copy p {
           margin: 0;
           max-width: 620px;
           font-size: 1.08rem;
@@ -491,84 +449,105 @@ const InvoicingAccountingPage = () => {
           color: #5a6a7e;
         }
 
-        .iap-actions {
+        .oos-actions {
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
         }
 
-        .iap-actions--hero {
+        .oos-actions--hero {
           margin-top: 28px;
         }
 
-        .iap-cta {
+        .oos-cta {
           background: #FF751F;
           color: #ffffff;
           padding: 12px 18px;
           box-shadow: 0 14px 28px rgba(255, 117, 31, 0.22);
         }
 
-        .iap-cta:hover {
+        .oos-cta:hover {
           transform: translateY(-1px);
           box-shadow: 0 18px 34px rgba(255, 117, 31, 0.28);
         }
 
-        .iap-cta--ghost {
+        .oos-cta--ghost {
           background: rgba(255, 255, 255, 0.8);
           color: #0B2247;
           border: 1px solid rgba(11, 34, 71, 0.12);
           box-shadow: none;
         }
 
-        .iap-cta--ghost:hover {
+        .oos-cta--ghost:hover {
           color: #FF751F;
           border-color: rgba(255, 117, 31, 0.3);
           box-shadow: none;
         }
 
-        .iap-cta--ghost-light {
+        .oos-cta--ghost-light {
           background: transparent;
           color: #ffffff;
           border: 1px solid rgba(255, 255, 255, 0.24);
           box-shadow: none;
         }
 
-        .iap-cta--ghost-light:hover {
+        .oos-cta--ghost-light:hover {
           border-color: rgba(255, 255, 255, 0.46);
           color: #ffffff;
           box-shadow: none;
         }
 
-        .iap-hero-visual {
+        .oos-hero-visual {
           position: relative;
-          min-height: 660px;
+          min-height: 590px;
           display: flex;
           justify-content: center;
           align-items: center;
           isolation: isolate;
         }
 
-        .iap-hero-frame {
+        .oos-orb {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(4px);
+          z-index: 0;
+        }
+
+        .oos-orb--orange {
+          width: min(70vw, 410px);
+          aspect-ratio: 1;
+          top: 10%;
+          right: 8%;
+          background: radial-gradient(circle, rgba(255, 117, 31, 0.24) 0%, rgba(255, 117, 31, 0.08) 55%, rgba(255, 117, 31, 0) 76%);
+        }
+
+        .oos-orb--navy {
+          width: min(62vw, 340px);
+          aspect-ratio: 1;
+          bottom: 10%;
+          left: 4%;
+          background: radial-gradient(circle, rgba(11, 34, 71, 0.18) 0%, rgba(11, 34, 71, 0.06) 52%, rgba(11, 34, 71, 0) 74%);
+        }
+
+        .oos-hero-frame {
           position: relative;
           z-index: 1;
-          width: min(100%, 760px);
-          border-radius: 0;
+          width: min(100%, 650px);
           overflow: hidden;
+          border-radius: 0;
           background: transparent;
-          border: none;
-          box-shadow: none;
           padding: 0;
         }
 
-        .iap-hero-frame img {
+        .oos-hero-frame img {
           display: block;
           width: 100%;
           height: auto;
-          border-radius: 0;
           object-fit: cover;
+          border-radius: 0;
         }
 
-        .iap-side-card {
+        .oos-side-card {
           position: absolute;
           z-index: 2;
           width: min(240px, 42%);
@@ -580,18 +559,19 @@ const InvoicingAccountingPage = () => {
           border-radius: 4px;
         }
 
-        .iap-side-card--left {
+        .oos-side-card--left {
           left: 0;
           bottom: 82px;
         }
 
-        .iap-side-card--right {
-          right: 0;
+        .oos-side-card--right {
+          right: 8px;
           top: 72px;
+          width: min(210px, 38%);
         }
 
-        .iap-side-card-label,
-        .iap-overview-eyebrow {
+        .oos-side-card-label,
+        .oos-overview-eyebrow {
           display: block;
           margin-bottom: 10px;
           color: #FF751F;
@@ -601,24 +581,23 @@ const InvoicingAccountingPage = () => {
           text-transform: uppercase;
         }
 
-        .iap-side-card strong {
+        .oos-side-card strong {
           display: block;
           line-height: 1.5;
           font-size: 1rem;
         }
 
-        .iap-metrics {
+        .oos-metrics {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
           margin-top: 34px;
         }
 
-        .iap-metric-card,
-        .iap-overview-card,
-        .iap-card,
-        .iap-extra-item,
-        .iap-workflow-card {
+        .oos-metric-card,
+        .oos-overview-card,
+        .oos-card,
+        .oos-workflow-card {
           background: rgba(255, 255, 255, 0.84);
           border: 1px solid rgba(11, 34, 71, 0.08);
           border-radius: 4px;
@@ -626,89 +605,84 @@ const InvoicingAccountingPage = () => {
           backdrop-filter: blur(12px);
         }
 
-        .iap-metric-card {
+        .oos-metric-card {
           padding: 22px 24px;
         }
 
-        .iap-metric-card strong {
+        .oos-metric-card strong {
           display: block;
           margin-bottom: 6px;
           font-size: 1.15rem;
         }
 
-        .iap-metric-card span {
+        .oos-metric-card span {
           color: #5a6a7e;
           line-height: 1.6;
           font-size: 0.95rem;
         }
 
-        .iap-overview,
-        .iap-capabilities,
-        .iap-extras,
-        .iap-workflow {
+        .oos-overview,
+        .oos-capabilities,
+        .oos-workflow {
           padding: 38px 0 88px;
         }
 
-        .iap-overview-grid {
+        .oos-overview-grid {
           display: grid;
           grid-template-columns: 1.2fr 0.9fr 0.9fr;
           gap: 22px;
         }
 
-        .iap-overview-card {
+        .oos-overview-card {
           padding: 28px;
         }
 
-        .iap-overview-card--feature {
+        .oos-overview-card--feature {
           background: linear-gradient(135deg, rgba(11, 34, 71, 0.96) 0%, rgba(22, 53, 110, 0.96) 100%);
           color: #ffffff;
           box-shadow: 0 26px 60px rgba(11, 34, 71, 0.18);
         }
 
-        .iap-overview-card--feature p {
+        .oos-overview-card--feature p {
           color: rgba(255, 255, 255, 0.82);
         }
 
-        .iap-overview-card h2,
-        .iap-section-head h2,
-        .iap-footer-cta h3 {
+        .oos-overview-card h2,
+        .oos-section-head h2,
+        .oos-footer-cta h3 {
           margin: 14px 0 14px;
           font-size: clamp(1.8rem, 3vw, 2.8rem);
           line-height: 1.08;
           letter-spacing: -0.03em;
         }
 
-        .iap-overview-card p,
-        .iap-section-head p,
-        .iap-card p,
-        .iap-extra-item p,
-        .iap-workflow-card p,
-        .iap-footer-cta p {
+        .oos-overview-card p,
+        .oos-section-head p,
+        .oos-workflow-card p,
+        .oos-footer-cta p {
           margin: 0;
           color: #5a6a7e;
           line-height: 1.8;
           font-size: 0.98rem;
         }
 
-        .iap-section-head {
+        .oos-section-head {
           max-width: 760px;
           margin-bottom: 28px;
         }
 
-        .iap-grid {
+        .oos-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 22px;
         }
 
-        .iap-card,
-        .iap-workflow-card {
+        .oos-card {
           padding: 28px;
         }
 
-        .iap-card-index,
-        .iap-extra-badge,
-        .iap-workflow-number {
+        .oos-card-index,
+        .oos-workflow-number {
           width: 44px;
           height: 44px;
           display: inline-flex;
@@ -720,35 +694,33 @@ const InvoicingAccountingPage = () => {
           font-size: 0.82rem;
           font-weight: 800;
           margin-bottom: 18px;
-          flex-shrink: 0;
         }
 
-        .iap-card h3,
-        .iap-workflow-card h3 {
+        .oos-card h3,
+        .oos-workflow-card h3 {
           margin: 0 0 12px;
           font-size: 1.24rem;
           line-height: 1.35;
         }
 
-        .iap-extra-grid,
-        .iap-workflow-grid {
+        .oos-card p {
+          margin: 0;
+          color: #5a6a7e;
+          line-height: 1.85;
+          font-size: 0.98rem;
+        }
+
+        .oos-workflow-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 22px;
         }
 
-        .iap-extra-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 14px;
-          padding: 24px;
+        .oos-workflow-card {
+          padding: 28px;
         }
 
-        .iap-workflow-grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .iap-footer-cta {
+        .oos-footer-cta {
           margin-top: 34px;
           display: flex;
           align-items: center;
@@ -761,97 +733,96 @@ const InvoicingAccountingPage = () => {
           box-shadow: 0 30px 60px rgba(11, 34, 71, 0.2);
         }
 
-        .iap-footer-cta p {
+        .oos-footer-cta p {
           color: rgba(255, 255, 255, 0.82);
           max-width: 620px;
         }
 
         @media (max-width: 1100px) {
-          .iap-hero-grid,
-          .iap-overview-grid,
-          .iap-workflow-grid {
+          .oos-hero-grid,
+          .oos-overview-grid,
+          .oos-workflow-grid {
             grid-template-columns: 1fr;
           }
 
-          .iap-extra-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .iap-hero-grid {
+          .oos-hero-grid {
             min-height: auto;
           }
 
-          .iap-hero-visual {
+          .oos-hero-visual {
             min-height: 520px;
           }
 
-          .iap-footer-cta {
+          .oos-footer-cta {
             flex-direction: column;
             align-items: flex-start;
           }
         }
 
         @media (max-width: 900px) {
-          .iap-nav-links {
+          .oos-nav-links {
             display: none;
           }
 
-          .iap-hero {
+          .oos-hero {
             padding: 98px 0 32px;
           }
 
-          .iap-grid,
-          .iap-metrics {
+          .oos-grid,
+          .oos-metrics {
             grid-template-columns: 1fr;
           }
 
-          .iap-hero-copy h1 {
+          .oos-hero-copy h1 {
             font-size: clamp(2.4rem, 11vw, 4rem);
           }
 
-          .iap-side-card {
+          .oos-side-card {
             width: min(220px, 46%);
           }
 
-          .iap-side-card--right {
+          .oos-side-card--right {
             top: 34px;
           }
 
-          .iap-side-card--left {
+          .oos-side-card--left {
             bottom: 36px;
           }
         }
 
         @media (max-width: 640px) {
-          .iap-shell {
+          .oos-shell {
             width: min(100% - 28px, 1160px);
           }
 
-          .iap-hero {
+          .oos-hero {
             padding-top: 86px;
           }
 
-          .iap-hero-visual {
+          .oos-hero-visual {
             min-height: 370px;
             display: grid;
             gap: 14px;
           }
 
-          .iap-side-card {
+          .oos-side-card {
             position: static;
             width: 100%;
           }
 
-          .iap-card,
-          .iap-overview-card,
-          .iap-extra-item,
-          .iap-workflow-card,
-          .iap-footer-cta,
-          .iap-metric-card {
+          .oos-orb {
+            display: none;
+          }
+
+          .oos-card,
+          .oos-overview-card,
+          .oos-workflow-card,
+          .oos-footer-cta,
+          .oos-metric-card {
             padding: 22px;
           }
 
-          .iap-actions {
+          .oos-actions {
             flex-direction: column;
           }
         }
@@ -860,4 +831,4 @@ const InvoicingAccountingPage = () => {
   )
 }
 
-export default InvoicingAccountingPage
+export default OnlineOfflineSyncPage

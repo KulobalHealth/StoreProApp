@@ -3,161 +3,151 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import MarketingFooter from '../components/MarketingFooter'
 import logo from '../MainLogo.jpeg'
-import accountingImage from '../mobile-mockups/06.png'
+import featureImage from '../mobile-mockups/06.png'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0 },
 }
 
-const accountingMetrics = [
-  { value: 'Faster billing', label: 'Invoices in seconds' },
-  { value: 'Accurate', label: 'Receivables and payables tracked' },
-  { value: 'Flexible', label: 'Sales cycles and currencies supported' },
+const metrics = [
+  { value: 'Upcoming', label: 'New release currently in development' },
+  { value: 'Smarter credit', label: 'Track what is owed and when' },
+  { value: 'Clearer cashflow', label: 'Understand money in and money out faster' },
 ]
 
-const accountingSections = [
+const sections = [
   {
-    title: 'Create professional-looking invoices in seconds',
+    title: 'Customer and supplier credit tracking',
     description:
-      'Create, print, and email polished invoices in seconds with layouts you can customize to match your business, logo, and billing preferences.',
+      'Monitor who owes you, what you owe suppliers, and how those balances affect working capital across the business.',
   },
   {
-    title: 'Flexible purchase and sales management',
+    title: 'Due dates and payment reminders',
     description:
-      'Microbiz adapts to simple or complex purchase and sales cycles, including party-specific workflows, orders, payments, receipts, and notes.',
+      'Stay ahead of upcoming obligations with clearer due-date visibility and reminder flows that reduce missed follow-ups.',
   },
   {
-    title: 'Multiple billing formats',
+    title: 'Cash inflow and outflow visibility',
     description:
-      'Support different billing formats for products or services so your team can bill accurately with the right structure for every transaction.',
+      'See where money is coming from and where it is going so owners can make faster, more confident cash decisions.',
   },
   {
-    title: 'Multi-currency support',
+    title: 'Outstanding balances in one place',
     description:
-      'Record invoices, quotations, orders, and bills in foreign currencies while Microbiz automatically accounts for forex gains and losses.',
+      'Bring unpaid invoices, supplier obligations, and partial payments into one shared view for cleaner financial control.',
   },
   {
-    title: 'Multiple price levels',
+    title: 'Actionable snapshots for managers',
     description:
-      'Create price levels for wholesalers, retailers, or customer groups with quantity-based rates and discounts to speed up accurate billing.',
+      'Surface the most important credit and cashflow signals quickly so teams can prioritize collections and spending decisions.',
   },
   {
-    title: 'Share invoices and orders via WhatsApp',
+    title: 'Connected with sales and accounting workflows',
     description:
-      'Send invoices, orders, reminders, and reports directly through WhatsApp using formats like PDF, JPEG, or Excel with reusable templates.',
+      'Link credit activity to invoicing, payments, and operations so financial visibility improves without extra manual tracking.',
   },
-  {
-    title: 'Multiple addresses for company and ledgers',
-    description:
-      'Store and apply multiple addresses for your company and parties so documents and reports always reflect the right location details.',
-  },
-]
-
-const additionalFeatures = [
-  'Multi-task without losing your progress while handling invoices and financial workflows.',
-  'Bills receivable and payable are automatically managed as soon as invoices are saved.',
-  'Pre-set duties, ledgers, and billing templates to reduce repetitive invoice entry.',
-  'Record and track post-dated transactions with a dedicated register for visibility.',
-  'Handle buy-one-get-one, free samples, actual and billed quantities, and zero-valued transactions with ease.',
 ]
 
 const workflowSteps = [
   {
-    title: 'Create the right bill quickly',
+    title: 'See exposure clearly',
     description:
-      'Use the correct format, pricing level, and customer details without slowing down day-to-day invoicing.',
+      'Quickly understand receivables, payables, and overdue balances without piecing reports together manually.',
   },
   {
-    title: 'Capture the full financial picture',
+    title: 'Prioritize the next move',
     description:
-      'Track receipts, payables, receivables, currencies, and notes so every transaction stays complete and reliable.',
+      'Know which collections, supplier payments, or approvals need attention first to protect day-to-day cash position.',
   },
   {
-    title: 'Share and follow up effortlessly',
+    title: 'Plan with more confidence',
     description:
-      'Send invoices and related documents instantly while keeping teams and customers aligned with the same source of truth.',
+      'Use a clearer picture of upcoming inflows and obligations to make smarter inventory, payroll, and operating decisions.',
   },
 ]
 
-const InvoicingAccountingPage = () => {
+const CreditCashflowManagementPage = () => {
   return (
-    <div className="iap-page">
+    <div className="ccm-page">
       <motion.nav
-        className="iap-nav"
+        className="ccm-nav"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <Link to="/" className="iap-logo">
-          <img src={logo} alt="MicroBiz" className="iap-logo-img" />
+        <Link to="/" className="ccm-logo">
+          <img src={logo} alt="MicroBiz" className="ccm-logo-img" />
         </Link>
-        <ul className="iap-nav-links">
+        <ul className="ccm-nav-links">
           <li><a href="/#features">Features</a></li>
           <li><a href="/#how">How It Works</a></li>
           <li><a href="/#pricing">Pricing</a></li>
           <li><a href="/#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="iap-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="iap-nav-cta">Get Started →</Link></li>
+          <li><Link to="/login" className="ccm-nav-signin">Sign In</Link></li>
+          <li><Link to="/register" className="ccm-nav-cta">Get Started →</Link></li>
         </ul>
       </motion.nav>
 
-      <section className="iap-hero">
-        <div className="iap-shell">
-          <div className="iap-hero-grid">
+      <section className="ccm-hero">
+        <div className="ccm-shell">
+          <div className="ccm-hero-grid">
             <motion.div
-              className="iap-hero-copy"
+              className="ccm-hero-copy"
               initial="hidden"
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.55, delay: 0.05 }}
             >
-              <div className="iap-kicker">Finance Suite</div>
-              <h1>Invoicing and accounting that stay fast and accurate.</h1>
+              <div className="ccm-kicker">Upcoming Update</div>
+              <h1>Credit and cashflow visibility built for better decisions.</h1>
               <p>
-                Create polished invoices, adapt to complex billing flows, manage receivables and
-                payables, and keep financial records dependable as your business grows.
+                We’re building a new Microbiz feature to help businesses manage credit,
+                follow outstanding balances, and understand cash movement with more clarity.
               </p>
 
-              <div className="iap-actions iap-actions--hero">
-                <Link to="/register" className="iap-cta">Get Started</Link>
-                <Link to="/" className="iap-cta iap-cta--ghost">Back to Homepage</Link>
+              <div className="ccm-actions ccm-actions--hero">
+                <Link to="/register" className="ccm-cta">Get Started</Link>
+                <Link to="/" className="ccm-cta ccm-cta--ghost">Back to Homepage</Link>
               </div>
             </motion.div>
 
             <motion.div
-              className="iap-hero-visual"
+              className="ccm-hero-visual"
               initial="hidden"
               animate="visible"
               variants={fadeUp}
               transition={{ duration: 0.6, delay: 0.12 }}
             >
-              <div className="iap-side-card iap-side-card--left">
-                <div className="iap-side-card-label">Flexible billing</div>
-                <strong>Support products, services, currencies, and pricing structures</strong>
+              <div className="ccm-orb ccm-orb--orange" />
+              <div className="ccm-orb ccm-orb--navy" />
+
+              <div className="ccm-side-card ccm-side-card--left">
+                <div className="ccm-side-card-label">What to expect</div>
+                <strong>Track receivables, payables, and cash timing from one clearer workflow</strong>
               </div>
 
-              <div className="iap-side-card iap-side-card--right">
-                <div className="iap-side-card-label">Faster follow-up</div>
-                <strong>Share invoices and reminders instantly across the channels you use</strong>
+              <div className="ccm-side-card ccm-side-card--right">
+                <div className="ccm-side-card-label">Release status</div>
+                <strong>Planned as an upcoming Microbiz update for stronger financial control</strong>
               </div>
 
-              <div className="iap-hero-frame">
-                <img src={accountingImage} alt="Invoicing and accounting dashboard preview" loading="lazy" />
+              <div className="ccm-hero-frame">
+                <img src={featureImage} alt="Credit and cashflow management preview" loading="lazy" />
               </div>
             </motion.div>
           </div>
 
           <motion.div
-            className="iap-metrics"
+            className="ccm-metrics"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.25 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            {accountingMetrics.map((item) => (
-              <div key={item.value} className="iap-metric-card">
+            {metrics.map((item) => (
+              <div key={item.value} className="ccm-metric-card">
                 <strong>{item.value}</strong>
                 <span>{item.label}</span>
               </div>
@@ -166,86 +156,84 @@ const InvoicingAccountingPage = () => {
         </div>
       </section>
 
-      <section className="iap-overview">
-        <div className="iap-shell iap-overview-grid">
+      <section className="ccm-overview">
+        <div className="ccm-shell ccm-overview-grid">
           <motion.article
-            className="iap-overview-card iap-overview-card--feature"
+            className="ccm-overview-card ccm-overview-card--feature"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">Why teams choose it</span>
-            <h2>From invoice creation to cleaner financial control.</h2>
+            <span className="ccm-section-label">Why it matters</span>
+            <h2>Know what is owed, what is due, and how cash is moving.</h2>
             <p>
-              Microbiz helps businesses bill faster, manage more billing complexity, and keep
-              accounting records accurate without slowing down sales operations.
+              Credit and cashflow management helps growing businesses reduce blind spots,
+              follow obligations more closely, and make everyday operating decisions with better timing.
             </p>
           </motion.article>
 
           <motion.article
-            className="iap-overview-card"
+            className="ccm-overview-card"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45, delay: 0.06 }}
           >
-            <span className="iap-overview-eyebrow">Built for billing flexibility</span>
+            <span className="ccm-overview-eyebrow">Reduce uncertainty</span>
             <p>
-              Handle multiple formats, currencies, addresses, and customer pricing structures with a
-              workflow that adapts to how your business really sells.
+              Replace scattered follow-ups and guesswork with a clearer view of balances,
+              due dates, and expected cash movement.
             </p>
           </motion.article>
 
           <motion.article
-            className="iap-overview-card"
+            className="ccm-overview-card"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45, delay: 0.12 }}
           >
-            <span className="iap-overview-eyebrow">Designed for accuracy</span>
+            <span className="ccm-overview-eyebrow">Support healthier operations</span>
             <p>
-              Keep receivables, payables, duties, and post-dated transactions connected so the books
-              stay reliable as transactions move faster.
+              Make stronger decisions around purchasing, collections, and spending with a more reliable cash picture.
             </p>
           </motion.article>
         </div>
       </section>
 
-      <section className="iap-capabilities">
-        <div className="iap-shell">
+      <section className="ccm-capabilities">
+        <div className="ccm-shell">
           <motion.div
-            className="iap-section-head"
+            className="ccm-section-head"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">Capabilities</span>
-            <h2>Everything you need to bill smarter and account with confidence.</h2>
+            <span className="ccm-section-label">Planned capabilities</span>
+            <h2>An upcoming feature set focused on visibility, follow-up, and control.</h2>
             <p>
-              Explore the invoicing and accounting tools that help your team move faster while
-              keeping transactions, payments, and financial records in sync.
+              Here’s what this update is being designed to help businesses manage once it goes live.
             </p>
           </motion.div>
 
-          <div className="iap-grid">
-            {accountingSections.map((section, index) => (
+          <div className="ccm-grid">
+            {sections.map((section, index) => (
               <motion.article
                 key={section.title}
-                className="iap-card"
+                className="ccm-card"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={fadeUp}
                 transition={{ duration: 0.45, delay: index * 0.04 }}
               >
-                <div className="iap-card-index">{String(index + 1).padStart(2, '0')}</div>
+                <div className="ccm-card-index">{String(index + 1).padStart(2, '0')}</div>
                 <h3>{section.title}</h3>
                 <p>{section.description}</p>
               </motion.article>
@@ -254,65 +242,32 @@ const InvoicingAccountingPage = () => {
         </div>
       </section>
 
-      <section className="iap-extras">
-        <div className="iap-shell">
+      <section className="ccm-workflow">
+        <div className="ccm-shell">
           <motion.div
-            className="iap-section-head"
+            className="ccm-section-head"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeUp}
             transition={{ duration: 0.45 }}
           >
-            <span className="iap-section-label">More Features</span>
-            <h2>Extra controls that make daily billing and finance work easier.</h2>
+            <span className="ccm-section-label">Planned workflow</span>
+            <h2>A clearer path from balances and due dates to better business decisions.</h2>
           </motion.div>
 
-          <div className="iap-extra-grid">
-            {additionalFeatures.map((feature, index) => (
-              <motion.article
-                key={feature}
-                className="iap-extra-item"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={fadeUp}
-                transition={{ duration: 0.45, delay: index * 0.04 }}
-              >
-                <div className="iap-extra-badge">{String(index + 1).padStart(2, '0')}</div>
-                <p>{feature}</p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="iap-workflow">
-        <div className="iap-shell">
-          <motion.div
-            className="iap-section-head"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            transition={{ duration: 0.45 }}
-          >
-            <span className="iap-section-label">Workflow</span>
-            <h2>A finance workflow that stays smooth from invoice to follow-up.</h2>
-          </motion.div>
-
-          <div className="iap-workflow-grid">
+          <div className="ccm-workflow-grid">
             {workflowSteps.map((step, index) => (
               <motion.article
                 key={step.title}
-                className="iap-workflow-card"
+                className="ccm-workflow-card"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={fadeUp}
                 transition={{ duration: 0.45, delay: index * 0.06 }}
               >
-                <div className="iap-workflow-number">0{index + 1}</div>
+                <div className="ccm-workflow-number">0{index + 1}</div>
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
               </motion.article>
@@ -320,7 +275,7 @@ const InvoicingAccountingPage = () => {
           </div>
 
           <motion.div
-            className="iap-footer-cta"
+            className="ccm-footer-cta"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
@@ -328,16 +283,16 @@ const InvoicingAccountingPage = () => {
             transition={{ duration: 0.45 }}
           >
             <div>
-              <span className="iap-section-label iap-section-label--light">Ready to simplify billing and finance?</span>
-              <h3>Use Microbiz to invoice faster and keep every financial workflow cleaner.</h3>
+              <span className="ccm-section-label ccm-section-label--light">Upcoming update</span>
+              <h3>Microbiz is expanding financial control beyond invoicing and reporting.</h3>
               <p>
-                Bring invoicing, pricing, currencies, receivables, and accounting control into one
-                experience your team can rely on every day.
+                This upcoming release is designed to help businesses stay ahead of collections,
+                obligations, and cash planning while keeping decisions grounded in real operating data.
               </p>
             </div>
-            <div className="iap-actions">
-              <Link to="/register" className="iap-cta">Create Account</Link>
-              <Link to="/login" className="iap-cta iap-cta--ghost-light">Sign In</Link>
+            <div className="ccm-actions">
+              <Link to="/register" className="ccm-cta">Create Account</Link>
+              <Link to="/login" className="ccm-cta ccm-cta--ghost-light">Sign In</Link>
             </div>
           </motion.div>
         </div>
@@ -346,7 +301,7 @@ const InvoicingAccountingPage = () => {
       <MarketingFooter />
 
       <style>{`
-        .iap-page {
+        .ccm-page {
           min-height: 100vh;
           background:
             radial-gradient(circle at top left, rgba(255, 117, 31, 0.1), transparent 26%),
@@ -355,12 +310,12 @@ const InvoicingAccountingPage = () => {
           font-family: Manrope, sans-serif;
         }
 
-        .iap-shell {
+        .ccm-shell {
           width: min(1160px, calc(100% - 48px));
           margin: 0 auto;
         }
 
-        .iap-nav {
+        .ccm-nav {
           position: fixed;
           top: 0;
           left: 0;
@@ -375,18 +330,18 @@ const InvoicingAccountingPage = () => {
           border-bottom: 1px solid rgba(11, 34, 71, 0.08);
         }
 
-        .iap-logo {
+        .ccm-logo {
           display: flex;
           align-items: center;
           text-decoration: none;
         }
 
-        .iap-logo-img {
+        .ccm-logo-img {
           height: 36px;
           object-fit: contain;
         }
 
-        .iap-nav-links {
+        .ccm-nav-links {
           display: flex;
           gap: 2.2rem;
           align-items: center;
@@ -395,7 +350,7 @@ const InvoicingAccountingPage = () => {
           padding: 0;
         }
 
-        .iap-nav-links a {
+        .ccm-nav-links a {
           text-decoration: none;
           color: #5a6a7e;
           font-size: 0.92rem;
@@ -403,17 +358,17 @@ const InvoicingAccountingPage = () => {
           transition: color 0.2s ease;
         }
 
-        .iap-nav-links a:hover {
+        .ccm-nav-links a:hover {
           color: #0B2247;
         }
 
-        .iap-nav-signin {
+        .ccm-nav-signin {
           color: #0B2247 !important;
           font-weight: 700 !important;
         }
 
-        .iap-nav-cta,
-        .iap-cta {
+        .ccm-nav-cta,
+        .ccm-cta {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -423,25 +378,25 @@ const InvoicingAccountingPage = () => {
           transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
 
-        .iap-nav-cta {
+        .ccm-nav-cta {
           background: #0B2247;
           color: #ffffff !important;
           padding: 0.55rem 1.3rem;
           font-size: 0.88rem !important;
         }
 
-        .iap-nav-cta:hover {
+        .ccm-nav-cta:hover {
           background: #FF751F !important;
           transform: translateY(-1px);
         }
 
-        .iap-hero {
+        .ccm-hero {
           position: relative;
           overflow: hidden;
           padding: 126px 0 36px;
         }
 
-        .iap-hero-grid {
+        .ccm-hero-grid {
           display: grid;
           grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
           gap: 42px;
@@ -449,8 +404,8 @@ const InvoicingAccountingPage = () => {
           min-height: calc(100vh - 210px);
         }
 
-        .iap-kicker,
-        .iap-section-label {
+        .ccm-kicker,
+        .ccm-section-label {
           display: inline-flex;
           align-items: center;
           padding: 8px 12px;
@@ -463,27 +418,27 @@ const InvoicingAccountingPage = () => {
           text-transform: uppercase;
         }
 
-        .iap-section-label--light {
+        .ccm-section-label--light {
           background: rgba(255, 255, 255, 0.12);
           color: #ffd7bd;
         }
 
-        .iap-kicker {
+        .ccm-kicker {
           margin-bottom: 18px;
         }
 
-        .iap-hero-copy {
+        .ccm-hero-copy {
           max-width: 650px;
         }
 
-        .iap-hero-copy h1 {
+        .ccm-hero-copy h1 {
           margin: 0 0 18px;
-          font-size: clamp(2.5rem, 4.5vw, 4.9rem);
+          font-size: clamp(2.5rem, 4.5vw, 4.8rem);
           line-height: 0.95;
           letter-spacing: -0.05em;
         }
 
-        .iap-hero-copy p {
+        .ccm-hero-copy p {
           margin: 0;
           max-width: 620px;
           font-size: 1.08rem;
@@ -491,84 +446,122 @@ const InvoicingAccountingPage = () => {
           color: #5a6a7e;
         }
 
-        .iap-actions {
+        .ccm-side-card-label,
+        .ccm-overview-eyebrow {
+          display: block;
+          margin-bottom: 10px;
+          color: #FF751F;
+          font-size: 0.77rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .ccm-side-card strong {
+          display: block;
+          line-height: 1.5;
+          font-size: 1rem;
+        }
+
+        .ccm-actions {
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
         }
 
-        .iap-actions--hero {
+        .ccm-actions--hero {
           margin-top: 28px;
         }
 
-        .iap-cta {
+        .ccm-cta {
           background: #FF751F;
           color: #ffffff;
           padding: 12px 18px;
           box-shadow: 0 14px 28px rgba(255, 117, 31, 0.22);
         }
 
-        .iap-cta:hover {
+        .ccm-cta:hover {
           transform: translateY(-1px);
           box-shadow: 0 18px 34px rgba(255, 117, 31, 0.28);
         }
 
-        .iap-cta--ghost {
+        .ccm-cta--ghost {
           background: rgba(255, 255, 255, 0.8);
           color: #0B2247;
           border: 1px solid rgba(11, 34, 71, 0.12);
           box-shadow: none;
         }
 
-        .iap-cta--ghost:hover {
+        .ccm-cta--ghost:hover {
           color: #FF751F;
           border-color: rgba(255, 117, 31, 0.3);
           box-shadow: none;
         }
 
-        .iap-cta--ghost-light {
+        .ccm-cta--ghost-light {
           background: transparent;
           color: #ffffff;
           border: 1px solid rgba(255, 255, 255, 0.24);
           box-shadow: none;
         }
 
-        .iap-cta--ghost-light:hover {
+        .ccm-cta--ghost-light:hover {
           border-color: rgba(255, 255, 255, 0.46);
           color: #ffffff;
           box-shadow: none;
         }
 
-        .iap-hero-visual {
+        .ccm-hero-visual {
           position: relative;
-          min-height: 660px;
+          min-height: 590px;
           display: flex;
           justify-content: center;
           align-items: center;
           isolation: isolate;
         }
 
-        .iap-hero-frame {
+        .ccm-orb {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(4px);
+          z-index: 0;
+        }
+
+        .ccm-orb--orange {
+          width: min(70vw, 410px);
+          aspect-ratio: 1;
+          top: 10%;
+          right: 8%;
+          background: radial-gradient(circle, rgba(255, 117, 31, 0.24) 0%, rgba(255, 117, 31, 0.08) 55%, rgba(255, 117, 31, 0) 76%);
+        }
+
+        .ccm-orb--navy {
+          width: min(62vw, 340px);
+          aspect-ratio: 1;
+          bottom: 10%;
+          left: 4%;
+          background: radial-gradient(circle, rgba(11, 34, 71, 0.18) 0%, rgba(11, 34, 71, 0.06) 52%, rgba(11, 34, 71, 0) 74%);
+        }
+
+        .ccm-hero-frame {
           position: relative;
           z-index: 1;
-          width: min(100%, 760px);
-          border-radius: 0;
+          width: min(100%, 650px);
           overflow: hidden;
+          border-radius: 0;
           background: transparent;
-          border: none;
-          box-shadow: none;
           padding: 0;
         }
 
-        .iap-hero-frame img {
+        .ccm-hero-frame img {
           display: block;
           width: 100%;
           height: auto;
-          border-radius: 0;
           object-fit: cover;
+          border-radius: 0;
         }
 
-        .iap-side-card {
+        .ccm-side-card {
           position: absolute;
           z-index: 2;
           width: min(240px, 42%);
@@ -580,45 +573,28 @@ const InvoicingAccountingPage = () => {
           border-radius: 4px;
         }
 
-        .iap-side-card--left {
+        .ccm-side-card--left {
           left: 0;
           bottom: 82px;
         }
 
-        .iap-side-card--right {
-          right: 0;
+        .ccm-side-card--right {
+          right: 8px;
           top: 72px;
+          width: min(210px, 38%);
         }
 
-        .iap-side-card-label,
-        .iap-overview-eyebrow {
-          display: block;
-          margin-bottom: 10px;
-          color: #FF751F;
-          font-size: 0.77rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .iap-side-card strong {
-          display: block;
-          line-height: 1.5;
-          font-size: 1rem;
-        }
-
-        .iap-metrics {
+        .ccm-metrics {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
           margin-top: 34px;
         }
 
-        .iap-metric-card,
-        .iap-overview-card,
-        .iap-card,
-        .iap-extra-item,
-        .iap-workflow-card {
+        .ccm-metric-card,
+        .ccm-overview-card,
+        .ccm-card,
+        .ccm-workflow-card {
           background: rgba(255, 255, 255, 0.84);
           border: 1px solid rgba(11, 34, 71, 0.08);
           border-radius: 4px;
@@ -626,89 +602,84 @@ const InvoicingAccountingPage = () => {
           backdrop-filter: blur(12px);
         }
 
-        .iap-metric-card {
+        .ccm-metric-card {
           padding: 22px 24px;
         }
 
-        .iap-metric-card strong {
+        .ccm-metric-card strong {
           display: block;
           margin-bottom: 6px;
           font-size: 1.15rem;
         }
 
-        .iap-metric-card span {
+        .ccm-metric-card span {
           color: #5a6a7e;
           line-height: 1.6;
           font-size: 0.95rem;
         }
 
-        .iap-overview,
-        .iap-capabilities,
-        .iap-extras,
-        .iap-workflow {
+        .ccm-overview,
+        .ccm-capabilities,
+        .ccm-workflow {
           padding: 38px 0 88px;
         }
 
-        .iap-overview-grid {
+        .ccm-overview-grid {
           display: grid;
           grid-template-columns: 1.2fr 0.9fr 0.9fr;
           gap: 22px;
         }
 
-        .iap-overview-card {
+        .ccm-overview-card {
           padding: 28px;
         }
 
-        .iap-overview-card--feature {
+        .ccm-overview-card--feature {
           background: linear-gradient(135deg, rgba(11, 34, 71, 0.96) 0%, rgba(22, 53, 110, 0.96) 100%);
           color: #ffffff;
           box-shadow: 0 26px 60px rgba(11, 34, 71, 0.18);
         }
 
-        .iap-overview-card--feature p {
+        .ccm-overview-card--feature p {
           color: rgba(255, 255, 255, 0.82);
         }
 
-        .iap-overview-card h2,
-        .iap-section-head h2,
-        .iap-footer-cta h3 {
+        .ccm-overview-card h2,
+        .ccm-section-head h2,
+        .ccm-footer-cta h3 {
           margin: 14px 0 14px;
           font-size: clamp(1.8rem, 3vw, 2.8rem);
           line-height: 1.08;
           letter-spacing: -0.03em;
         }
 
-        .iap-overview-card p,
-        .iap-section-head p,
-        .iap-card p,
-        .iap-extra-item p,
-        .iap-workflow-card p,
-        .iap-footer-cta p {
+        .ccm-overview-card p,
+        .ccm-section-head p,
+        .ccm-workflow-card p,
+        .ccm-footer-cta p {
           margin: 0;
           color: #5a6a7e;
           line-height: 1.8;
           font-size: 0.98rem;
         }
 
-        .iap-section-head {
+        .ccm-section-head {
           max-width: 760px;
           margin-bottom: 28px;
         }
 
-        .iap-grid {
+        .ccm-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 22px;
         }
 
-        .iap-card,
-        .iap-workflow-card {
+        .ccm-card {
           padding: 28px;
         }
 
-        .iap-card-index,
-        .iap-extra-badge,
-        .iap-workflow-number {
+        .ccm-card-index,
+        .ccm-workflow-number {
           width: 44px;
           height: 44px;
           display: inline-flex;
@@ -720,35 +691,33 @@ const InvoicingAccountingPage = () => {
           font-size: 0.82rem;
           font-weight: 800;
           margin-bottom: 18px;
-          flex-shrink: 0;
         }
 
-        .iap-card h3,
-        .iap-workflow-card h3 {
+        .ccm-card h3,
+        .ccm-workflow-card h3 {
           margin: 0 0 12px;
           font-size: 1.24rem;
           line-height: 1.35;
         }
 
-        .iap-extra-grid,
-        .iap-workflow-grid {
+        .ccm-card p {
+          margin: 0;
+          color: #5a6a7e;
+          line-height: 1.85;
+          font-size: 0.98rem;
+        }
+
+        .ccm-workflow-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 22px;
         }
 
-        .iap-extra-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 14px;
-          padding: 24px;
+        .ccm-workflow-card {
+          padding: 28px;
         }
 
-        .iap-workflow-grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
-        .iap-footer-cta {
+        .ccm-footer-cta {
           margin-top: 34px;
           display: flex;
           align-items: center;
@@ -761,97 +730,96 @@ const InvoicingAccountingPage = () => {
           box-shadow: 0 30px 60px rgba(11, 34, 71, 0.2);
         }
 
-        .iap-footer-cta p {
+        .ccm-footer-cta p {
           color: rgba(255, 255, 255, 0.82);
           max-width: 620px;
         }
 
         @media (max-width: 1100px) {
-          .iap-hero-grid,
-          .iap-overview-grid,
-          .iap-workflow-grid {
+          .ccm-hero-grid,
+          .ccm-overview-grid,
+          .ccm-workflow-grid {
             grid-template-columns: 1fr;
           }
 
-          .iap-extra-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .iap-hero-grid {
+          .ccm-hero-grid {
             min-height: auto;
           }
 
-          .iap-hero-visual {
+          .ccm-hero-visual {
             min-height: 520px;
           }
 
-          .iap-footer-cta {
+          .ccm-footer-cta {
             flex-direction: column;
             align-items: flex-start;
           }
         }
 
         @media (max-width: 900px) {
-          .iap-nav-links {
+          .ccm-nav-links {
             display: none;
           }
 
-          .iap-hero {
+          .ccm-hero {
             padding: 98px 0 32px;
           }
 
-          .iap-grid,
-          .iap-metrics {
+          .ccm-grid,
+          .ccm-metrics {
             grid-template-columns: 1fr;
           }
 
-          .iap-hero-copy h1 {
+          .ccm-hero-copy h1 {
             font-size: clamp(2.4rem, 11vw, 4rem);
           }
 
-          .iap-side-card {
+          .ccm-side-card {
             width: min(220px, 46%);
           }
 
-          .iap-side-card--right {
+          .ccm-side-card--right {
             top: 34px;
           }
 
-          .iap-side-card--left {
+          .ccm-side-card--left {
             bottom: 36px;
           }
         }
 
         @media (max-width: 640px) {
-          .iap-shell {
+          .ccm-shell {
             width: min(100% - 28px, 1160px);
           }
 
-          .iap-hero {
+          .ccm-hero {
             padding-top: 86px;
           }
 
-          .iap-hero-visual {
+          .ccm-hero-visual {
             min-height: 370px;
             display: grid;
             gap: 14px;
           }
 
-          .iap-side-card {
+          .ccm-side-card {
             position: static;
             width: 100%;
           }
 
-          .iap-card,
-          .iap-overview-card,
-          .iap-extra-item,
-          .iap-workflow-card,
-          .iap-footer-cta,
-          .iap-metric-card {
+          .ccm-orb {
+            display: none;
+          }
+
+          .ccm-card,
+          .ccm-overview-card,
+          .ccm-workflow-card,
+          .ccm-footer-cta,
+          .ccm-metric-card {
             padding: 22px;
           }
 
-          .iap-actions {
+          .ccm-actions {
             flex-direction: column;
           }
         }
@@ -860,4 +828,4 @@ const InvoicingAccountingPage = () => {
   )
 }
 
-export default InvoicingAccountingPage
+export default CreditCashflowManagementPage

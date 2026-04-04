@@ -15,6 +15,8 @@ const InventoryManagementPage = lazy(() => import('./pages/InventoryManagementPa
 const InvoicingAccountingPage = lazy(() => import('./pages/InvoicingAccountingPage'))
 const BusinessReportsPage = lazy(() => import('./pages/BusinessReportsPage'))
 const PointOfSalePage = lazy(() => import('./pages/PointOfSalePage'))
+const CreditCashflowManagementPage = lazy(() => import('./pages/CreditCashflowManagementPage'))
+const OnlineOfflineSyncPage = lazy(() => import('./pages/OnlineOfflineSyncPage'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const DesktopDownload = lazy(() => import('./pages/DesktopDownload'))
 const ActivityDashboard = lazy(() => import('./pages/ActivityDashboard'))
@@ -85,6 +87,8 @@ function App() {
               <Route path="/point-of-sale" element={<PointOfSalePage />} />
               <Route path="/invoicing-accounting" element={<InvoicingAccountingPage />} />
               <Route path="/business-reports" element={<BusinessReportsPage />} />
+              <Route path="/credit-cashflow-management" element={<CreditCashflowManagementPage />} />
+              <Route path="/online-offline-sync" element={<OnlineOfflineSyncPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<PrivacyPolicy />} />
               <Route path="/download" element={<DesktopDownload />} />
