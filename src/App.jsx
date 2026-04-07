@@ -24,13 +24,22 @@ const BranchDashboard = lazy(() => import('./pages/BranchDashboard'))
 const POS = lazy(() => import('./pages/POS'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Inventory = lazy(() => import('./pages/Inventory'))
-const PurchaseOrderDetail = lazy(() => import('./pages/PurchaseOrderDetail'))
+const ReceiveItems = lazy(() => import('./pages/ReceiveItems'))
+const ReceiveHistory = lazy(() => import('./pages/ReceiveHistory'))
 const Users = lazy(() => import('./pages/Users'))
 const Suppliers = lazy(() => import('./pages/Suppliers'))
 const SupplierDetail = lazy(() => import('./pages/SupplierDetail'))
 const Customers = lazy(() => import('./pages/Customers'))
 const Cashiers = lazy(() => import('./pages/Cashiers'))
 const SalesHistory = lazy(() => import('./pages/SalesHistory'))
+const Invoices = lazy(() => import('./pages/Invoices'))
+const Reports = lazy(() => import('./pages/Reports'))
+const ChequeManagement = lazy(() => import('./pages/ChequeManagement'))
+const Warehouse = lazy(() => import('./pages/Warehouse'))
+const SubscriptionSuccess = lazy(() => import('./pages/SaleSuccess'))
+const PosSuccess = lazy(() => import('./pages/PosSuccess'))
+const Billing = lazy(() => import('./pages/Billing'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 
 /* ─── Loading fallback ─── */
 const PageLoader = () => (
@@ -94,6 +103,7 @@ function App() {
               <Route path="/download" element={<DesktopDownload />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/welcome" element={<SubscriptionSuccess />} />
               
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
@@ -101,10 +111,18 @@ function App() {
                 <Route element={<Layout />}>
                   <Route path="/branch-dashboard" element={<RoleGuard blockedRoles={['sales']}><BranchDashboard /></RoleGuard>} />
                   <Route path="/pos" element={<POS />} />
+                  <Route path="/pos-success" element={<PosSuccess />} />
                   <Route path="/sales" element={<RoleGuard blockedRoles={['manager', 'sales']}><SalesHistory /></RoleGuard>} />
+                  <Route path="/invoices" element={<RoleGuard blockedRoles={['sales']}><Invoices /></RoleGuard>} />
+                  <Route path="/reports" element={<RoleGuard blockedRoles={['sales']}><Reports /></RoleGuard>} />
+                  <Route path="/cheque-management" element={<RoleGuard blockedRoles={['sales']}><ChequeManagement /></RoleGuard>} />
+                  <Route path="/warehouse" element={<RoleGuard blockedRoles={['sales']}><Warehouse /></RoleGuard>} />
                   <Route path="/inventory" element={<RoleGuard blockedRoles={['sales']}><Inventory /></RoleGuard>} />
-                  <Route path="/purchase-orders/:id" element={<RoleGuard blockedRoles={['sales']}><PurchaseOrderDetail /></RoleGuard>} />
+                  <Route path="/receive-items" element={<RoleGuard blockedRoles={['sales']}><ReceiveItems /></RoleGuard>} />
+                  <Route path="/receive-history" element={<RoleGuard blockedRoles={['sales']}><ReceiveHistory /></RoleGuard>} />
                   <Route path="/settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />
+                  <Route path="/billing" element={<RoleGuard blockedRoles={['sales']}><Billing /></RoleGuard>} />
+                  <Route path="/payment-success" element={<PaymentSuccess />} />
                   <Route path="/users" element={<RoleGuard blockedRoles={['sales']}><Users /></RoleGuard>} />
                   <Route path="/customers" element={<RoleGuard blockedRoles={['sales']}><Customers /></RoleGuard>} />
                   <Route path="/cashiers" element={<RoleGuard blockedRoles={['sales']}><Cashiers /></RoleGuard>} />

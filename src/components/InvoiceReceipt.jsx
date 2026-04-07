@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
-import { X, Download, Share2, Mail, MessageCircle, Printer } from 'lucide-react'
+import { HIcon } from './HIcon'
+import { Cancel01Icon, Download01Icon, Share01Icon, Mail01Icon, SentIcon, PrinterIcon, ReceiptTextIcon } from '@hugeicons/core-free-icons'
 import { printReceipt } from '../utils/printReceipt'
 
 const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
@@ -206,7 +207,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
         <div className="bg-gray-900 p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-primary-500 p-2 rounded-lg">
-              <Receipt size={24} className="text-white" />
+              <HIcon icon={ReceiptTextIcon} size={24} className="text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Invoice Receipt</h2>
@@ -217,7 +218,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
             onClick={onClose}
             className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
           >
-            <X size={24} />
+            <HIcon icon={Cancel01Icon} size={24} />
           </button>
         </div>
 
@@ -393,21 +394,21 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
             onClick={handlePrint}
             className="flex-1 btn-primary flex items-center justify-center bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800"
           >
-            <Printer size={18} className="mr-2" />
+            <HIcon icon={PrinterIcon} size={18} className="mr-2" />
             Print
           </button>
           <button
             onClick={handleDownloadPDF}
             className="flex-1 btn-primary flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
           >
-            <Download size={18} className="mr-2" />
+            <HIcon icon={Download01Icon} size={18} className="mr-2" />
             Download PDF
           </button>
           <button
             onClick={handleShareWhatsApp}
             className="flex-1 btn-primary flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
           >
-            <MessageCircle size={18} className="mr-2" />
+            <HIcon icon={SentIcon} size={18} className="mr-2" />
             Share WhatsApp
           </button>
           <button
@@ -415,7 +416,7 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
             className="flex-1 btn-primary flex items-center justify-center"
             disabled={!invoice.customer?.email}
           >
-            <Mail size={18} className="mr-2" />
+            <HIcon icon={Mail01Icon} size={18} className="mr-2" />
             Email Receipt
           </button>
         </div>
@@ -423,27 +424,6 @@ const InvoiceReceipt = ({ invoice, storeInfo, onClose }) => {
     </div>
   )
 }
-
-// Receipt icon component
-const Receipt = ({ size = 24, className = '' }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <polyline points="10 9 9 9 8 9" />
-  </svg>
-)
 
 export default InvoiceReceipt
 

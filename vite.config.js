@@ -10,6 +10,9 @@ export default defineConfig({
       '/api': { target: 'http://localhost:3001', changeOrigin: true },
     },
   },
+  optimizeDeps: {
+    include: ['@hugeicons/react', '@hugeicons/core-free-icons'],
+  },
   build: {
     target: 'es2020',
     minify: 'esbuild',
@@ -21,7 +24,7 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-motion': ['motion'],
           'vendor-charts': ['recharts'],
-          'vendor-icons': ['lucide-react'],
+          'vendor-icons': ['@hugeicons/react', '@hugeicons/core-free-icons'],
           'vendor-xlsx': ['xlsx'],
         },
       },

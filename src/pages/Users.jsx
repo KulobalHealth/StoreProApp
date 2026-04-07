@@ -1,10 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { HIcon } from '../components/HIcon'
 import {
-  Users as UsersIcon, UserPlus, X, Shield, Pencil, Trash2,
-  Search, Filter, Mail, Calendar, Eye, EyeOff, Phone,
-  UserCheck, ChevronDown, RefreshCw, Building2, MapPin
-} from 'lucide-react'
+  ArrowDown01Icon,
+  Building01Icon,
+  Calendar01Icon,
+  CallIcon,
+  Cancel01Icon,
+  Delete01Icon,
+  FilterIcon,
+  Mail01Icon,
+  MapPinIcon,
+  PencilEdit01Icon,
+  RefreshIcon,
+  Search01Icon,
+  Shield01Icon,
+  UserAdd01Icon,
+  UserCheck01Icon,
+  UserGroupIcon,
+  ViewIcon,
+  ViewOffIcon,
+} from '@hugeicons/core-free-icons'
 import { listEmployees, createEmployee, updateEmployee, deleteEmployee, listBranches } from '../api/awoselDb.js'
 import { getActiveBranch, getSessionBranchId, getSessionOrgId } from '../utils/branch'
 import Tooltip from '../components/Tooltip'
@@ -258,7 +274,7 @@ const Users = () => {
       <div className="p-6 flex items-center justify-center min-h-[60vh]">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-10 text-center max-w-md">
           <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="text-amber-600" size={32} />
+            <HIcon icon={Shield01Icon} className="text-amber-600" size={32}  />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
           <p className="text-gray-600">Only administrators can manage users and permissions.</p>
@@ -268,14 +284,14 @@ const Users = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <UsersIcon size={18} strokeWidth={2} />
+                <HIcon icon={UserGroupIcon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Employee Management</h1>
@@ -289,7 +305,7 @@ const Users = () => {
                   onClick={fetchEmployees}
                   className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                  <HIcon icon={RefreshIcon} size={18} className={loading ? 'animate-spin' : ''}  />
                 </button>
               </Tooltip>
               <Tooltip text="Add a new employee to this branch">
@@ -298,7 +314,7 @@ const Users = () => {
                   onClick={openAddModal}
                   className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all"
                 >
-                  <UserPlus size={18} />
+                  <HIcon icon={UserAdd01Icon} size={18}  />
                   <span className="font-medium">Add Employee</span>
                 </button>
               </Tooltip>
@@ -313,7 +329,7 @@ const Users = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white rounded-lg border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-1">
-              <UsersIcon size={16} className="text-gray-400" />
+              <HIcon icon={UserGroupIcon} size={16} className="text-gray-400"  />
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span>
             </div>
             <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
@@ -341,11 +357,11 @@ const Users = () => {
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
           <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <X size={16} className="text-red-600" />
+            <HIcon icon={Cancel01Icon} size={16} className="text-red-600"  />
           </div>
           <p className="text-sm text-red-700 flex-1">{error}</p>
           <button onClick={() => setError('')} className="text-red-400 hover:text-red-600">
-            <X size={16} />
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
       )}
@@ -353,7 +369,7 @@ const Users = () => {
       {/* Search & Filter Bar */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <HIcon icon={Search01Icon} size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
           <input
             type="text"
             value={searchQuery}
@@ -363,7 +379,7 @@ const Users = () => {
           />
         </div>
         <div className="relative">
-          <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <HIcon icon={FilterIcon} size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
           <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value)}
@@ -372,7 +388,7 @@ const Users = () => {
             <option value="all">All roles</option>
             {ROLES.map(r => <option key={r} value={r} className="capitalize">{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
           </select>
-          <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <HIcon icon={ArrowDown01Icon} size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"  />
         </div>
       </div>
 
@@ -386,7 +402,7 @@ const Users = () => {
         ) : filteredUsers.length === 0 ? (
           <div className="p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              {list.length === 0 ? <UserPlus size={28} className="text-gray-400" /> : <Search size={28} className="text-gray-400" />}
+              {list.length === 0 ? <HIcon icon={UserAdd01Icon} size={28} className="text-gray-400"  /> : <HIcon icon={Search01Icon} size={28} className="text-gray-400"  />}
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
               {list.length === 0 ? 'No employees yet' : 'No employees found'}
@@ -396,7 +412,7 @@ const Users = () => {
             </p>
             {list.length === 0 && (
               <button onClick={openAddModal} className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm">
-                <UserPlus size={16} /> Add first employee
+                <HIcon icon={UserAdd01Icon} size={16}  /> Add first employee
               </button>
             )}
           </div>
@@ -452,7 +468,7 @@ const Users = () => {
 
                       {/* Phone */}
                       <div className="col-span-2 hidden lg:flex items-center gap-1.5 text-sm text-gray-500">
-                        <Phone size={13} className="flex-shrink-0" />
+                        <HIcon icon={CallIcon} size={13} className="flex-shrink-0"  />
                         {u.phone || '—'}
                       </div>
 
@@ -469,7 +485,7 @@ const Users = () => {
                             onClick={() => openEditModal(u)}
                             className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                           >
-                            <Pencil size={16} />
+                            <HIcon icon={PencilEdit01Icon} size={16}  />
                           </button>
                         </Tooltip>
                         <Tooltip text={isCurrentUser ? 'You cannot delete your own account' : 'Delete this employee'} position="left">
@@ -479,7 +495,7 @@ const Users = () => {
                             disabled={isCurrentUser || submitting}
                             className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                           >
-                            <Trash2 size={16} />
+                            <HIcon icon={Delete01Icon} size={16}  />
                           </button>
                         </Tooltip>
                       </div>
@@ -521,7 +537,7 @@ const Users = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editingUser ? 'bg-primary-50' : 'bg-primary-50'}`}>
-                  {editingUser ? <Pencil size={18} className="text-primary-600" /> : <UserPlus size={18} className="text-primary-600" />}
+                  {editingUser ? <HIcon icon={PencilEdit01Icon} size={18} className="text-primary-600"  /> : <HIcon icon={UserAdd01Icon} size={18} className="text-primary-600"  />}
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">{editingUser ? 'Edit Employee' : 'Add New Employee'}</h2>
@@ -529,7 +545,7 @@ const Users = () => {
                 </div>
               </div>
               <button onClick={closeModal} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
-                <X size={20} />
+                <HIcon icon={Cancel01Icon} size={20}  />
               </button>
             </div>
 
@@ -537,7 +553,7 @@ const Users = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                  <X size={14} className="flex-shrink-0" />
+                  <HIcon icon={Cancel01Icon} size={14} className="flex-shrink-0"  />
                   {error}
                 </div>
               )}
@@ -570,7 +586,7 @@ const Users = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={Mail01Icon} size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
                     <input
                       type="email"
                       value={form.email}
@@ -583,7 +599,7 @@ const Users = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone <span className="text-gray-400 font-normal">(optional)</span></label>
                   <div className="relative">
-                    <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={CallIcon} size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
                     <input
                       type="tel"
                       value={form.phone}
@@ -613,7 +629,7 @@ const Users = () => {
                       onClick={() => setShowPassword(p => !p)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPassword ? <HIcon icon={ViewOffIcon} size={16}  /> : <HIcon icon={ViewIcon} size={16}  />}
                     </button>
                   </div>
                 </div>
@@ -634,7 +650,7 @@ const Users = () => {
               {/* Branch Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  <span className="flex items-center gap-1.5"><Building2 size={14} /> Branch</span>
+                  <span className="flex items-center gap-1.5"><HIcon icon={Building01Icon} size={14}  /> Branch</span>
                   {!editingUser && <span className="text-red-500 ml-1">*</span>}
                 </label>
                 <select
@@ -690,7 +706,7 @@ const Users = () => {
                     </>
                   ) : (
                     <>
-                      {editingUser ? <UserCheck size={16} /> : <UserPlus size={16} />}
+                      {editingUser ? <HIcon icon={UserCheck01Icon} size={16}  /> : <HIcon icon={UserAdd01Icon} size={16}  />}
                       {editingUser ? 'Save Changes' : 'Create Employee'}
                     </>
                   )}

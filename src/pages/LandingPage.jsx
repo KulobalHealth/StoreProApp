@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import logo from '../MainLogo.jpeg'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
 import heroVideo from '../video /Professional bold we are hiring promo linkedin post  (Presentation).mp4'
 import client1 from '../clients/1662123687706.jpeg'
@@ -183,47 +183,7 @@ const LandingPage = () => {
     { src: client5, alt: 'Client logo 5' },
   ]
 
-  const featureMenuItems = [
-    {
-      title: 'Inventory',
-      description: 'Track stock levels, movement, and replenishment with confidence.',
-      link: '/inventory-management',
-      icon: features[0].icon,
-    },
-    {
-      title: 'Point of Sale',
-      description: 'Sell faster with connected checkout, payments, and receipts.',
-      link: '/point-of-sale',
-      icon: features[1].icon,
-    },
-    {
-      title: 'Accounting',
-      description: 'Manage invoicing, billing, receivables, and finance workflows.',
-      link: '/invoicing-accounting',
-      icon: features[2].icon,
-    },
-    {
-      title: 'Business Reports',
-      description: 'Turn daily store activity into clearer reporting and insight.',
-      link: '/business-reports',
-      icon: features[3].icon,
-    },
-    {
-      title: 'Credit & Cashflow Management',
-      description: 'Explore the upcoming tools for balances, due dates, and cash visibility.',
-      link: '/credit-cashflow-management',
-      icon: features[4].icon,
-    },
-    {
-      title: 'Online & Offline Sync',
-      description: 'Keep POS running through internet issues and sync later.',
-      link: '/online-offline-sync',
-      icon: features[5].icon,
-    },
-  ]
-
   const [showCookies, setShowCookies] = useState(false)
-  const [isFeaturesMenuOpen, setIsFeaturesMenuOpen] = useState(false)
 
   useEffect(() => {
     const consent = localStorage.getItem('lp-cookie-consent')
@@ -248,90 +208,7 @@ const LandingPage = () => {
       {/* ─── SCOPED STYLES ─── */}
       <style>{landingStyles}</style>
 
-      {/* ─── NAV ─── */}
-      <motion.nav
-        className="lp-nav"
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <Link to="/" className="lp-logo" aria-label="MicroBiz home">
-          <motion.img
-            src={logo}
-            alt="MicroBiz"
-            className="lp-logo-img"
-            initial={{ x: -28, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.65, delay: 0.18, ease: 'easeOut' }}
-          />
-        </Link>
-        <ul className="lp-nav-links">
-          <li
-            className="lp-nav-item lp-nav-item--mega"
-            onMouseEnter={() => setIsFeaturesMenuOpen(true)}
-            onMouseLeave={() => setIsFeaturesMenuOpen(false)}
-            onFocus={() => setIsFeaturesMenuOpen(true)}
-            onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget)) {
-                setIsFeaturesMenuOpen(false)
-              }
-            }}
-          >
-            <button
-              type="button"
-              className="lp-nav-menu-trigger"
-              aria-expanded={isFeaturesMenuOpen}
-              aria-haspopup="true"
-              onClick={() => setIsFeaturesMenuOpen((currentValue) => !currentValue)}
-            >
-              Features
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-
-            <AnimatePresence>
-              {isFeaturesMenuOpen && (
-                <motion.div
-                  className="lp-mega-menu"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
-                >
-                  <div className="lp-mega-menu-intro">
-                    <span className="lp-mega-menu-label">Explore Features</span>
-                    <h3>Everything MicroBiz brings into one retail workflow.</h3>
-                    <p>Open any feature page to see how it supports day-to-day store operations.</p>
-                  </div>
-
-                  <div className="lp-mega-menu-grid">
-                    {featureMenuItems.map((item) => (
-                      <Link
-                        key={item.title}
-                        to={item.link}
-                        className="lp-mega-menu-card"
-                        onClick={() => setIsFeaturesMenuOpen(false)}
-                      >
-                        <span className="lp-mega-menu-icon">{item.icon}</span>
-                        <span className="lp-mega-menu-copy">
-                          <strong>{item.title}</strong>
-                          <span>{item.description}</span>
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </li>
-          <li><a href="#how">How It Works</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="lp-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="lp-nav-cta">Start Free →</Link></li>
-        </ul>
-      </motion.nav>
+      <MarketingHeader />
 
       {/* ─── HERO ─── */}
       <section className="lp-hero" id="home">
@@ -736,7 +613,7 @@ const LandingPage = () => {
         variants={staggerContainer}
       >
         <motion.h2 variants={fadeUp} transition={{ duration: 0.6 }}>Your store deserves<br />better tools.</motion.h2>
-        <motion.p variants={fadeUp} transition={{ duration: 0.5 }}>Join 2,400+ small business owners who run leaner, smarter operations with StorePro. Start free — no credit card needed.</motion.p>
+        <motion.p variants={fadeUp} transition={{ duration: 0.5 }}>Join 2,400+ small business owners who run leaner, smarter operations with Microbiz. Start free — no credit card needed.</motion.p>
         <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
           <Link to="/register" className="lp-btn-primary lp-cta-btn">Start Your Free Trial →</Link>
         </motion.div>

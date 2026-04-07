@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  FileText, 
-  X, 
-  Save, 
-  Plus,
-  Calendar,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Package,
-  DollarSign,
-  Percent
-} from 'lucide-react'
+import { HIcon } from './HIcon'
+import {
+  Add01Icon,
+  Calendar01Icon,
+  CallIcon,
+  Cancel01Icon,
+  DollarCircleIcon,
+  FileValidationIcon,
+  Mail01Icon,
+  MapPinIcon,
+  Package01Icon,
+  PercentIcon,
+  SaveIcon,
+  UserIcon,
+} from '@hugeicons/core-free-icons'
 
 const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
   const [invoice, setInvoice] = useState({
@@ -129,7 +130,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="bg-primary-500 p-2 rounded-lg mr-3">
-                <FileText size={24} className="text-white" />
+                <HIcon icon={FileValidationIcon} size={24} className="text-white"  />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white">
@@ -144,7 +145,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               onClick={onClose} 
               className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
             >
-              <X size={24} />
+              <HIcon icon={Cancel01Icon} size={24}  />
             </button>
           </div>
         </div>
@@ -154,7 +155,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
           {/* Customer Information */}
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <User size={20} className="mr-2 text-primary-600" />
+              <HIcon icon={UserIcon} size={20} className="mr-2 text-primary-600"  />
               Customer Information
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +177,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <Mail size={16} className="mr-2 text-primary-600" />
+                  <HIcon icon={Mail01Icon} size={16} className="mr-2 text-primary-600"  />
                   Email
                 </label>
                 <input
@@ -192,7 +193,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <Phone size={16} className="mr-2 text-primary-600" />
+                  <HIcon icon={CallIcon} size={16} className="mr-2 text-primary-600"  />
                   Phone
                 </label>
                 <input
@@ -208,7 +209,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <MapPin size={16} className="mr-2 text-primary-600" />
+                  <HIcon icon={MapPinIcon} size={16} className="mr-2 text-primary-600"  />
                   Address
                 </label>
                 <input
@@ -228,7 +229,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
           {/* Invoice Details */}
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Calendar size={20} className="mr-2 text-primary-600" />
+              <HIcon icon={Calendar01Icon} size={20} className="mr-2 text-primary-600"  />
               Invoice Details
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -255,7 +256,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <Percent size={16} className="mr-2 text-primary-600" />
+                  <HIcon icon={PercentIcon} size={16} className="mr-2 text-primary-600"  />
                   Tax Rate (%)
                 </label>
                 <input
@@ -275,14 +276,14 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Package size={20} className="mr-2 text-primary-600" />
+                <HIcon icon={Package01Icon} size={20} className="mr-2 text-primary-600"  />
                 Invoice Items
               </h4>
               <button
                 onClick={handleAddItem}
                 className="btn-secondary flex items-center text-sm"
               >
-                <Plus size={16} className="mr-1" />
+                <HIcon icon={Add01Icon} size={16} className="mr-1"  />
                 Add Item
               </button>
             </div>
@@ -344,7 +345,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
                             className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
                             title="Remove item"
                           >
-                            <X size={18} />
+                            <HIcon icon={Cancel01Icon} size={18}  />
                           </button>
                         )}
                       </td>
@@ -360,7 +361,7 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <DollarSign size={16} className="mr-2 text-primary-600" />
+                  <HIcon icon={DollarCircleIcon} size={16} className="mr-2 text-primary-600"  />
                   Discount (₵)
                 </label>
                 <input
@@ -411,14 +412,14 @@ const CreateInvoice = ({ isOpen, onClose, onSave, editingInvoice = null }) => {
               onClick={onClose} 
               className="btn-secondary flex-1 flex items-center justify-center"
             >
-              <X size={18} className="mr-2" />
+              <HIcon icon={Cancel01Icon} size={18} className="mr-2"  />
               Cancel
             </button>
             <button 
               onClick={handleSave} 
               className="btn-primary flex-1 flex items-center justify-center"
             >
-              <Save size={18} className="mr-2" />
+              <HIcon icon={SaveIcon} size={18} className="mr-2"  />
               {editingInvoice ? 'Update Invoice' : 'Create Invoice'}
             </button>
           </div>

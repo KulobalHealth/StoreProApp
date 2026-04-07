@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 const AuthContext = createContext(null)
 
-const SESSION_TIMEOUT = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+const SESSION_TIMEOUT = 20 * 60 * 1000 // 20 minutes in milliseconds
 const ACTIVITY_CHECK_INTERVAL = 60 * 1000 // Check every minute
 
 /**
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated) return
 
-    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart']
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'touchmove', 'click']
     const handler = () => updateActivity()
 
     activityEvents.forEach(event =>

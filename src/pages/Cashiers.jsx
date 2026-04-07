@@ -3,13 +3,35 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getActiveBranch, getSessionBranchId } from '../utils/branch'
 import { getCashierSales, listEmployees, listSales } from '../api/awoselDb.js'
+import { HIcon } from '../components/HIcon'
 import {
-  Users, Search, Calendar, Wallet,
-  ShoppingCart, Clock, Loader2, AlertTriangle,
-  Receipt, BarChart3, CalendarDays, CalendarRange, Filter, LogOut,
-  RefreshCw, X, ChevronDown, ChevronUp, CreditCard, Banknote,
-  Smartphone, Package, ArrowUpRight, User, Hash, DollarSign
-} from 'lucide-react'
+  Alert02Icon,
+  Analytics02Icon,
+  ArrowDown01Icon,
+  ArrowUp01Icon,
+  ArrowUpRightIcon,
+  Cash01Icon,
+  Calendar01Icon,
+  Calendar02Icon,
+  Calendar03Icon,
+  Cancel01Icon,
+  Clock01Icon,
+  CreditCardIcon,
+  DollarCircleIcon,
+  FilterIcon,
+  HashtagIcon,
+  Loading03Icon,
+  Logout01Icon,
+  Package01Icon,
+  ReceiptTextIcon,
+  RefreshIcon,
+  Search01Icon,
+  ShoppingCart01Icon,
+  SmartPhone01Icon,
+  UserGroupIcon,
+  UserIcon,
+  Wallet02Icon,
+} from '@hugeicons/core-free-icons'
 
 const AVATAR_COLORS = [
   'from-primary-500 to-primary-700',
@@ -114,10 +136,10 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
 
   const paymentIcon = (method) => {
     const m = (method || '').toLowerCase()
-    if (m.includes('cash'))                        return <Banknote size={12} className="text-green-600" />
-    if (m.includes('mobile') || m.includes('momo')) return <Smartphone size={12} className="text-blue-500" />
-    if (m.includes('card') || m.includes('cheque') || m.includes('credit')) return <CreditCard size={12} className="text-purple-500" />
-    return <DollarSign size={12} className="text-gray-500" />
+    if (m.includes('cash'))                        return <HIcon icon={Cash01Icon} size={12} className="text-green-600"  />
+    if (m.includes('mobile') || m.includes('momo')) return <HIcon icon={SmartPhone01Icon} size={12} className="text-blue-500"  />
+    if (m.includes('card') || m.includes('cheque') || m.includes('credit')) return <HIcon icon={CreditCardIcon} size={12} className="text-purple-500"  />
+    return <HIcon icon={DollarCircleIcon} size={12} className="text-gray-500"  />
   }
 
   return (
@@ -140,7 +162,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20 text-white transition-colors">
-            <X size={20} />
+            <HIcon icon={Cancel01Icon} size={20}  />
           </button>
         </div>
 
@@ -177,7 +199,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
         {/* Search + Sort */}
         <div className="px-6 py-3 border-b border-gray-100 bg-white shrink-0 flex items-center gap-3">
           <div className="relative flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <HIcon icon={Search01Icon} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
             <input type="text" placeholder="Search receipt, customer, payment…"
               value={search} onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 bg-gray-50" />
@@ -196,17 +218,17 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Loader2 size={32} className="animate-spin text-primary-500" />
+              <HIcon icon={Loading03Icon} size={32} className="animate-spin text-primary-500"  />
               <p className="text-sm text-gray-500">Loading sales history…</p>
             </div>
           ) : error ? (
             <div className="mx-6 my-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-              <AlertTriangle size={18} className="text-red-500 shrink-0" />
+              <HIcon icon={Alert02Icon} size={18} className="text-red-500 shrink-0"  />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           ) : processedSales.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
-              <Receipt size={40} className="text-gray-300" />
+              <HIcon icon={ReceiptTextIcon} size={40} className="text-gray-300"  />
               <p className="text-gray-500 font-medium">No sales found</p>
               <p className="text-xs text-gray-400">{search ? 'Try a different search.' : `No transactions for ${periodLabel}.`}</p>
             </div>
@@ -228,7 +250,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                       onClick={() => setExpandedSale(isExpanded ? null : saleId)}>
 
                       <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                        <Receipt size={16} className="text-primary-500" />
+                        <HIcon icon={ReceiptTextIcon} size={16} className="text-primary-500"  />
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -236,7 +258,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                           <span className="text-sm font-bold text-gray-900">{receiptNo}</span>
                           {customer && (
                             <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                              <User size={11} />{customer}
+                              <HIcon icon={UserIcon} size={11}  />{customer}
                             </span>
                           )}
                         </div>
@@ -244,7 +266,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                       </div>
 
                       <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 shrink-0">
-                        <Package size={13} />{items.length} item{items.length !== 1 ? 's' : ''}
+                        <HIcon icon={Package01Icon} size={13}  />{items.length} item{items.length !== 1 ? 's' : ''}
                       </div>
 
                       <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-600 shrink-0">
@@ -256,7 +278,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                       </div>
 
                       <div className="text-gray-400 shrink-0 ml-1">
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {isExpanded ? <HIcon icon={ArrowUp01Icon} size={16}  /> : <HIcon icon={ArrowDown01Icon} size={16}  />}
                       </div>
                     </button>
 
@@ -267,7 +289,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                           {/* Items table */}
                           <div className="lg:col-span-2">
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                              <Package size={12} /> Items Sold
+                              <HIcon icon={Package01Icon} size={12}  /> Items Sold
                             </p>
                             {items.length === 0 ? (
                               <p className="text-xs text-gray-400 italic">No item details available</p>
@@ -306,7 +328,7 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                           {/* Summary panel */}
                           <div className="space-y-3">
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                              <Hash size={12} /> Transaction Summary
+                              <HIcon icon={HashtagIcon} size={12}  /> Transaction Summary
                             </p>
                             <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 overflow-hidden">
                               {[
@@ -334,13 +356,13 @@ const CashierDetailModal = ({ cashier, branchId, period, customDate, rangeStart,
                               </div>
                               {customer && (
                                 <div className="flex items-center gap-2 text-xs">
-                                  <User size={12} className="text-gray-400" />
+                                  <HIcon icon={UserIcon} size={12} className="text-gray-400"  />
                                   <span className="text-gray-500">Customer:</span>
                                   <span className="font-semibold text-gray-800">{customer}</span>
                                 </div>
                               )}
                               <div className="flex items-center gap-2 text-xs">
-                                <Clock size={12} className="text-gray-400" />
+                                <HIcon icon={Clock01Icon} size={12} className="text-gray-400"  />
                                 <span className="text-gray-500">Time:</span>
                                 <span className="font-semibold text-gray-800">{fmtDateTime(sale.created_at)}</span>
                               </div>
@@ -509,13 +531,13 @@ const Cashiers = () => {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Top Nav */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-              <Wallet size={18} strokeWidth={2} />
+              <HIcon icon={Wallet02Icon} size={18} strokeWidth={2}  />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900 tracking-tight">Cashiers</h1>
@@ -527,11 +549,11 @@ const Cashiers = () => {
           <div className="flex items-center gap-2">
             <button onClick={handleRefresh} disabled={refreshing}
               className="p-2 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors disabled:opacity-50" title="Refresh">
-              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+              <HIcon icon={RefreshIcon} size={18} className={refreshing ? 'animate-spin' : ''}  />
             </button>
             <button onClick={() => { logout(); navigate('/login') }}
               className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Logout">
-              <LogOut size={20} />
+              <HIcon icon={Logout01Icon} size={20}  />
             </button>
           </div>
         </div>
@@ -558,7 +580,7 @@ const Cashiers = () => {
 
         {period === 'range' && (
           <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 w-fit">
-            <CalendarDays size={13} className="text-primary-500 shrink-0" />
+            <HIcon icon={Calendar02Icon} size={13} className="text-primary-500 shrink-0"  />
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">From</span>
             <input type="date" value={rangeStart} onChange={e => setRangeStart(e.target.value)} max={rangeEnd}
               className="text-xs text-gray-700 border-0 outline-none bg-transparent cursor-pointer" />
@@ -571,7 +593,7 @@ const Cashiers = () => {
 
         {period === 'custom' && (
           <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 w-fit">
-            <Calendar size={13} className="text-primary-500 shrink-0" />
+            <HIcon icon={Calendar01Icon} size={13} className="text-primary-500 shrink-0"  />
             <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</span>
             <input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} max={new Date().toISOString().split('T')[0]}
               className="text-xs text-gray-700 border-0 outline-none bg-transparent cursor-pointer" />
@@ -582,8 +604,8 @@ const Cashiers = () => {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { icon: <span className="text-lg font-bold text-primary-600">₵</span>, bg: 'bg-primary-100', label: 'Total revenue', value: `GH₵${summaryTotals.sales.toFixed(2)}`, badge: periodLabel, badgeColor: 'text-primary-600 bg-primary-50' },
-            { icon: <Receipt size={20} className="text-orange-600" />, bg: 'bg-orange-100', label: `${periodLabel} sales count`, value: summaryTotals.count, badge: 'Transactions', badgeColor: 'text-orange-600 bg-orange-50' },
-            { icon: <Users size={20} className="text-amber-600" />, bg: 'bg-amber-100', label: 'Cashiers with sales', value: <>{filteredCashiers.filter(c => c.totalCount > 0).length}<span className="text-base font-medium text-gray-400">/{filteredCashiers.length}</span></>, badge: 'Active', badgeColor: 'text-amber-600 bg-amber-50' },
+            { icon: <HIcon icon={ReceiptTextIcon} size={20} className="text-orange-600"  />, bg: 'bg-orange-100', label: `${periodLabel} sales count`, value: summaryTotals.count, badge: 'Transactions', badgeColor: 'text-orange-600 bg-orange-50' },
+            { icon: <HIcon icon={UserGroupIcon} size={20} className="text-amber-600"  />, bg: 'bg-amber-100', label: 'Cashiers with sales', value: <>{filteredCashiers.filter(c => c.totalCount > 0).length}<span className="text-base font-medium text-gray-400">/{filteredCashiers.length}</span></>, badge: 'Active', badgeColor: 'text-amber-600 bg-amber-50' },
           ].map((card, i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
@@ -598,7 +620,7 @@ const Cashiers = () => {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
           <input type="text" placeholder="Search cashiers by name or email…" value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
@@ -606,14 +628,14 @@ const Cashiers = () => {
 
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-            <AlertTriangle size={20} className="text-red-500 shrink-0" />
+            <HIcon icon={Alert02Icon} size={20} className="text-red-500 shrink-0"  />
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
         {refreshing && (
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Loader2 size={16} className="animate-spin" /> Refreshing…
+            <HIcon icon={Loading03Icon} size={16} className="animate-spin"  /> Refreshing…
           </div>
         )}
 
@@ -624,7 +646,7 @@ const Cashiers = () => {
           </div>
         ) : filteredCashiers.length === 0 ? (
           <div className="text-center py-16">
-            <Users size={48} className="mx-auto text-gray-300 mb-4" />
+            <HIcon icon={UserGroupIcon} size={48} className="mx-auto text-gray-300 mb-4"  />
             <h3 className="text-lg font-semibold text-gray-700">No cashiers found</h3>
             <p className="text-sm text-gray-500 mt-1">
               {searchTerm ? 'Try a different search term.' : `No cashier sales for ${periodLabel.toLowerCase()}.`}
@@ -689,7 +711,7 @@ const Cashiers = () => {
                   {/* Footer row */}
                   <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end">
                     <span className="text-[10px] text-primary-500 font-semibold group-hover:underline flex items-center gap-1">
-                      <ArrowUpRight size={11} /> View details
+                      <HIcon icon={ArrowUpRightIcon} size={11}  /> View details
                     </span>
                   </div>
                 </div>

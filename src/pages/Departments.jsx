@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Building2, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Package, 
-  FolderOpen, 
-  X, 
-  Save, 
-  AlertTriangle,
-  FileText,
-  Search
-} from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  Alert02Icon,
+  Building01Icon,
+  Cancel01Icon,
+  Delete01Icon,
+  FileValidationIcon,
+  FolderOpenIcon,
+  Package01Icon,
+  PencilEdit01Icon,
+  SaveIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons'
 
 const Departments = () => {
   // Load departments from localStorage or use default
@@ -160,14 +161,14 @@ const Departments = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <Building2 size={18} strokeWidth={2} />
+                <HIcon icon={Building01Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Department Management</h1>
@@ -182,7 +183,7 @@ const Departments = () => {
               }}
               className="btn-primary flex items-center"
             >
-              <Plus size={18} className="mr-2" />
+              <HIcon icon={Add01Icon} size={18} className="mr-2"  />
               Add Department
             </button>
           </div>
@@ -193,7 +194,7 @@ const Departments = () => {
       {/* Search */}
       <div className="card mb-6">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20}  />
           <input
             type="text"
             placeholder="Search departments by name or description..."
@@ -222,7 +223,7 @@ const Departments = () => {
                   <tr key={dept.id} className="border-b hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center">
-                        <FolderOpen size={20} className="text-primary-600 mr-3" />
+                        <HIcon icon={FolderOpenIcon} size={20} className="text-primary-600 mr-3"  />
                         <span className="font-semibold text-gray-900 text-lg">{dept.name}</span>
                       </div>
                     </td>
@@ -233,7 +234,7 @@ const Departments = () => {
                     </td>
                     <td className="py-4 px-4 text-center">
                       <div className="flex items-center justify-center">
-                        <Package size={18} className="text-gray-400 mr-2" />
+                        <HIcon icon={Package01Icon} size={18} className="text-gray-400 mr-2"  />
                         <span className="font-semibold text-gray-900 text-lg">
                           {dept.productCount}
                         </span>
@@ -249,14 +250,14 @@ const Departments = () => {
                           className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                           title="Edit Department"
                         >
-                          <Edit size={18} />
+                          <HIcon icon={PencilEdit01Icon} size={18}  />
                         </button>
                         <button
                           onClick={() => handleDeleteDepartment(dept)}
                           className="p-2 rounded-lg hover:bg-red-100 text-red-600 transition-colors"
                           title="Delete Department"
                         >
-                          <Trash2 size={18} />
+                          <HIcon icon={Delete01Icon} size={18}  />
                         </button>
                       </div>
                     </td>
@@ -266,7 +267,7 @@ const Departments = () => {
                 <tr>
                   <td colSpan="4" className="py-12 text-center">
                     <div className="flex flex-col items-center">
-                      <Building2 size={64} className="text-gray-300 mb-4" />
+                      <HIcon icon={Building01Icon} size={64} className="text-gray-300 mb-4"  />
                       <p className="text-lg font-medium text-gray-500">No departments found</p>
                       <p className="text-sm text-gray-500 mt-2">
                         {searchTerm 
@@ -292,7 +293,7 @@ const Departments = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="bg-primary-500 p-2 rounded-lg mr-3">
-                    <Building2 size={24} className="text-white" />
+                    <HIcon icon={Building01Icon} size={24} className="text-white"  />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white">
@@ -307,7 +308,7 @@ const Departments = () => {
                   onClick={handleCloseDepartmentModal} 
                   className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                 >
-                  <X size={24} />
+                  <HIcon icon={Cancel01Icon} size={24}  />
                 </button>
               </div>
             </div>
@@ -318,7 +319,7 @@ const Departments = () => {
                 {/* Department Name */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Building2 size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={Building01Icon} size={16} className="text-primary-600 mr-2"  />
                     Department Name <span className="text-red-500 ml-1">*</span>
                   </label>
                   <input
@@ -333,7 +334,7 @@ const Departments = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <FileText size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={FileValidationIcon} size={16} className="text-primary-600 mr-2"  />
                     Description (Optional)
                   </label>
                   <textarea
@@ -349,7 +350,7 @@ const Departments = () => {
                 {editingDepartment && (
                   <div className="p-4 bg-primary-50 border-l-4 border-primary-500 rounded-lg">
                     <div className="flex items-start">
-                      <AlertTriangle size={20} className="text-primary-600 mr-3 mt-0.5" />
+                      <HIcon icon={Alert02Icon} size={20} className="text-primary-600 mr-3 mt-0.5"  />
                       <div>
                         <p className="text-sm font-medium text-primary-900">Update Notice</p>
                         <p className="text-xs text-primary-700 mt-1">
@@ -367,14 +368,14 @@ const Departments = () => {
                   onClick={handleCloseDepartmentModal} 
                   className="btn-secondary flex-1 flex items-center justify-center"
                 >
-                  <X size={18} className="mr-2" />
+                  <HIcon icon={Cancel01Icon} size={18} className="mr-2"  />
                   Cancel
                 </button>
                 <button 
                   onClick={editingDepartment ? handleUpdateDepartment : handleAddDepartment} 
                   className="btn-primary flex-1 flex items-center justify-center"
                 >
-                  <Save size={18} className="mr-2" />
+                  <HIcon icon={SaveIcon} size={18} className="mr-2"  />
                   {editingDepartment ? 'Update Department' : 'Add Department'}
                 </button>
               </div>

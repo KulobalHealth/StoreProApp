@@ -1,5 +1,6 @@
 import React from 'react'
-import { AlertCircle, RefreshCw, Home } from 'lucide-react'
+import { HIcon } from './HIcon'
+import { AlertCircleIcon, RefreshIcon, Home01Icon } from '@hugeicons/core-free-icons'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -72,7 +73,7 @@ class ErrorBoundary extends React.Component {
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full border border-red-200">
             <div className="flex items-center mb-4">
               <div className="bg-red-100 p-3 rounded-lg mr-4">
-                <AlertCircle size={32} className="text-red-600" />
+                <HIcon icon={AlertCircleIcon} size={32} className="text-red-600" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Something went wrong</h2>
@@ -125,14 +126,14 @@ class ErrorBoundary extends React.Component {
                 onClick={this.handleReload}
                 className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                <RefreshCw size={18} />
+                <HIcon icon={RefreshIcon} size={18} />
                 Reload Page
               </button>
               <button
                 onClick={this.handleGoHome}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
-                <Home size={18} />
+                <HIcon icon={Home01Icon} size={18} />
                 Go to POS
               </button>
             </div>

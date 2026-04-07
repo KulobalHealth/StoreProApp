@@ -1,5 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Plus, Edit, Trash2, User, Shield, UserCheck, Clock, Mail, Phone, Lock, Eye, EyeOff, X, Key, CheckCircle, Users, TrendingUp, Activity, AlertCircle } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Activity01Icon,
+  Add01Icon,
+  AlertCircleIcon,
+  ArrowMoveUpRightIcon,
+  CallIcon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Delete01Icon,
+  KeyIcon,
+  LockIcon,
+  Mail01Icon,
+  PencilEdit01Icon,
+  Search01Icon,
+  Shield01Icon,
+  UserCheck01Icon,
+  UserGroupIcon,
+  UserIcon,
+  ViewIcon,
+  ViewOffIcon,
+} from '@hugeicons/core-free-icons'
 
 const Staff = () => {
   // Role permissions matrix
@@ -139,13 +161,13 @@ const Staff = () => {
   const getRoleIcon = (role) => {
     switch (role) {
       case 'Admin':
-        return <Shield size={16} className="text-red-600" />
+        return <HIcon icon={Shield01Icon} size={16} className="text-red-600"  />
       case 'Manager':
-        return <UserCheck size={16} className="text-primary-600" />
+        return <HIcon icon={UserCheck01Icon} size={16} className="text-primary-600"  />
       case 'Accountant':
-        return <Key size={16} className="text-amber-600" />
+        return <HIcon icon={KeyIcon} size={16} className="text-amber-600"  />
       default:
-        return <User size={16} className="text-gray-600" />
+        return <HIcon icon={UserIcon} size={16} className="text-gray-600"  />
     }
   }
 
@@ -211,13 +233,13 @@ const Staff = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <UserCheck size={18} strokeWidth={2} />
+                <HIcon icon={UserCheck01Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Staff Management</h1>
@@ -231,7 +253,7 @@ const Staff = () => {
                 setShowAddModal(true)
               }}
             >
-              <Plus size={18} className="mr-2" />
+              <HIcon icon={Add01Icon} size={18} className="mr-2"  />
               Add Staff
             </button>
           </div>
@@ -247,12 +269,12 @@ const Staff = () => {
               <p className="text-sm text-gray-600 mb-1">Total Staff</p>
               <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
               <div className="flex items-center mt-2">
-                <Users size={14} className="text-primary-600 mr-1" />
+                <HIcon icon={UserGroupIcon} size={14} className="text-primary-600 mr-1"  />
                 <span className="text-xs text-gray-600">All members</span>
               </div>
             </div>
             <div className="bg-primary-600 p-3 rounded-lg">
-              <Users size={24} className="text-white" />
+              <HIcon icon={UserGroupIcon} size={24} className="text-white"  />
             </div>
           </div>
         </div>
@@ -264,12 +286,12 @@ const Staff = () => {
                 {staff.filter(s => s.status === 'active').length}
               </p>
               <div className="flex items-center mt-2">
-                <CheckCircle size={14} className="text-green-600 mr-1" />
+                <HIcon icon={CheckmarkCircle02Icon} size={14} className="text-green-600 mr-1"  />
                 <span className="text-xs text-gray-600">Currently active</span>
               </div>
             </div>
             <div className="bg-green-600 p-3 rounded-lg">
-              <Activity size={24} className="text-white" />
+              <HIcon icon={Activity01Icon} size={24} className="text-white"  />
             </div>
           </div>
         </div>
@@ -279,12 +301,12 @@ const Staff = () => {
               <p className="text-sm text-gray-600 mb-1">Admins</p>
               <p className="text-2xl font-bold text-red-700">{roleStats.Admin}</p>
               <div className="flex items-center mt-2">
-                <Shield size={14} className="text-red-600 mr-1" />
+                <HIcon icon={Shield01Icon} size={14} className="text-red-600 mr-1"  />
                 <span className="text-xs text-gray-600">Full access</span>
               </div>
             </div>
             <div className="bg-red-600 p-3 rounded-lg">
-              <Shield size={24} className="text-white" />
+              <HIcon icon={Shield01Icon} size={24} className="text-white"  />
             </div>
           </div>
         </div>
@@ -294,12 +316,12 @@ const Staff = () => {
               <p className="text-sm text-gray-600 mb-1">Managers</p>
               <p className="text-2xl font-bold text-primary-700">{roleStats.Manager}</p>
               <div className="flex items-center mt-2">
-                <UserCheck size={14} className="text-primary-600 mr-1" />
+                <HIcon icon={UserCheck01Icon} size={14} className="text-primary-600 mr-1"  />
                 <span className="text-xs text-gray-600">Management</span>
               </div>
             </div>
             <div className="bg-primary-600 p-3 rounded-lg">
-              <UserCheck size={24} className="text-white" />
+              <HIcon icon={UserCheck01Icon} size={24} className="text-white"  />
             </div>
           </div>
         </div>
@@ -309,12 +331,12 @@ const Staff = () => {
               <p className="text-sm text-gray-600 mb-1">Cashiers</p>
               <p className="text-2xl font-bold text-amber-700">{roleStats.Cashier}</p>
               <div className="flex items-center mt-2">
-                <User size={14} className="text-amber-600 mr-1" />
+                <HIcon icon={UserIcon} size={14} className="text-amber-600 mr-1"  />
                 <span className="text-xs text-gray-600">Point of sale</span>
               </div>
             </div>
             <div className="bg-amber-600 p-3 rounded-lg">
-              <User size={24} className="text-white" />
+              <HIcon icon={UserIcon} size={24} className="text-white"  />
             </div>
           </div>
         </div>
@@ -324,7 +346,7 @@ const Staff = () => {
       <div className="card mb-6">
         <div className="space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20}  />
             <input
               type="text"
               placeholder="Search staff by name, email, username, or role..."
@@ -365,7 +387,7 @@ const Staff = () => {
                 onClick={() => setShowPermissionsModal(true)}
                 className="btn-secondary flex items-center"
               >
-                <Shield size={18} className="mr-2" />
+                <HIcon icon={Shield01Icon} size={18} className="mr-2"  />
                 View Permissions Matrix
               </button>
             </div>
@@ -378,7 +400,7 @@ const Staff = () => {
         <div className="flex justify-between items-center mb-6 pb-4 border-b">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Users size={24} className="mr-3 text-primary-600" />
+              <HIcon icon={UserGroupIcon} size={24} className="mr-3 text-primary-600"  />
               Staff Members
             </h2>
             <p className="text-sm text-gray-600 mt-2">Showing {filteredStaff.length} of {staff.length} staff members</p>
@@ -414,7 +436,7 @@ const Staff = () => {
                       <div>
                         <p className="font-semibold text-gray-900">{member.name}</p>
                         <div className="flex items-center mt-1">
-                          <Mail size={12} className="text-gray-400 mr-1" />
+                          <HIcon icon={Mail01Icon} size={12} className="text-gray-400 mr-1"  />
                           <p className="text-xs text-gray-500">{member.email}</p>
                         </div>
                       </div>
@@ -425,7 +447,7 @@ const Staff = () => {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center text-gray-700">
-                      <Phone size={14} className="text-gray-400 mr-2" />
+                      <HIcon icon={CallIcon} size={14} className="text-gray-400 mr-2"  />
                       {member.phone}
                     </div>
                   </td>
@@ -441,13 +463,13 @@ const Staff = () => {
                         ? 'bg-green-100 text-green-700' 
                         : 'bg-gray-100 text-gray-700'
                     }`}>
-                      {member.status === 'active' && <CheckCircle size={12} className="mr-1" />}
+                      {member.status === 'active' && <HIcon icon={CheckmarkCircle02Icon} size={12} className="mr-1"  />}
                       {member.status}
                     </span>
                   </td>
                   <td className="py-4 px-4 text-gray-700 text-sm">
                     <div className="flex items-center">
-                      <Clock size={14} className="text-gray-400 mr-2" />
+                      <HIcon icon={Clock01Icon} size={14} className="text-gray-400 mr-2"  />
                       {member.lastLogin === 'Never' ? (
                         <span className="text-gray-500 italic">Never</span>
                       ) : (
@@ -472,7 +494,7 @@ const Staff = () => {
                         className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                         title="Edit Staff"
                       >
-                        <Edit size={18} />
+                        <HIcon icon={PencilEdit01Icon} size={18}  />
                       </button>
                       <button
                         onClick={() => {
@@ -482,14 +504,14 @@ const Staff = () => {
                         className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                         title="Reset Password"
                       >
-                        <Lock size={18} />
+                        <HIcon icon={LockIcon} size={18}  />
                       </button>
                       <button
                         onClick={() => deleteStaff(member.id)}
                         className="p-2 rounded-lg hover:bg-red-100 text-red-600 transition-colors"
                         title="Delete Staff"
                       >
-                        <Trash2 size={18} />
+                        <HIcon icon={Delete01Icon} size={18}  />
                       </button>
                     </div>
                   </td>
@@ -499,7 +521,7 @@ const Staff = () => {
               <tr>
                 <td colSpan="8" className="py-12 text-center">
                   <div className="flex flex-col items-center">
-                    <Users size={48} className="text-gray-300 mb-3" />
+                    <HIcon icon={UserGroupIcon} size={48} className="text-gray-300 mb-3"  />
                     <p className="text-gray-500 font-medium">No staff members found</p>
                     <p className="text-sm text-gray-500 mt-1">Try adjusting your search or filters</p>
                   </div>
@@ -607,7 +629,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
         <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
             <div className="bg-primary-600 p-2 rounded-lg mr-3">
-              {staff ? <Edit size={24} className="text-white" /> : <Plus size={24} className="text-white" />}
+              {staff ? <HIcon icon={PencilEdit01Icon} size={24} className="text-white"  /> : <HIcon icon={Add01Icon} size={24} className="text-white"  />}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -619,7 +641,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X size={24} />
+            <HIcon icon={Cancel01Icon} size={24}  />
           </button>
         </div>
 
@@ -736,7 +758,7 @@ const StaffModal = ({ staff, onSave, onClose }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <HIcon icon={ViewOffIcon} size={18}  /> : <HIcon icon={ViewIcon} size={18}  />}
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
@@ -784,7 +806,7 @@ const PermissionsModal = ({ permissions, onClose }) => {
         <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
             <div className="bg-primary-500 p-2 rounded-lg mr-3">
-              <Shield size={24} className="text-white" />
+              <HIcon icon={Shield01Icon} size={24} className="text-white"  />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Role Permissions Matrix</h2>
@@ -792,7 +814,7 @@ const PermissionsModal = ({ permissions, onClose }) => {
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X size={24} />
+            <HIcon icon={Cancel01Icon} size={24}  />
           </button>
         </div>
 
@@ -805,10 +827,10 @@ const PermissionsModal = ({ permissions, onClose }) => {
                   {roles.map(role => (
                     <th key={role} className="text-center py-4 px-4 font-bold text-gray-900">
                       <div className="flex items-center justify-center">
-                        {role === 'Admin' && <Shield size={16} className="text-red-600 mr-2" />}
-                        {role === 'Manager' && <UserCheck size={16} className="text-primary-600 mr-2" />}
-                        {role === 'Accountant' && <Key size={16} className="text-amber-600 mr-2" />}
-                        {role === 'Cashier' && <User size={16} className="text-gray-600 mr-2" />}
+                        {role === 'Admin' && <HIcon icon={Shield01Icon} size={16} className="text-red-600 mr-2"  />}
+                        {role === 'Manager' && <HIcon icon={UserCheck01Icon} size={16} className="text-primary-600 mr-2"  />}
+                        {role === 'Accountant' && <HIcon icon={KeyIcon} size={16} className="text-amber-600 mr-2"  />}
+                        {role === 'Cashier' && <HIcon icon={UserIcon} size={16} className="text-gray-600 mr-2"  />}
                         {role}
                       </div>
                     </th>
@@ -833,9 +855,9 @@ const PermissionsModal = ({ permissions, onClose }) => {
                             {roles.map(role => (
                               <td key={role} className="text-center py-2 px-4">
                                 {permissions[role][category.key]?.[subPerm] ? (
-                                  <CheckCircle size={20} className="text-green-600 mx-auto" />
+                                  <HIcon icon={CheckmarkCircle02Icon} size={20} className="text-green-600 mx-auto"  />
                                 ) : (
-                                  <X size={20} className="text-red-600 mx-auto" />
+                                  <HIcon icon={Cancel01Icon} size={20} className="text-red-600 mx-auto"  />
                                 )}
                               </td>
                             ))}
@@ -850,9 +872,9 @@ const PermissionsModal = ({ permissions, onClose }) => {
                         {roles.map(role => (
                           <td key={role} className="text-center py-2 px-4">
                             {permissions[role][category.key] ? (
-                              <CheckCircle size={20} className="text-green-600 mx-auto" />
+                              <HIcon icon={CheckmarkCircle02Icon} size={20} className="text-green-600 mx-auto"  />
                             ) : (
-                              <X size={20} className="text-red-600 mx-auto" />
+                              <HIcon icon={Cancel01Icon} size={20} className="text-red-600 mx-auto"  />
                             )}
                           </td>
                         ))}
@@ -912,7 +934,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
         <div className="px-6 py-5 border-b bg-gradient-to-r from-primary-50 to-transparent flex items-center justify-between">
           <div className="flex items-center">
             <div className="bg-primary-500 p-2 rounded-lg mr-3">
-              <Lock size={24} className="text-white" />
+              <HIcon icon={LockIcon} size={24} className="text-white"  />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">Reset Password</h2>
@@ -920,7 +942,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <X size={24} />
+            <HIcon icon={Cancel01Icon} size={24}  />
           </button>
         </div>
 
@@ -947,7 +969,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <HIcon icon={ViewOffIcon} size={18}  /> : <HIcon icon={ViewIcon} size={18}  />}
               </button>
             </div>
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
@@ -975,7 +997,7 @@ const PasswordModal = ({ staff, onReset, onClose }) => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <HIcon icon={ViewOffIcon} size={18}  /> : <HIcon icon={ViewIcon} size={18}  />}
               </button>
             </div>
             {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}

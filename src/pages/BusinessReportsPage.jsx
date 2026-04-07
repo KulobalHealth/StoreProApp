@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
-import logo from '../MainLogo.jpeg'
 import reportsImage from '../mobile-mockups/20.png'
 
 const fadeUp = {
@@ -70,24 +70,7 @@ const workflowSteps = [
 const BusinessReportsPage = () => {
   return (
     <div className="brp-page">
-      <motion.nav
-        className="brp-nav"
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <Link to="/" className="brp-logo">
-          <img src={logo} alt="MicroBiz" className="brp-logo-img" />
-        </Link>
-        <ul className="brp-nav-links">
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#how">How It Works</a></li>
-          <li><a href="/#pricing">Pricing</a></li>
-          <li><a href="/#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="brp-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="brp-nav-cta">Get Started →</Link></li>
-        </ul>
-      </motion.nav>
+      <MarketingHeader />
 
       <section className="brp-hero">
         <div className="brp-shell">

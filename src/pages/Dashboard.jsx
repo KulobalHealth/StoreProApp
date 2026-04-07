@@ -1,37 +1,37 @@
 import React, { useState } from 'react'
 import logo from '../MainLogo.jpeg'
-import { 
-  DollarSign, 
-  ShoppingCart, 
-  Package, 
-  TrendingUp, 
-  ArrowUp, 
-  ArrowDown, 
-  Users, 
-  Clock, 
-  AlertTriangle, 
-  Award, 
-  Activity, 
-  Calendar, 
-  TrendingDown, 
-  CheckCircle,
-  FileText,
-  CreditCard,
-  Wallet,
-  ChevronDown,
-  Play,
-  Building2,
-  Menu,
-  Plus,
-  Search,
-  Settings,
-  HelpCircle,
-  Bell,
-  Lock,
-  User,
-  Receipt,
-  AlertCircle
-} from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  DollarCircleIcon,
+  ShoppingCart01Icon,
+  Package01Icon,
+  ArrowMoveUpRightIcon,
+  ArrowUp01Icon,
+  ArrowDown01Icon,
+  UserGroupIcon,
+  Clock02Icon,
+  Alert02Icon,
+  Award02Icon,
+  Activity01Icon,
+  Calendar01Icon,
+  ArrowMoveDownRightIcon,
+  CheckmarkCircle02Icon,
+  FileValidationIcon,
+  CreditCardIcon,
+  Wallet02Icon,
+  PlayIcon,
+  Building01Icon,
+  Menu01Icon,
+  Add01Icon,
+  Search01Icon,
+  Settings02Icon,
+  HelpCircleIcon,
+  Notification03Icon,
+  LockIcon,
+  UserIcon,
+  ReceiptTextIcon,
+  AlertCircleIcon,
+} from '@hugeicons/core-free-icons'
 import { 
   PieChart, 
   Pie, 
@@ -144,7 +144,7 @@ const Dashboard = () => {
           {/* Left Side - Logo and Menu */}
           <div className="flex items-center gap-4">
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Menu size={20} className="text-gray-700" />
+              <HIcon icon={Menu01Icon} size={20} className="text-gray-700" />
             </button>
             <img src={logo} alt="StorePro" className="h-10 object-contain" />
           </div>
@@ -154,19 +154,19 @@ const Dashboard = () => {
             {/* Utility Icons */}
             <div className="flex items-center gap-2">
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Add">
-                <Plus size={20} className="text-gray-700" />
+                <HIcon icon={Add01Icon} size={20} className="text-gray-700" />
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Search">
-                <Search size={20} className="text-gray-700" />
+                <HIcon icon={Search01Icon} size={20} className="text-gray-700" />
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Settings">
-                <Settings size={20} className="text-gray-700" />
+                <HIcon icon={Settings02Icon} size={20} className="text-gray-700" />
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Help">
-                <HelpCircle size={20} className="text-gray-700" />
+                <HIcon icon={HelpCircleIcon} size={20} className="text-gray-700" />
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative" title="Notifications">
-                <Bell size={20} className="text-gray-700" />
+                <HIcon icon={Notification03Icon} size={20} className="text-gray-700" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
             </div>
@@ -181,7 +181,7 @@ const Dashboard = () => {
               </button>
               <div className="h-6 w-px bg-gray-300"></div>
               <div className="flex items-center gap-2">
-                <Lock size={16} className="text-gray-600" />
+                <HIcon icon={LockIcon} size={16} className="text-gray-600" />
                 <span className="text-sm text-gray-700 font-medium">PRIVACY</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -204,7 +204,7 @@ const Dashboard = () => {
         <div className="mb-6">
           <div className="flex items-center gap-3">
             <div className="bg-primary-500 w-9 h-9 rounded-lg flex items-center justify-center">
-              <Building2 size={18} className="text-white" />
+              <HIcon icon={Building01Icon} size={18} className="text-white" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900 tracking-tight">Awosel OS Store</h1>
@@ -297,7 +297,7 @@ const Dashboard = () => {
                 <option value="lastQuarter">Last quarter</option>
                 <option value="thisYear">This year</option>
               </select>
-              <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+              <HIcon icon={ArrowDown01Icon} size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
             </div>
           </div>
 
@@ -371,7 +371,7 @@ const Dashboard = () => {
             <a href="#" className="text-sm text-primary-600 hover:text-primary-700 font-medium block">Connect accounts</a>
             <a href="#" className="text-sm text-gray-600 hover:text-gray-700 font-medium flex items-center">
               Go to registers
-              <ChevronDown size={16} className="ml-1" />
+              <HIcon icon={ArrowDown01Icon} size={16} className="ml-1" />
             </a>
           </div>
         </div>
@@ -394,7 +394,7 @@ const Dashboard = () => {
                 <option value="lastQuarter">Last quarter</option>
                 <option value="thisYear">This year</option>
               </select>
-              <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+              <HIcon icon={ArrowDown01Icon} size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
             </div>
           </div>
 
@@ -407,7 +407,7 @@ const Dashboard = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold text-gray-900">₵{profitLossData.income.toLocaleString()} INCOME</span>
-                <ArrowUp size={16} className="text-green-600" />
+                <HIcon icon={ArrowUp01Icon} size={16} className="text-green-600" />
               </div>
               <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
@@ -420,7 +420,7 @@ const Dashboard = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold text-gray-900">₵{profitLossData.expenses.toLocaleString()} EXPENSES</span>
-                <ArrowUp size={16} className="text-teal-600" />
+                <HIcon icon={ArrowUp01Icon} size={16} className="text-teal-600" />
               </div>
               <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                 <div 
@@ -447,7 +447,7 @@ const Dashboard = () => {
                 <option value="thisYear">This year</option>
                 <option value="lastYear">Last year</option>
               </select>
-              <ChevronDown size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
+              <HIcon icon={ArrowDown01Icon} size={16} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
             </div>
           </div>
 
@@ -494,7 +494,7 @@ const Dashboard = () => {
           <div className="bg-gradient-to-br from-primary-200 to-primary-300 rounded-lg h-32 mb-4 flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-white bg-opacity-90 rounded-full p-4 shadow-lg">
-                <Play size={32} className="text-primary-600" />
+                <HIcon icon={PlayIcon} size={32} className="text-primary-600" />
               </div>
             </div>
           </div>
@@ -516,7 +516,7 @@ const Dashboard = () => {
         <div className="bg-gradient-to-br from-primary-50 to-orange-100 rounded-lg shadow-sm border border-primary-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Wallet size={20} className="mr-2 text-primary-600" />
+              <HIcon icon={Wallet02Icon} size={20} className="mr-2 text-primary-600" />
               Cash Flow
             </h3>
           </div>
@@ -525,7 +525,7 @@ const Dashboard = () => {
             <p className="text-xs text-gray-600 mb-1 font-medium">THIS MONTH</p>
             <p className="text-2xl font-bold text-gray-900">₵{cashFlowData.netFlow.toLocaleString()}</p>
             <p className="text-xs text-green-600 mt-1 flex items-center">
-              <TrendingUp size={12} className="mr-1" />
+              <HIcon icon={ArrowMoveUpRightIcon} size={12} className="mr-1" />
               Net positive
             </p>
           </div>
@@ -546,7 +546,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Users size={20} className="mr-2 text-primary-600" />
+              <HIcon icon={UserGroupIcon} size={20} className="mr-2 text-primary-600" />
               Top Customers
             </h3>
           </div>
@@ -556,7 +556,7 @@ const Dashboard = () => {
               <div key={index} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors">
                 <div className="flex items-center flex-1">
                   <div className="bg-primary-100 w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                    <User size={16} className="text-primary-600" />
+                    <HIcon icon={UserIcon} size={16} className="text-primary-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-gray-900">{customer.name}</p>
@@ -576,7 +576,7 @@ const Dashboard = () => {
         <div className="bg-gradient-to-br from-orange-50 to-yellow-100 rounded-lg shadow-sm border border-orange-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Package size={20} className="mr-2 text-orange-600" />
+              <HIcon icon={Package01Icon} size={20} className="mr-2 text-orange-600" />
               Inventory Status
             </h3>
           </div>
@@ -589,21 +589,21 @@ const Dashboard = () => {
           <div className="space-y-3 pt-4 border-t border-orange-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <AlertCircle size={16} className="text-orange-600 mr-2" />
+                <HIcon icon={AlertCircleIcon} size={16} className="text-orange-600 mr-2" />
                 <span className="text-sm text-gray-700">Low Stock</span>
               </div>
               <span className="text-sm font-bold text-orange-700">{inventoryStatus.lowStock}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <AlertCircle size={16} className="text-red-600 mr-2" />
+                <HIcon icon={AlertCircleIcon} size={16} className="text-red-600 mr-2" />
                 <span className="text-sm text-gray-700">Out of Stock</span>
               </div>
               <span className="text-sm font-bold text-red-700">{inventoryStatus.outOfStock}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <Package size={16} className="text-primary-600 mr-2" />
+                <HIcon icon={Package01Icon} size={16} className="text-primary-600 mr-2" />
                 <span className="text-sm text-gray-700">Reorder Needed</span>
               </div>
               <span className="text-sm font-bold text-primary-700">{inventoryStatus.reorderNeeded}</span>
@@ -616,7 +616,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Receipt size={20} className="mr-2 text-primary-600" />
+              <HIcon icon={ReceiptTextIcon} size={20} className="mr-2 text-primary-600" />
               Recent Transactions
             </h3>
             <a href="#" className="text-xs text-primary-600 hover:text-primary-700 font-medium">View all</a>

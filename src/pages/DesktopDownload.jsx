@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import logo from '../MainLogo.jpeg'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
 
 const fadeUp = {
@@ -19,18 +19,7 @@ export default function DesktopDownload() {
     <div className="dd-root">
       <style>{ddStyles}</style>
 
-      {/* NAV */}
-      <motion.nav
-        className="dd-nav"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Link to="/" className="dd-nav-logo">
-          <img src={logo} alt="StorePro" />
-        </Link>
-        <Link to="/" className="dd-nav-back">← Back to Home</Link>
-      </motion.nav>
+      <MarketingHeader />
 
       {/* HERO */}
       <motion.header
@@ -263,7 +252,7 @@ const ddStyles = `
 /* HERO */
 .dd-hero {
   text-align: center;
-  padding: 5rem 5% 4rem;
+  padding: 8rem 5% 4rem;
   background: var(--amber);
   border-bottom: none;
   position: relative;
@@ -598,7 +587,7 @@ const ddStyles = `
   .dd-nav-logo img { height: 28px; }
   .dd-nav-back { font-size: 0.78rem; }
 
-  .dd-hero { padding: 4rem 6% 3.5rem; }
+  .dd-hero { padding: 6.75rem 6% 3.5rem; }
   .dd-hero h1 { font-size: 2rem; }
   .dd-hero-sub { font-size: 0.92rem; max-width: 90%; }
   .dd-hero-badges { gap: 0.5rem; }
@@ -643,7 +632,7 @@ const ddStyles = `
   .dd-nav-logo img { height: 24px; }
   .dd-nav-back { font-size: 0.72rem; }
 
-  .dd-hero { padding: 3rem 5% 2.5rem; }
+  .dd-hero { padding: 5.75rem 5% 2.5rem; }
   .dd-hero h1 { font-size: 1.6rem; line-height: 1.2; }
   .dd-hero-sub { font-size: 0.85rem; line-height: 1.6; max-width: 100%; }
   .dd-hero-badges { gap: 0.4rem; justify-content: center; }

@@ -3,10 +3,36 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { listBranches, createBranch } from '../api/awoselDb'
 import logo from '../MainLogo.jpeg'
+import { HIcon } from '../components/HIcon'
 import {
-  Store, Plus, MapPin, Building2, X,
-  LogOut, Loader2, ArrowRight, Search, RefreshCw
-} from 'lucide-react'
+  Store01Icon, Add01Icon, MapPinIcon, Building01Icon, Cancel01Icon,
+  Logout01Icon, Loading03Icon, ArrowRight01Icon, Search01Icon, RefreshIcon,
+} from '@hugeicons/core-free-icons'
+
+const STORE_TYPE_OPTIONS = [
+  { value: 'retail', label: 'Retail' },
+  { value: 'wholesale', label: 'Wholesale' },
+  { value: 'warehouse', label: 'Warehouse' },
+]
+
+const BRANCH_CACHE_KEY = 'awosel_branches_cache'
+const BRANCHES_UPDATED_EVENT = 'awosel:branches-updated'
+
+const normalizeBranch = (branch) => ({
+  ...branch,
+  uuid: branch.uuid || branch.id || branch.branch_id || branch.branchId,
+  id: branch.id || branch.uuid || branch.branch_id || branch.branchId,
+  name: branch.name || branch.branchName || branch.branch_name || 'Unnamed Store',
+  location: branch.location || branch.address || branch.branch_location || '',
+  store_type: branch.store_type || branch.storeType || branch.type || '',
+})
+
+const publishBranchUpdates = (branchList) => {
+  localStorage.setItem(BRANCH_CACHE_KEY, JSON.stringify(branchList))
+  window.dispatchEvent(new CustomEvent(BRANCHES_UPDATED_EVENT, {
+    detail: { branches: branchList },
+  }))
+}
 
 const ActivityDashboard = () => {
   const { user, logout } = useAuth()
@@ -16,7 +42,7 @@ const ActivityDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ name: '', location: '' })
+  const [form, setForm] = useState({ name: '', location: '', storeType: '' })
   const [error, setError] = useState('')
   const [branchSearch, setBranchSearch] = useState('')
 
@@ -60,11 +86,18 @@ const ActivityDashboard = () => {
     try {
       setLoading(true)
       const res = await listBranches()
-      const list = res.data || res || []
-      setBranches(Array.isArray(list) ? list : [])
+      const rawList = res?.data?.branches || res?.branches || res?.data || res || []
+      const nextBranches = (Array.isArray(rawList) ? rawList : []).map(normalizeBranch)
+      setBranches(nextBranches)
+      publishBranchUpdates(nextBranches)
     } catch (err) {
       console.error('Failed to load branches:', err)
-      setBranches([])
+      try {
+        const cached = JSON.parse(localStorage.getItem(BRANCH_CACHE_KEY) || '[]')
+        setBranches(Array.isArray(cached) ? cached.map(normalizeBranch) : [])
+      } catch {
+        setBranches([])
+      }
     } finally {
       setLoading(false)
     }
@@ -75,14 +108,31 @@ const ActivityDashboard = () => {
     setError('')
     if (!form.name.trim()) { setError('Branch name is required'); return }
     if (!form.location.trim()) { setError('Location is required'); return }
+    if (!form.storeType) { setError('Store type is required'); return }
     try {
       setSubmitting(true)
-      await createBranch({
+      const createResponse = await createBranch({
         branchName: form.name.trim(),
         location: form.location.trim(),
+        store_type: form.storeType,
         organization_id: user?.organization_id,
       })
-      setForm({ name: '', location: '' })
+
+      const createdBranchRaw = createResponse?.data?.branch || createResponse?.branch || createResponse?.data || createResponse
+      const createdBranch = createdBranchRaw ? normalizeBranch(createdBranchRaw) : null
+
+      if (createdBranch?.id || createdBranch?.uuid) {
+        setBranches((previousBranches) => {
+          const nextBranches = [
+            createdBranch,
+            ...previousBranches.filter((branch) => String(branch.id || branch.uuid) !== String(createdBranch.id || createdBranch.uuid)),
+          ]
+          publishBranchUpdates(nextBranches)
+          return nextBranches
+        })
+      }
+
+      setForm({ name: '', location: '', storeType: '' })
       setShowForm(false)
       await fetchBranches()
     } catch (err) {
@@ -120,7 +170,7 @@ const ActivityDashboard = () => {
     : branches
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Minimal top bar */}
       <header className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -138,7 +188,7 @@ const ActivityDashboard = () => {
               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               title="Logout"
             >
-              <LogOut size={18} />
+              <HIcon icon={Logout01Icon} size={18} />
             </button>
           </div>
         </div>
@@ -159,7 +209,7 @@ const ActivityDashboard = () => {
           <div className="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
-                <Store size={16} className="text-white" />
+                <HIcon icon={Store01Icon} size={16} className="text-white" />
               </div>
               <div>
                 <h2 className="text-base font-bold text-gray-900">Branches</h2>
@@ -169,7 +219,7 @@ const ActivityDashboard = () => {
             <div className="flex items-center gap-2">
               {branches.length > 3 && (
                 <div className="relative">
-                  <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <HIcon icon={Search01Icon} size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search branches..."
@@ -185,13 +235,13 @@ const ActivityDashboard = () => {
                 className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
                 title="Refresh"
               >
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                <HIcon icon={RefreshIcon} size={16} className={loading ? 'animate-spin' : ''} />
               </button>
               <button
                 onClick={() => setShowForm(true)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
               >
-                <Plus size={15} />
+                <HIcon icon={Add01Icon} size={15} />
                 <span className="hidden sm:inline">New Branch</span>
               </button>
             </div>
@@ -201,13 +251,13 @@ const ActivityDashboard = () => {
           <div className="p-2">
             {loading ? (
               <div className="py-16 text-center">
-                <Loader2 size={28} className="animate-spin text-primary-500 mx-auto mb-3" />
+                <HIcon icon={Loading03Icon} size={28} className="animate-spin text-primary-500 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">Loading branches...</p>
               </div>
             ) : branches.length === 0 ? (
               <div className="py-16 text-center">
                 <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Store className="text-gray-400" size={24} />
+                  <HIcon icon={Store01Icon} className="text-gray-400" size={24} />
                 </div>
                 <h3 className="text-base font-semibold text-gray-800 mb-1">No branches yet</h3>
                 <p className="text-sm text-gray-500 mb-5 max-w-xs mx-auto">
@@ -217,7 +267,7 @@ const ActivityDashboard = () => {
                   onClick={() => setShowForm(true)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-lg shadow-sm transition-colors"
                 >
-                  <Plus size={16} />
+                  <HIcon icon={Add01Icon} size={16} />
                   Create Branch
                 </button>
               </div>
@@ -226,27 +276,39 @@ const ActivityDashboard = () => {
                 <p className="text-gray-500 text-sm">No branches match "{branchSearch}"</p>
               </div>
             ) : (
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex justify-center px-3 py-4">
+                <div className="grid w-full max-w-5xl justify-center gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredBranches.map((branch) => (
                   <button
                     key={branch.id || branch.uuid}
                     onClick={() => selectBranch(branch)}
-                    className="flex items-center gap-3.5 p-4 rounded-xl text-left hover:bg-primary-50 transition-all group"
+                    className="group aspect-square w-full max-w-[280px] rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-primary-200 hover:bg-primary-50 hover:shadow-md"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-orange-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors shrink-0">
-                      <Store size={18} className="text-orange-600 group-hover:text-primary-600 transition-colors" />
+                    <div className="flex h-full flex-col items-center justify-center">
+                    <div className="w-16 h-16 rounded-2xl bg-orange-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors shrink-0 mx-auto">
+                      <HIcon icon={Store01Icon} size={18} className="text-orange-600 group-hover:text-primary-600 transition-colors" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{branch.name}</p>
+                    <div className="mt-5 flex flex-col items-center">
+                      <p className="text-base font-semibold text-gray-900 text-center line-clamp-2">{branch.name}</p>
                       {branch.location && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 truncate">
-                          <MapPin size={11} className="shrink-0" /> {branch.location}
+                        <p className="text-sm text-gray-500 flex items-center justify-center gap-1 mt-2 text-center line-clamp-2 max-w-[200px]">
+                          <HIcon icon={MapPinIcon} size={12} className="shrink-0" /> {branch.location}
                         </p>
                       )}
+                      {(branch.store_type || branch.storeType) && (
+                        <span className="inline-flex mt-3 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-[10px] font-semibold uppercase tracking-wide">
+                          {branch.store_type || branch.storeType}
+                        </span>
+                      )}
                     </div>
-                    <ArrowRight size={16} className="text-gray-300 group-hover:text-primary-500 transition-colors shrink-0" />
+                    <div className="mt-5 flex items-center justify-center text-sm font-medium text-gray-400 group-hover:text-primary-600 transition-colors">
+                      <span>Open branch</span>
+                      <HIcon icon={ArrowRight01Icon} size={16} className="ml-2" />
+                    </div>
+                    </div>
                   </button>
                 ))}
+                </div>
               </div>
             )}
           </div>
@@ -269,7 +331,7 @@ const ActivityDashboard = () => {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="text-primary-600" size={18} />
+                  <HIcon icon={Building01Icon} className="text-primary-600" size={18} />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">New Branch</h2>
               </div>
@@ -277,7 +339,7 @@ const ActivityDashboard = () => {
                 onClick={() => { setShowForm(false); setError('') }}
                 className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X size={18} />
+                <HIcon icon={Cancel01Icon} size={18} />
               </button>
             </div>
 
@@ -292,7 +354,7 @@ const ActivityDashboard = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Branch Name</label>
                 <div className="relative">
-                  <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={Store01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
                     value={form.name}
@@ -307,7 +369,7 @@ const ActivityDashboard = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={MapPinIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
                     value={form.location}
@@ -315,6 +377,23 @@ const ActivityDashboard = () => {
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-sm"
                     placeholder="e.g. Accra, Ghana"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Store Type</label>
+                <div className="relative">
+                  <HIcon icon={Building01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <select
+                    value={form.storeType}
+                    onChange={(e) => setForm({ ...form, storeType: e.target.value })}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-sm bg-white appearance-none"
+                  >
+                    <option value="">Select store type</option>
+                    {STORE_TYPE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -332,9 +411,9 @@ const ActivityDashboard = () => {
                   className={`flex-1 py-2.5 ${submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-500 hover:bg-primary-600'} text-white font-semibold rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2`}
                 >
                   {submitting ? (
-                    <><Loader2 size={16} className="animate-spin" /> Creating...</>
+                    <><HIcon icon={Loading03Icon} size={16} className="animate-spin" /> Creating...</>
                   ) : (
-                    <><Plus size={16} /> Create</>
+                    <><HIcon icon={Add01Icon} size={16} /> Create</>
                   )}
                 </button>
               </div>

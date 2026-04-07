@@ -5,7 +5,8 @@ import logo from '../MainLogo.jpeg'
 import slide1 from '../mp.jpg'
 import slide2 from '../2.jpg'
 import slide3 from '../3.jpg'
-import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import { Login01Icon, Mail01Icon, LockIcon, ViewIcon, ViewOffIcon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
 
 const slides = [slide1, slide2, slide3]
 
@@ -221,7 +222,7 @@ const Login = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <HIcon icon={Mail01Icon} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="email"
                   value={email}
@@ -242,7 +243,7 @@ const Login = () => {
                 </a>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <HIcon icon={LockIcon} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -256,7 +257,7 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <HIcon icon={ViewOffIcon} size={18} /> : <HIcon icon={ViewIcon} size={18} />}
                 </button>
               </div>
             </div>
@@ -289,7 +290,7 @@ const Login = () => {
               ) : (
                 <>
                   Sign In
-                  <ArrowRight size={16} />
+                  <HIcon icon={ArrowRight01Icon} size={16} />
                 </>
               )}
             </button>
@@ -308,7 +309,7 @@ const Login = () => {
             className="w-full py-3 px-4 rounded-[3px] font-semibold text-sm text-gray-700 bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-sm"
           >
             Create an account
-            <ArrowRight size={14} className="text-gray-400" />
+            <HIcon icon={ArrowRight01Icon} size={14} className="text-gray-400" />
           </Link>
 
           {/* Footer — mobile only */}

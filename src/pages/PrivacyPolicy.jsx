@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import logo from '../MainLogo.jpeg'
+import { useLocation } from 'react-router-dom'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
 
 export default function PrivacyPolicy() {
@@ -19,17 +19,7 @@ export default function PrivacyPolicy() {
     <div className="pp-root">
       <style>{ppStyles}</style>
 
-      {/* NAV */}
-      <nav className="pp-nav">
-        <Link to="/" className="pp-nav-logo">
-          <img src={logo} alt="StorePro" style={{ height: '32px', objectFit: 'contain' }} />
-        </Link>
-        <div className="pp-nav-links">
-          <a href="#privacy">Privacy Policy</a>
-          <a href="#terms">Terms of Use</a>
-          <Link to="/">← Back to Home</Link>
-        </div>
-      </nav>
+      <MarketingHeader />
 
       {/* ─── PRIVACY POLICY ─── */}
       <article className="pp-content" id="privacy">
@@ -54,7 +44,7 @@ export default function PrivacyPolicy() {
             <li><strong>Account information:</strong> full name, business name, email address, phone number, and password</li>
             <li><strong>Business profile:</strong> store type, location, number of branches, and operating hours</li>
             <li><strong>Product and inventory data:</strong> product names, SKUs, pricing, stock quantities, and supplier details</li>
-            <li><strong>Transaction records:</strong> sales data, payment methods, receipt information, and purchase orders</li>
+            <li><strong>Transaction records:</strong> sales data, payment methods, receipt information, and stock records</li>
             <li><strong>Staff information:</strong> names, roles, and login credentials of staff members you add to the platform</li>
             <li><strong>Support communications:</strong> messages, tickets, or feedback submitted to our team</li>
           </ul>
@@ -185,7 +175,7 @@ export default function PrivacyPolicy() {
             <li>Point of Sale (POS) operations</li>
             <li>Sales reporting and business analytics</li>
             <li>Staff and role-based access management</li>
-            <li>Supplier and purchase order management</li>
+            <li>Supplier and stock management</li>
             <li>Multi-branch management (Enterprise plan)</li>
           </ul>
           <p>We reserve the right to modify, suspend, or discontinue any part of the Platform at any time, with reasonable prior notice where possible.</p>
@@ -402,7 +392,7 @@ const ppStyles = `
 .pp-content {
   max-width: 740px;
   margin: 0 auto;
-  padding: 3.5rem 1.5rem 5rem;
+  padding: 6.5rem 1.5rem 5rem;
 }
 
 .pp-header {
@@ -564,7 +554,7 @@ const ppStyles = `
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
-  .pp-content { padding: 2.5rem 1.25rem 4rem; }
+  .pp-content { padding: 5.5rem 1.25rem 4rem; }
   .pp-header h1 { font-size: 1.6rem; }
   .pp-nav-links { gap: 0.8rem; }
   .pp-nav-links a { font-size: 0.75rem; }

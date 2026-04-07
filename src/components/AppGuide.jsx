@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react'
+import { HIcon } from './HIcon'
 import {
-  X, ChevronRight, ChevronLeft, ShoppingCart, Package, UserCircle,
-  Truck, Users, Settings, Receipt, LayoutDashboard, HelpCircle,
-  CheckCircle, Lightbulb, Keyboard, Star, BookOpen
-} from 'lucide-react'
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  BookOpenIcon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  DashboardSpeed02Icon,
+  DeliveryTruck01Icon,
+  HelpCircleIcon,
+  KeyboardIcon,
+  BulbIcon,
+  Package01Icon,
+  ReceiptTextIcon,
+  Settings02Icon,
+  ShoppingCart01Icon,
+  StarIcon,
+  UserCircleIcon,
+  UserGroupIcon,
+} from '@hugeicons/core-free-icons'
 
 const GUIDE_DISMISSED_KEY = 'awosel_guide_dismissed'
 const GUIDE_VERSION = '1' // bump to re-show after major updates
@@ -15,7 +30,7 @@ const guideContent = [
   {
     id: 'welcome',
     title: 'Welcome to StorePro',
-    icon: Star,
+    icon: StarIcon,
     color: 'bg-primary-500',
     forRoles: ['admin', 'manager', 'sales'],
     content: (
@@ -27,7 +42,7 @@ const guideContent = [
         </p>
         <div className="mt-4 p-3 bg-primary-50 rounded-lg border border-primary-100">
           <p className="text-primary-700 text-sm font-medium flex items-center gap-2">
-            <Lightbulb size={16} /> Use the arrows below to navigate through the guide.
+            <HIcon icon={BulbIcon} size={16}  /> Use the arrows below to navigate through the guide.
           </p>
         </div>
       </>
@@ -36,7 +51,7 @@ const guideContent = [
   {
     id: 'dashboard',
     title: 'Branch Dashboard',
-    icon: LayoutDashboard,
+    icon: DashboardSpeed02Icon,
     color: 'bg-gray-900',
     forRoles: ['admin', 'manager'],
     content: (
@@ -46,10 +61,10 @@ const guideContent = [
           a glance — revenue, transactions, profit, and more.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> View today's sales, revenue & profit</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> See inventory alerts & low-stock items</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Quick-action buttons to jump to any section</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Payment breakdown by method (Cash, MoMo, etc.)</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> View today's sales, revenue & profit</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> See inventory alerts & low-stock items</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Quick-action buttons to jump to any section</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Payment breakdown by method (Cash, MoMo, etc.)</li>
         </ul>
       </>
     ),
@@ -57,7 +72,7 @@ const guideContent = [
   {
     id: 'pos',
     title: 'POS / Checkout',
-    icon: ShoppingCart,
+    icon: ShoppingCart01Icon,
     color: 'bg-primary-500',
     forRoles: ['admin', 'manager', 'sales'],
     content: (
@@ -67,16 +82,16 @@ const guideContent = [
           build a cart, apply discounts, and complete payment.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Search products by name, SKU, or barcode</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Choose unit sizes (piece, pack, carton, etc.)</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Apply per-item or cart-wide discounts</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Pay by Cash, Card, or Mobile Money</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Hold a sale and recall it later</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Print or preview receipts after checkout</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Search products by name, SKU, or barcode</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Choose unit sizes (piece, pack, carton, etc.)</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Apply per-item or cart-wide discounts</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Pay by Cash, Card, or Mobile Money</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Hold a sale and recall it later</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Print or preview receipts after checkout</li>
         </ul>
         <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
           <p className="text-amber-700 text-sm font-medium flex items-center gap-2">
-            <Keyboard size={16} /> Tip: Press <kbd className="px-1.5 py-0.5 bg-amber-100 rounded text-xs font-mono">Enter</kbd> in the search bar to quickly add the first matching product.
+            <HIcon icon={KeyboardIcon} size={16}  /> Tip: Press <kbd className="px-1.5 py-0.5 bg-amber-100 rounded text-xs font-mono">Enter</kbd> in the search bar to quickly add the first matching product.
           </p>
         </div>
       </>
@@ -85,7 +100,7 @@ const guideContent = [
   {
     id: 'sales-history',
     title: 'Sales History',
-    icon: Receipt,
+    icon: ReceiptTextIcon,
     color: 'bg-gray-900',
     forRoles: ['admin'],
     content: (
@@ -95,10 +110,10 @@ const guideContent = [
           profit margins, and payment method breakdowns.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Filter by date, month, year, or view all</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Search by receipt number or customer name</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Click any sale to view full line-item details</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Export to CSV for accounting or analysis</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Filter by date, month, year, or view all</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Search by receipt number or customer name</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Click any sale to view full line-item details</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Export to CSV for accounting or analysis</li>
         </ul>
       </>
     ),
@@ -106,21 +121,21 @@ const guideContent = [
   {
     id: 'inventory',
     title: 'Inventory Management',
-    icon: Package,
+    icon: Package01Icon,
     color: 'bg-primary-500',
     forRoles: ['admin', 'manager'],
     content: (
       <>
         <p className="text-gray-600 leading-relaxed">
           Manage your entire product catalog. Add new products, track stock
-          levels, set reorder points, and receive purchase orders.
+          levels, set reorder points, and monitor low-stock items.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Add single products or bulk import via Excel</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Set selling price, cost price & min stock level</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Manage unit types (piece, pack, carton, kg…)</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Low-stock alerts shown on the dashboard</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Create purchase orders and receive stock</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Add single products or bulk import via Excel</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Set selling price, cost price & min stock level</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Manage unit types (piece, pack, carton, kg…)</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Low-stock alerts shown on the dashboard</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Review product availability and restock needs quickly</li>
         </ul>
       </>
     ),
@@ -128,7 +143,7 @@ const guideContent = [
   {
     id: 'customers',
     title: 'Customer Management',
-    icon: UserCircle,
+    icon: UserCircleIcon,
     color: 'bg-gray-900',
     forRoles: ['admin', 'manager'],
     content: (
@@ -138,9 +153,9 @@ const guideContent = [
           better tracking and relationship management.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Add customers with name, phone & email</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Link a customer at checkout in POS</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Track customer balances & owing amounts</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Add customers with name, phone & email</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Link a customer at checkout in POS</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Track customer balances & owing amounts</li>
         </ul>
       </>
     ),
@@ -148,7 +163,7 @@ const guideContent = [
   {
     id: 'suppliers',
     title: 'Supplier Management',
-    icon: Truck,
+    icon: DeliveryTruck01Icon,
     color: 'bg-primary-500',
     forRoles: ['admin', 'manager'],
     content: (
@@ -157,9 +172,9 @@ const guideContent = [
           Keep track of your suppliers, manage debts, and record payments.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Add supplier contact details & notes</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Track outstanding debts per supplier</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Record debt payments with history</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Add supplier contact details & notes</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Track outstanding debts per supplier</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Record debt payments with history</li>
         </ul>
       </>
     ),
@@ -167,7 +182,7 @@ const guideContent = [
   {
     id: 'users',
     title: 'User & Staff Management',
-    icon: Users,
+    icon: UserGroupIcon,
     color: 'bg-gray-900',
     forRoles: ['admin', 'manager'],
     content: (
@@ -177,9 +192,9 @@ const guideContent = [
           access.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> <strong>Admin</strong> — full access to everything</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> <strong>Manager</strong> — branch-level access, no sales history</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> <strong>Sales</strong> — POS only, focused on checkout</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> <strong>Admin</strong> — full access to everything</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> <strong>Manager</strong> — branch-level access, no sales history</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> <strong>Sales</strong> — POS only, focused on checkout</li>
         </ul>
       </>
     ),
@@ -187,7 +202,7 @@ const guideContent = [
   {
     id: 'settings',
     title: 'Settings',
-    icon: Settings,
+    icon: Settings02Icon,
     color: 'bg-primary-500',
     forRoles: ['admin', 'manager'],
     content: (
@@ -196,9 +211,9 @@ const guideContent = [
           Configure your store preferences — receipt layout, tax rates, and more.
         </p>
         <ul className="mt-3 space-y-2 text-sm text-gray-600">
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Set store name, address & contact info</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Configure tax rate (applied at POS)</li>
-          <li className="flex items-start gap-2"><CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" /> Customise receipt header & footer</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Set store name, address & contact info</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Configure tax rate (applied at POS)</li>
+          <li className="flex items-start gap-2"><HIcon icon={CheckmarkCircle02Icon} size={16} className="text-green-500 mt-0.5 shrink-0"  /> Customise receipt header & footer</li>
         </ul>
       </>
     ),
@@ -206,7 +221,7 @@ const guideContent = [
   {
     id: 'tips',
     title: 'Pro Tips & Shortcuts',
-    icon: Lightbulb,
+    icon: BulbIcon,
     color: 'bg-gray-900',
     forRoles: ['admin', 'manager', 'sales'],
     content: (
@@ -216,28 +231,28 @@ const guideContent = [
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-            <Keyboard size={18} className="text-primary-500 mt-0.5 shrink-0" />
+            <HIcon icon={KeyboardIcon} size={18} className="text-primary-500 mt-0.5 shrink-0"  />
             <div>
               <p className="text-sm font-medium text-gray-900">Keyboard Navigation</p>
               <p className="text-xs text-gray-500 mt-0.5">Press <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">Alt + ←</kbd> to go back to the previous page.</p>
             </div>
           </div>
           <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-            <ShoppingCart size={18} className="text-primary-500 mt-0.5 shrink-0" />
+            <HIcon icon={ShoppingCart01Icon} size={18} className="text-primary-500 mt-0.5 shrink-0"  />
             <div>
               <p className="text-sm font-medium text-gray-900">Quick Add in POS</p>
               <p className="text-xs text-gray-500 mt-0.5">Type a product name and press <kbd className="px-1 py-0.5 bg-gray-200 rounded text-[10px] font-mono">Enter</kbd> to instantly add it to the cart.</p>
             </div>
           </div>
           <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-            <Receipt size={18} className="text-primary-500 mt-0.5 shrink-0" />
+            <HIcon icon={ReceiptTextIcon} size={18} className="text-primary-500 mt-0.5 shrink-0"  />
             <div>
               <p className="text-sm font-medium text-gray-900">Hold & Recall Sales</p>
               <p className="text-xs text-gray-500 mt-0.5">Use "I Want To → Hold Sale" to save a cart and pick it up later from the held sales list.</p>
             </div>
           </div>
           <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-            <Package size={18} className="text-primary-500 mt-0.5 shrink-0" />
+            <HIcon icon={Package01Icon} size={18} className="text-primary-500 mt-0.5 shrink-0"  />
             <div>
               <p className="text-sm font-medium text-gray-900">Bulk Import Products</p>
               <p className="text-xs text-gray-500 mt-0.5">In Inventory, use the import button to upload an Excel spreadsheet of products at once.</p>
@@ -306,7 +321,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
           title="Open feature guide"
           className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary-500 text-white shadow-lg hover:bg-primary-600 hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
         >
-          <BookOpen size={20} />
+          <HIcon icon={BookOpenIcon} size={20}  />
         </button>
       )}
 
@@ -333,7 +348,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   title="Close guide"
                 >
-                  <X size={18} />
+                  <HIcon icon={Cancel01Icon} size={18}  />
                 </button>
               </div>
               {/* Progress bar */}
@@ -374,7 +389,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
                     onClick={handlePrev}
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors"
                   >
-                    <ChevronLeft size={16} />
+                    <HIcon icon={ArrowLeft01Icon} size={16}  />
                     Back
                   </button>
                 )}
@@ -383,7 +398,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
                     onClick={handleDismiss}
                     className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
                   >
-                    <CheckCircle size={16} />
+                    <HIcon icon={CheckmarkCircle02Icon} size={16}  />
                     Got it!
                   </button>
                 ) : (
@@ -392,7 +407,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
                     className="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
                   >
                     Next
-                    <ChevronRight size={16} />
+                    <HIcon icon={ArrowRight01Icon} size={16}  />
                   </button>
                 )}
               </div>

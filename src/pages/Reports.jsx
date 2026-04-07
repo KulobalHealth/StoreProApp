@@ -1,5 +1,26 @@
 import React, { useState, useEffect } from 'react'
-import { Download, Calendar, Filter, FileText, BarChart3, Package, TrendingUp, DollarSign, X, List, LayoutGrid, ShoppingBag, Users, CreditCard, Percent, ArrowUp, ArrowDown, Minus, AlertTriangle } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Alert02Icon,
+  Analytics02Icon,
+  ArrowDown01Icon,
+  ArrowMoveUpRightIcon,
+  ArrowUp01Icon,
+  Calendar01Icon,
+  Cancel01Icon,
+  CreditCardIcon,
+  DollarCircleIcon,
+  Download01Icon,
+  FileValidationIcon,
+  FilterIcon,
+  LayoutGridIcon,
+  LeftToRightListBulletIcon,
+  MinusSignIcon,
+  Package01Icon,
+  PercentIcon,
+  ShoppingBag01Icon,
+  UserGroupIcon,
+} from '@hugeicons/core-free-icons'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts'
 import UiTooltip from '../components/Tooltip'
 
@@ -231,13 +252,13 @@ const Reports = () => {
   }, [dateRange])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <BarChart3 size={18} strokeWidth={2} />
+                <HIcon icon={Analytics02Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Reports & Analytics</h1>
@@ -256,7 +277,7 @@ const Reports = () => {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    <List size={16} className="mr-1.5" />
+                    <HIcon icon={LeftToRightListBulletIcon} size={16} className="mr-1.5"  />
                     Simple
                   </button>
                 </UiTooltip>
@@ -269,7 +290,7 @@ const Reports = () => {
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
-                    <BarChart3 size={16} className="mr-1.5" />
+                    <HIcon icon={Analytics02Icon} size={16} className="mr-1.5"  />
                     Charts
                   </button>
                 </UiTooltip>
@@ -279,7 +300,7 @@ const Reports = () => {
                   onClick={handleExportCSV}
                   className="btn-secondary flex items-center"
                 >
-                  <Download size={18} className="mr-2" />
+                  <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                   Export CSV
                 </button>
               </UiTooltip>
@@ -288,7 +309,7 @@ const Reports = () => {
                   onClick={handleExportPDF}
                   className="btn-secondary flex items-center"
                 >
-                  <FileText size={18} className="mr-2" />
+                  <HIcon icon={FileValidationIcon} size={18} className="mr-2"  />
                   Export PDF
                 </button>
               </UiTooltip>
@@ -310,7 +331,7 @@ const Reports = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <DollarSign size={18} className="inline mr-2" />
+            <HIcon icon={DollarCircleIcon} size={18} className="inline mr-2"  />
             Sales Reports
           </button>
           <button
@@ -321,7 +342,7 @@ const Reports = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Package size={18} className="inline mr-2" />
+            <HIcon icon={Package01Icon} size={18} className="inline mr-2"  />
             Inventory Reports
           </button>
           <button
@@ -332,7 +353,7 @@ const Reports = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <TrendingUp size={18} className="inline mr-2" />
+            <HIcon icon={ArrowMoveUpRightIcon} size={18} className="inline mr-2"  />
             Profit Analysis
           </button>
         </div>
@@ -341,7 +362,7 @@ const Reports = () => {
       {/* Date Range Filter */}
       <div className="mb-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-gray-500" />
+          <HIcon icon={Calendar01Icon} size={18} className="text-gray-500"  />
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
@@ -380,7 +401,7 @@ const Reports = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center justify-between mb-2">
-                <DollarSign size={24} className="text-primary-600" />
+                <HIcon icon={DollarCircleIcon} size={24} className="text-primary-600"  />
                 <span className="text-xs bg-primary-200 text-primary-800 px-2 py-1 rounded-full font-semibold">
                   {salesMetrics.totalOrders} orders
                 </span>
@@ -391,7 +412,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
               <div className="flex items-center justify-between mb-2">
-                <TrendingUp size={24} className="text-green-600" />
+                <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-green-600"  />
                 <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full font-semibold">
                   {((salesMetrics.totalProfit / salesMetrics.totalSales) * 100).toFixed(1)}% margin
                 </span>
@@ -402,7 +423,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center justify-between mb-2">
-                <ShoppingBag size={24} className="text-primary-600" />
+                <HIcon icon={ShoppingBag01Icon} size={24} className="text-primary-600"  />
                 <span className="text-xs bg-primary-200 text-primary-800 px-2 py-1 rounded-full font-semibold">
                   Avg
                 </span>
@@ -413,7 +434,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
               <div className="flex items-center justify-between mb-2">
-                <Percent size={24} className="text-orange-600" />
+                <HIcon icon={PercentIcon} size={24} className="text-orange-600"  />
                 <span className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full font-semibold">
                   Discounts
                 </span>
@@ -440,9 +461,9 @@ const Reports = () => {
                           <span className={`text-xs flex items-center ${
                             change > 0 ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-gray-600'
                           }`}>
-                            {change > 0 ? <ArrowUp size={14} className="mr-1" /> : 
-                             change < 0 ? <ArrowDown size={14} className="mr-1" /> : 
-                             <Minus size={14} className="mr-1" />}
+                            {change > 0 ? <HIcon icon={ArrowUp01Icon} size={14} className="mr-1"  /> : 
+                             change < 0 ? <HIcon icon={ArrowDown01Icon} size={14} className="mr-1"  /> : 
+                             <HIcon icon={MinusSignIcon} size={14} className="mr-1"  />}
                             {Math.abs(change).toFixed(1)}%
                           </span>
                         )}
@@ -528,7 +549,7 @@ const Reports = () => {
                             className="w-4 h-4 rounded-full mr-3"
                             style={{ backgroundColor: COLORS[index % COLORS.length] }}
                           />
-                          <CreditCard size={20} className="text-gray-400 mr-2" />
+                          <HIcon icon={CreditCardIcon} size={20} className="text-gray-400 mr-2"  />
                           <span className="font-semibold text-gray-900">{method.name}</span>
                         </div>
                       </div>
@@ -615,7 +636,7 @@ const Reports = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
             <div className="card bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
               <div className="flex items-center mb-2">
-                <Package size={24} className="text-gray-600 mr-2" />
+                <HIcon icon={Package01Icon} size={24} className="text-gray-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Total Products</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.totalProducts}</p>
@@ -623,7 +644,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <DollarSign size={24} className="text-primary-600 mr-2" />
+                <HIcon icon={DollarCircleIcon} size={24} className="text-primary-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Total Stock Value</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">₵{inventoryMetrics.totalStockValue.toFixed(2)}</p>
@@ -631,7 +652,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
               <div className="flex items-center mb-2">
-                <AlertTriangle size={24} className="text-yellow-600 mr-2" />
+                <HIcon icon={Alert02Icon} size={24} className="text-yellow-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Low Stock Items</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.lowStockItems}</p>
@@ -639,7 +660,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
               <div className="flex items-center mb-2">
-                <ShoppingBag size={24} className="text-orange-600 mr-2" />
+                <HIcon icon={ShoppingBag01Icon} size={24} className="text-orange-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Need Reorder</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.itemsNeedingReorder}</p>
@@ -647,7 +668,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <LayoutGrid size={24} className="text-primary-600 mr-2" />
+                <HIcon icon={LayoutGridIcon} size={24} className="text-primary-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Categories</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">{inventoryMetrics.totalCategories}</p>
@@ -815,7 +836,7 @@ const Reports = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <DollarSign size={24} className="text-primary-600 mr-2" />
+                <HIcon icon={DollarCircleIcon} size={24} className="text-primary-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Total Revenue</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">₵{salesMetrics.totalSales.toFixed(2)}</p>
@@ -823,7 +844,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-green-50 to-green-100 border-green-200">
               <div className="flex items-center mb-2">
-                <TrendingUp size={24} className="text-green-600 mr-2" />
+                <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-green-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Total Profit</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">₵{salesMetrics.totalProfit.toFixed(2)}</p>
@@ -831,7 +852,7 @@ const Reports = () => {
             </div>
             <div className="card bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200">
               <div className="flex items-center mb-2">
-                <Percent size={24} className="text-primary-600 mr-2" />
+                <HIcon icon={PercentIcon} size={24} className="text-primary-600 mr-2"  />
                 <p className="text-sm text-gray-700 font-medium">Profit Margin</p>
               </div>
               <p className="text-3xl font-bold text-gray-900">

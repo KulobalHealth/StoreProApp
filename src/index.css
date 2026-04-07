@@ -3,13 +3,217 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --surface-page: #f7f8fa;
+    --surface-card: #ffffff;
+    --surface-muted: #f4f5f7;
+    --surface-soft: #f8fafc;
+    --ink-900: #111827;
+    --ink-700: #374151;
+    --success-500: #10b981;
+    --success-600: #059669;
+    --danger-600: #e11d48;
+    --danger-700: #be123c;
+    --radius-panel: 14px;
+    --radius-control: 10px;
+    --shadow-panel: 0 10px 30px rgba(15, 23, 42, 0.06);
+    --shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.05);
+    --shadow-focus: 0 0 0 4px rgba(255, 117, 33, 0.12);
+    color: var(--ink-900);
+    background-color: var(--surface-page);
+  }
+
+  html {
+    background-color: var(--surface-page);
+  }
+
   body {
-    @apply antialiased bg-gray-50;
+    @apply antialiased;
+    background-color: var(--surface-page);
+    color: var(--ink-900);
     font-family: 'Manrope', sans-serif;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--ink-900);
+  }
+
+  ::selection {
+    @apply bg-primary-100 text-primary-900;
   }
 }
 
 @layer components {
+  .app-shell {
+    background-color: var(--surface-page);
+  }
+
+  .app-page {
+    @apply min-h-full;
+    background-color: var(--surface-page);
+  }
+
+  .app-page-content {
+    @apply px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .app-page-header {
+    @apply border-b border-gray-200 bg-white/95 backdrop-blur-sm;
+  }
+
+  .app-page-header-inner {
+    @apply flex flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8;
+  }
+
+  .app-page-title-wrap {
+    @apply flex items-start gap-3;
+  }
+
+  .app-page-icon {
+    @apply flex h-10 w-10 items-center justify-center bg-primary-500 text-white;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-page-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-600;
+  }
+
+  .app-page-title {
+    @apply text-lg font-bold tracking-tight;
+    color: var(--ink-900);
+  }
+
+  .app-page-subtitle {
+    @apply mt-0.5 text-sm text-gray-500;
+  }
+
+  .app-page-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .app-btn-primary {
+    @apply inline-flex items-center gap-2 bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 focus:outline-none;
+    border-radius: var(--radius-control);
+  }
+
+  .app-btn-secondary {
+    @apply inline-flex items-center gap-2 border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none;
+    border-radius: var(--radius-control);
+  }
+
+  .app-btn-muted {
+    @apply inline-flex items-center gap-2 border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus:outline-none;
+    background-color: var(--surface-muted);
+    border-radius: var(--radius-control);
+  }
+
+  .app-btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white transition-colors focus:outline-none;
+    background-color: var(--danger-600);
+    border-radius: var(--radius-control);
+  }
+
+  .app-btn-danger:hover {
+    background-color: var(--danger-700);
+  }
+
+  .app-btn-primary:focus-visible,
+  .app-btn-secondary:focus-visible,
+  .app-btn-muted:focus-visible,
+  .app-btn-danger:focus-visible {
+    box-shadow: var(--shadow-focus);
+  }
+
+  .app-surface {
+    @apply border border-gray-200 bg-white;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-surface-muted {
+    @apply border border-gray-200;
+    background-color: var(--surface-muted);
+    border-radius: var(--radius-panel);
+  }
+
+  .app-stat-grid {
+    @apply grid grid-cols-2 gap-4 lg:grid-cols-4;
+  }
+
+  .app-stat-card {
+    @apply border border-gray-200 bg-white p-4;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-stat-card-accent {
+    @apply border border-primary-100 bg-primary-500 p-4 text-white;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-stat-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500;
+  }
+
+  .app-stat-value {
+    @apply mt-1 text-2xl font-bold tracking-tight;
+    color: var(--ink-900);
+  }
+
+  .app-stat-card-accent .app-stat-label,
+  .app-stat-card-accent .app-stat-value,
+  .app-stat-card-accent .app-stat-meta {
+    @apply text-white;
+  }
+
+  .app-stat-meta {
+    @apply mt-0.5 text-xs text-gray-500;
+  }
+
+  .app-filter-bar {
+    @apply border border-gray-200 bg-white p-4;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-input {
+    @apply w-full border border-gray-200 bg-white px-3.5 py-2.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20;
+    border-radius: var(--radius-control);
+    color: var(--ink-900);
+  }
+
+  .app-input-muted {
+    @apply w-full border border-gray-200 px-3.5 py-2.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20;
+    background-color: var(--surface-soft);
+    border-radius: var(--radius-control);
+    color: var(--ink-900);
+  }
+
+  .app-table-shell {
+    @apply overflow-hidden border border-gray-200 bg-white;
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-table-head {
+    @apply bg-gray-50/90;
+  }
+
+  .app-table-head-dark {
+    @apply text-white;
+    background-color: #111827;
+  }
+
+  .app-table-head-cell {
+    @apply px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.16em];
+  }
+
+  .app-table-row {
+    @apply border-b border-gray-100 transition-colors hover:bg-primary-50/30;
+  }
+
   .btn-primary {
     @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors font-medium;
   }

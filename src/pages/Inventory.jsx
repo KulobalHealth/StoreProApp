@@ -3,7 +3,40 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
 import * as XLSX from 'xlsx'
-import { Search, Plus, Edit, Trash2, AlertTriangle, Upload, Download, Package, X, Trash, CheckCircle, Check, ChevronLeft, ChevronRight, ChevronDown, ShoppingCart, FileText, Clock, CheckCircle2, ClipboardList, Scan, TrendingUp, TrendingDown, Minus, Building2, FolderOpen, Save, Filter, XCircle, Loader2, RotateCcw } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  Alert02Icon,
+  ArrowDown01Icon,
+  ArrowLeft01Icon,
+  ArrowMoveDownRightIcon,
+  ArrowMoveUpRightIcon,
+  ArrowRight01Icon,
+  Building01Icon,
+  Cancel01Icon,
+  Cancel02Icon,
+  CheckListIcon,
+  CheckmarkCircle01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Delete01Icon,
+  Delete02Icon,
+  Download01Icon,
+  FileValidationIcon,
+  FilterIcon,
+  FolderOpenIcon,
+  Loading03Icon,
+  MinusSignIcon,
+  Package01Icon,
+  PencilEdit01Icon,
+  QrCodeIcon,
+  RotateLeft01Icon,
+  SaveIcon,
+  Search01Icon,
+  ShoppingCart01Icon,
+  Tick01Icon,
+  Upload01Icon,
+} from '@hugeicons/core-free-icons'
 import Tooltip from '../components/Tooltip'
 import {
   listProducts,
@@ -13,13 +46,7 @@ import {
   updateProduct,
   deleteProduct as apiDeleteProduct,
   bulkImportProducts,
-  listReceipts,
-  listSuppliers,
   listSales,
-  createReceipt,
-  createReceiptBulk,
-  addReceiptItem,
-  receiveReceipt,
 } from '../api/awoselDb.js'
 
 function mapApiProductToDisplay(p) {
@@ -58,10 +85,6 @@ const Inventory = () => {
   // Get active branch for the session
   const getActiveBranch = getActiveBranchUtil
 
-  const [purchaseOrders, setPurchaseOrders] = useState([])
-  const [suppliers, setSuppliers] = useState([])
-  const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false)
-
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const allProductsCache = useRef([]) // Cache all products to avoid refetching on search
@@ -81,9 +104,6 @@ const Inventory = () => {
   const PAGE_SIZE = 100
   const TABLE_PAGE_SIZE = 10
   const [tablePage, setTablePage] = useState(1)
-  const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false)
-  const [showPurchaseOrderList, setShowPurchaseOrderList] = useState(false)
-  const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState(null)
   const [showExportModal, setShowExportModal] = useState(false)
   const [showReturnModal, setShowReturnModal] = useState(false)
   const [alertQueue, setAlertQueue] = useState([])
@@ -878,99 +898,18 @@ const Inventory = () => {
     setEditingProduct(null)
   }
 
-  // Purchase orders: load from API when list modal opens
-  const fetchPurchaseOrders = async () => {
-    setPurchaseOrdersLoading(true)
-    try {
-      const branchId = getSessionBranchId()
-      const res = await listReceipts(branchId)
-      const raw = Array.isArray(res) ? res
-        : Array.isArray(res?.data) ? res.data
-        : Array.isArray(res?.stockReceipts) ? res.stockReceipts
-        : Array.isArray(res?.stock_receipts) ? res.stock_receipts
-        : Array.isArray(res?.receipts) ? res.receipts
-        : []
-      setPurchaseOrders(raw)
-    } catch (err) {
-      console.error(err)
-      setPurchaseOrders([])
-    } finally {
-      setPurchaseOrdersLoading(false)
-    }
-  }
-
-  const fetchSuppliers = async () => {
-    try {
-      const branchId = getSessionBranchId()
-      if (!branchId) { setSuppliers([]); return }
-      const data = await listSuppliers(branchId)
-      setSuppliers(Array.isArray(data) ? data : (data?.data || []))
-    } catch (_) {
-      setSuppliers([])
-    }
-  }
-
-  useEffect(() => {
-    if (showPurchaseOrderModal) fetchSuppliers()
-  }, [showPurchaseOrderModal])
-  useEffect(() => {
-    if (showPurchaseOrderList) fetchPurchaseOrders()
-  }, [showPurchaseOrderList])
-
-  const createPurchaseOrder = async (orderData) => {
-    const supplierId = orderData.supplier_id
-    const items = orderData.items || []
-    const paymentType = orderData.payment_type === 'credit' ? 'credit' : 'full_payment'
-    if (!supplierId || items.length === 0) {
-      showAlert('Please select a supplier and add at least one item', 'warning')
-      return
-    }
-    try {
-      const payload = {
-        supplier_id: supplierId,
-        payment_type: paymentType,
-        branchId: getSessionBranchId(),
-        organizationId: getSessionOrgId(),
-        items: items.map(item => ({
-          product_id: item.productId,
-          quantity: String(item.quantity),
-          unit_cost: String(parseFloat(item.unitCost) || 0),
-          total_cost: String(Number(item.quantity) * (parseFloat(item.unitCost) || 0)),
-        }))
-      }
-      await createReceipt(payload)
-      setShowPurchaseOrderModal(false)
-      setSelectedPurchaseOrder(null)
-      fetchPurchaseOrders()
-      showAlert('Purchase order saved. Receive it from the list when stock arrives.', 'success')
-    } catch (err) {
-      showAlert(err.message || 'Could not save purchase order', 'error')
-    }
-  }
-
-  const receivePurchaseOrder = async (poId, poUuid) => {
-    try {
-      await receiveReceipt({ stock_receipt_id: poUuid, branchId: getSessionBranchId(), organizationId: getSessionOrgId() })
-      fetchPurchaseOrders()
-      fetchProducts()
-      showAlert('Purchase order received. Stock and supplier balance updated.', 'success')
-    } catch (err) {
-      showAlert(err.message || 'Could not receive order', 'error')
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app-page">
       {/* Toast Notifications */}
       {alertQueue.length > 0 && (
         <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
           {alertQueue.map((alert) => {
             const styles = {
-              success: { bg: 'bg-green-50 border-green-200', icon: <CheckCircle size={20} className="text-green-500" />, title: 'Success', text: 'text-green-800', bar: 'bg-green-500' },
-              error: { bg: 'bg-red-50 border-red-200', icon: <XCircle size={20} className="text-red-500" />, title: 'Error', text: 'text-red-800', bar: 'bg-red-500' },
-              warning: { bg: 'bg-amber-50 border-amber-200', icon: <AlertTriangle size={20} className="text-amber-500" />, title: 'Warning', text: 'text-amber-800', bar: 'bg-amber-500' },
-              info: { bg: 'bg-primary-50 border-primary-200', icon: <Package size={20} className="text-primary-500" />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' },
-            }[alert.type] || { bg: 'bg-primary-50 border-primary-200', icon: <Package size={20} className="text-primary-500" />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' }
+              success: { bg: 'bg-green-50 border-green-200', icon: <HIcon icon={CheckmarkCircle02Icon} size={20} className="text-green-500"  />, title: 'Success', text: 'text-green-800', bar: 'bg-green-500' },
+              error: { bg: 'bg-red-50 border-red-200', icon: <HIcon icon={Cancel02Icon} size={20} className="text-red-500"  />, title: 'Error', text: 'text-red-800', bar: 'bg-red-500' },
+              warning: { bg: 'bg-amber-50 border-amber-200', icon: <HIcon icon={Alert02Icon} size={20} className="text-amber-500"  />, title: 'Warning', text: 'text-amber-800', bar: 'bg-amber-500' },
+              info: { bg: 'bg-primary-50 border-primary-200', icon: <HIcon icon={Package01Icon} size={20} className="text-primary-500"  />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' },
+            }[alert.type] || { bg: 'bg-primary-50 border-primary-200', icon: <HIcon icon={Package01Icon} size={20} className="text-primary-500"  />, title: 'Info', text: 'text-primary-800', bar: 'bg-primary-500' }
             return (
               <div key={alert.id} className={`pointer-events-auto rounded-lg border shadow-lg overflow-hidden ${styles.bg}`} style={{ animation: 'slideDown 0.35s ease-out' }}>
                 <div className="px-4 py-3 flex items-start gap-3">
@@ -980,7 +919,7 @@ const Inventory = () => {
                     <p className={`text-sm mt-0.5 ${styles.text} opacity-90`}>{alert.message}</p>
                   </div>
                   <button onClick={() => setAlertQueue(prev => prev.filter(a => a.id !== alert.id))} className="shrink-0 p-1 rounded-lg hover:bg-black/5 transition-colors">
-                    <X size={16} className={styles.text} />
+                    <HIcon icon={Cancel01Icon} size={16} className={styles.text}  />
                   </button>
                 </div>
                 <div className={`h-1 ${styles.bar} opacity-30`} />
@@ -994,7 +933,7 @@ const Inventory = () => {
       {productSaving && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <Loader2 size={48} className="animate-spin text-primary-600" />
+            <HIcon icon={Loading03Icon} size={48} className="animate-spin text-primary-600"  />
             <p className="text-lg font-semibold text-gray-800">
               {editingProduct ? 'Updating Product...' : 'Saving Product...'}
             </p>
@@ -1004,16 +943,17 @@ const Inventory = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <Package size={18} strokeWidth={2} />
+      <div className="app-page-header">
+        <div className="app-page-header-inner py-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="app-page-title-wrap">
+              <div className="app-page-icon h-9 w-9 rounded-control">
+                <HIcon icon={Package01Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Inventory</h1>
-                <p className="text-gray-500 text-xs">Manage your products and stock levels</p>
+                <p className="app-page-kicker">Operations</p>
+                <h1 className="app-page-title">Inventory</h1>
+                <p className="app-page-subtitle">Manage your products and stock levels</p>
               </div>
             </div>
             <input
@@ -1023,58 +963,49 @@ const Inventory = () => {
               onChange={handleFileSelect}
               style={{ display: 'none' }}
             />
-            <div className="flex flex-wrap items-center gap-2">
-              <Tooltip text="View and manage purchase orders from suppliers">
-                <button
-                  onClick={() => setShowPurchaseOrderList(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  <FileText size={16} className="text-primary-500" />
-                  Purchase Orders
-                </button>
-              </Tooltip>
+            <div className="app-page-actions">
               <Tooltip text="Upload a CSV or Excel file to add products in bulk">
                 <button
                   onClick={handleImportClick}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="app-btn-secondary"
                 >
-                  <Upload size={16} className="text-primary-500" />
+                  <HIcon icon={Upload01Icon} size={16} className="text-primary-500"  />
                   Import
                 </button>
               </Tooltip>
               <Tooltip text="Download a blank CSV template for bulk product import">
                 <button
                   onClick={handleDownloadTemplate}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-gray-300 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="app-btn-muted border-dashed"
                 >
-                  <Download size={16} className="text-gray-400" />
+                  <HIcon icon={Download01Icon} size={16} className="text-gray-400"  />
                   Template
                 </button>
               </Tooltip>
               <Tooltip text="Export your product list to CSV or Excel">
                 <button
                   onClick={() => setShowExportModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="app-btn-secondary"
                 >
-                  <Download size={16} className="text-primary-500" />
+                  <HIcon icon={Download01Icon} size={16} className="text-primary-500"  />
                   Export
                 </button>
               </Tooltip>
               <Tooltip text="Return items from a sale back to inventory stock">
                 <button
                   onClick={() => setShowReturnModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-700 text-sm font-medium hover:bg-orange-100 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-control border border-warning-100 bg-warning-50 px-4 py-2.5 text-sm font-medium text-warning-700 transition-colors hover:bg-warning-100"
                 >
-                  <RotateCcw size={16} className="text-orange-500" />
+                  <HIcon icon={RotateLeft01Icon} size={16} className="text-orange-500"  />
                   Return Item
                 </button>
               </Tooltip>
               <Tooltip text="Add a single new product to inventory">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
+                  className="app-btn-primary px-5"
                 >
-                  <Plus size={16} strokeWidth={2.5} />
+                  <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
                   Add Product
                 </button>
               </Tooltip>
@@ -1083,52 +1014,52 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="app-page-content space-y-5">
         {/* Summary Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="app-stat-grid gap-4">
+          <div className="app-stat-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Products</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{totalProducts}</p>
+                <p className="app-stat-label">Total Products</p>
+                <p className="app-stat-value">{totalProducts}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <Package className="text-primary-500" size={20} />
+                <HIcon icon={Package01Icon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="app-stat-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Stock Value</p>
-                <p className="text-2xl font-bold text-primary-500 mt-1">
+                <p className="app-stat-label">Stock Value</p>
+                <p className="mt-1 text-2xl font-bold text-primary-600">
                   ₵{products.reduce((sum, p) => sum + (Number(p.stock) || 0) * (Number(p.cost) || 0), 0).toFixed(2)}
                 </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <TrendingUp className="text-primary-500" size={20} />
+                <HIcon icon={ArrowMoveUpRightIcon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="app-stat-card">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Low Stock</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{lowStockItems.length}</p>
+                <p className="app-stat-label">Low Stock</p>
+                <p className="app-stat-value">{lowStockItems.length}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <AlertTriangle className="text-primary-500" size={20} />
+                <HIcon icon={Alert02Icon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
+          <div className="app-stat-card-accent">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Expired</p>
-                <p className="text-2xl font-bold text-white mt-1">{expiredStockItems.length}</p>
+                <p className="app-stat-label text-white/80">Expired</p>
+                <p className="app-stat-value text-white">{expiredStockItems.length}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <Clock className="text-white" size={20} />
+                <HIcon icon={Clock01Icon} className="text-white" size={20}  />
               </div>
             </div>
           </div>
@@ -1136,9 +1067,9 @@ const Inventory = () => {
 
         {/* Low Stock Alert */}
         {lowStockItems.length > 0 && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-panel border border-warning-100 bg-warning-50 p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="text-amber-600 mt-0.5 shrink-0" size={18} />
+              <HIcon icon={Alert02Icon} className="text-amber-600 mt-0.5 shrink-0" size={18}  />
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-amber-900 text-sm">
                   {lowStockItems.length} product(s) running low on stock
@@ -1153,24 +1084,24 @@ const Inventory = () => {
         )}
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+        <div className="app-filter-bar space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <input
                 type="text"
                 placeholder="Search by name, SKU, or barcode..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-sm"
+                className="app-input pl-10"
               />
             </div>
             <div className="relative">
-              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <HIcon icon={Building01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <select
                 value={selectedDepartmentFilter}
                 onChange={(e) => setSelectedDepartmentFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 bg-white appearance-none text-sm"
+                className="app-input pl-10 appearance-none"
               >
                 <option value="all">All departments</option>
                 {loadDepartments().map((dept) => {
@@ -1188,7 +1119,7 @@ const Inventory = () => {
           {/* Stock Filter Chips */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 text-gray-500 mr-1">
-              <Filter size={14} />
+              <HIcon icon={FilterIcon} size={14}  />
               <span className="text-xs font-medium">Quick Filters:</span>
             </div>
             <Tooltip text="Show all products">
@@ -1264,28 +1195,28 @@ const Inventory = () => {
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="app-table-shell">
           {productsError && (
             <div className="px-5 py-3 bg-red-50 border-b border-red-100 text-red-700 text-sm flex items-center gap-2">
-              <AlertTriangle size={16} />
+              <HIcon icon={Alert02Icon} size={16}  />
               {productsError}
             </div>
           )}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-900 text-white">
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Product</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">SKU</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Department</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Stock</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Min Stock</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Reorder</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Price</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Cost</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Profit</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Value</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                <tr className="app-table-head-dark">
+                  <th className="app-table-head-cell">Product</th>
+                  <th className="app-table-head-cell">SKU</th>
+                  <th className="app-table-head-cell">Department</th>
+                  <th className="app-table-head-cell text-right">Stock</th>
+                  <th className="app-table-head-cell text-right">Min Stock</th>
+                  <th className="app-table-head-cell text-right">Reorder</th>
+                  <th className="app-table-head-cell text-right">Price</th>
+                  <th className="app-table-head-cell text-right">Cost</th>
+                  <th className="app-table-head-cell text-right">Profit</th>
+                  <th className="app-table-head-cell text-right">Value</th>
+                  <th className="app-table-head-cell text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1311,7 +1242,7 @@ const Inventory = () => {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                              <Package size={14} className="text-primary-500" />
+                              <HIcon icon={Package01Icon} size={14} className="text-primary-500"  />
                             </div>
                             <div className="min-w-0">
                               <p className="font-medium text-gray-900 text-sm truncate">{product.name}</p>
@@ -1360,7 +1291,7 @@ const Inventory = () => {
                                 onClick={(e) => { e.stopPropagation(); handleEditClick(product) }}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                               >
-                                <Edit size={15} />
+                                <HIcon icon={PencilEdit01Icon} size={15}  />
                               </button>
                             </Tooltip>
                             <Tooltip text="Delete this product">
@@ -1368,7 +1299,7 @@ const Inventory = () => {
                                 onClick={(e) => { e.stopPropagation(); deleteProduct(product.uuid || product.id) }}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                               >
-                                <Trash2 size={15} />
+                                <HIcon icon={Delete01Icon} size={15}  />
                               </button>
                             </Tooltip>
                           </div>
@@ -1380,14 +1311,14 @@ const Inventory = () => {
                   <tr>
                     <td colSpan={11} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
-                        <Package size={40} />
+                        <HIcon icon={Package01Icon} size={40}  />
                         <p className="text-sm font-medium text-gray-500">No products found</p>
                         <p className="text-xs text-gray-500">Try adjusting your search or add a new product.</p>
                         <button
                           onClick={() => setShowAddModal(true)}
                           className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
                         >
-                          <Plus size={16} />
+                          <HIcon icon={Add01Icon} size={16}  />
                           Add Product
                         </button>
                       </div>
@@ -1410,7 +1341,7 @@ const Inventory = () => {
                   disabled={tablePage === 1}
                   className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <ChevronLeft size={16} />
+                  <HIcon icon={ArrowLeft01Icon} size={16}  />
                 </button>
                 {Array.from({ length: totalTablePages }, (_, i) => i + 1).map((page) => {
                   if (page === 1 || page === totalTablePages || (page >= tablePage - 1 && page <= tablePage + 1)) {
@@ -1437,7 +1368,7 @@ const Inventory = () => {
                   disabled={tablePage === totalTablePages}
                   className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <ChevronRight size={16} />
+                  <HIcon icon={ArrowRight01Icon} size={16}  />
                 </button>
               </div>
             </div>
@@ -1453,7 +1384,7 @@ const Inventory = () => {
             <div className="bg-gray-900 rounded-t-xl px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                  <Download size={18} className="text-primary-400" />
+                  <HIcon icon={Download01Icon} size={18} className="text-primary-400"  />
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">Export Products</h2>
@@ -1464,7 +1395,7 @@ const Inventory = () => {
                 onClick={() => { setShowExportModal(false); setExportDepartmentFilter('all'); setExportSaleFilter('all') }}
                 className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
               >
-                <X size={18} />
+                <HIcon icon={Cancel01Icon} size={18}  />
               </button>
             </div>
 
@@ -1484,7 +1415,7 @@ const Inventory = () => {
                       <option key={dept.id} value={dept.name}>{dept.name}</option>
                     ))}
                   </select>
-                  <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <HIcon icon={ArrowDown01Icon} size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"  />
                 </div>
               </div>
 
@@ -1500,7 +1431,7 @@ const Inventory = () => {
                         : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <Package size={18} className={exportSaleFilter === 'all' ? 'text-primary-500' : 'text-gray-400'} />
+                    <HIcon icon={Package01Icon} size={18} className={exportSaleFilter === 'all' ? 'text-primary-500' : 'text-gray-400'}  />
                     <span>All Items</span>
                   </button>
                   <button
@@ -1511,7 +1442,7 @@ const Inventory = () => {
                         : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <TrendingUp size={18} className={exportSaleFilter === 'high' ? 'text-primary-500' : 'text-gray-400'} />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={18} className={exportSaleFilter === 'high' ? 'text-primary-500' : 'text-gray-400'}  />
                     <span>High Sale</span>
                   </button>
                   <button
@@ -1522,7 +1453,7 @@ const Inventory = () => {
                         : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <TrendingDown size={18} className={exportSaleFilter === 'low' ? 'text-primary-500' : 'text-gray-400'} />
+                    <HIcon icon={ArrowMoveDownRightIcon} size={18} className={exportSaleFilter === 'low' ? 'text-primary-500' : 'text-gray-400'}  />
                     <span>Low Sale</span>
                   </button>
                 </div>
@@ -1549,14 +1480,14 @@ const Inventory = () => {
                     onClick={handleExportPriceListCSV}
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all"
                   >
-                    <Download size={15} />
+                    <HIcon icon={Download01Icon} size={15}  />
                     Price List CSV
                   </button>
                   <button
                     onClick={handleExportPriceListPDF}
                     className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-red-200 bg-red-50 text-red-700 text-sm font-semibold hover:border-red-400 hover:bg-red-100 transition-all"
                   >
-                    <FileText size={15} />
+                    <HIcon icon={FileValidationIcon} size={15}  />
                     Price List PDF
                   </button>
                 </div>
@@ -1575,7 +1506,7 @@ const Inventory = () => {
                 onClick={handleExportCSV}
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
               >
-                <Download size={16} />
+                <HIcon icon={Download01Icon} size={16}  />
                 Full Export CSV
               </button>
             </div>
@@ -1606,7 +1537,7 @@ const Inventory = () => {
                 disabled={importLoading}
                 className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-50"
               >
-                <X size={20} />
+                <HIcon icon={Cancel01Icon} size={20}  />
               </button>
             </div>
 
@@ -1743,38 +1674,6 @@ const Inventory = () => {
           onClose={() => {
             setShowSuccessModal(false)
             setSuccessProduct(null)
-          }}
-        />
-      )}
-
-      {/* Purchase Order Modal */}
-      {showPurchaseOrderModal && (
-        <PurchaseOrderModal
-          products={products}
-          suppliers={suppliers}
-          initialItems={selectedPurchaseOrder?.items || []}
-          onSave={createPurchaseOrder}
-          onClose={() => {
-            setShowPurchaseOrderModal(false)
-            setSelectedPurchaseOrder(null)
-          }}
-          showAlert={showAlert}
-        />
-      )}
-
-      {/* Purchase Order List Modal */}
-      {showPurchaseOrderList && (
-        <PurchaseOrderListModal
-          purchaseOrders={purchaseOrders}
-          loading={purchaseOrdersLoading}
-          onSelectPo={(po) => {
-            setShowPurchaseOrderList(false)
-            navigate(`/purchase-orders/${po.id}`, { state: { uuid: po.uuid, supplierName: po.supplier_name || po.supplier || '' } })
-          }}
-          onClose={() => setShowPurchaseOrderList(false)}
-          onCreateNew={() => {
-            setShowPurchaseOrderList(false)
-            setShowPurchaseOrderModal(true)
           }}
         />
       )}
@@ -2195,7 +2094,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center">
-              {product ? <Edit size={18} className="text-white" /> : <Plus size={18} className="text-white" />}
+              {product ? <HIcon icon={PencilEdit01Icon} size={18} className="text-white"  /> : <HIcon icon={Add01Icon} size={18} className="text-white"  />}
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
@@ -2210,7 +2109,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
           >
-            <X size={20} />
+            <HIcon icon={Cancel01Icon} size={20}  />
           </button>
         </div>
 
@@ -2228,7 +2127,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
         {fetchError && (
           <div className="px-6 py-3 bg-red-50 border-b border-red-100">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="text-red-500 mt-0.5" size={16} />
+              <HIcon icon={Alert02Icon} className="text-red-500 mt-0.5" size={16}  />
               <div>
                 <p className="text-sm text-red-800 font-medium">Error loading product</p>
                 <p className="text-xs text-red-600 mt-0.5">{fetchError}</p>
@@ -2433,7 +2332,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
               {errors.reorderPoint && (
                 <p className="text-red-500 text-xs mt-1">{errors.reorderPoint}</p>
               )}
-              <p className="text-xs text-gray-500 mt-1">Stock level at which to create a purchase order</p>
+              <p className="text-xs text-gray-500 mt-1">Stock level at which this item should be restocked</p>
             </div>
 
             {/* Expiry Date */}
@@ -2480,7 +2379,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
                   onClick={handleAddUnit}
                   className="text-sm bg-primary-50 text-primary-600 px-3 py-1 rounded-lg hover:bg-primary-100 transition-colors flex items-center gap-1 font-medium"
                 >
-                  <Plus size={16} />
+                  <HIcon icon={Add01Icon} size={16}  />
                   Add Unit
                 </button>
               </div>
@@ -2593,7 +2492,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
                             className="ml-3 p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Remove unit"
                           >
-                            <Trash size={18} />
+                            <HIcon icon={Delete02Icon} size={18}  />
                           </button>
                         )}
                       </div>
@@ -2645,7 +2544,7 @@ const ProductSuccessModal = ({ product, onClose }) => {
         <div className="bg-gray-900 px-6 py-6">
           <div className="flex flex-col items-center">
             <div className="bg-primary-500 rounded-full p-3 mb-3">
-              <CheckCircle size={32} className="text-white" />
+              <HIcon icon={CheckmarkCircle02Icon} size={32} className="text-white"  />
             </div>
             <h2 className="text-xl font-bold text-white">
               Product {product.action === 'added' ? 'Added' : 'Updated'}!
@@ -2738,426 +2637,9 @@ const ProductSuccessModal = ({ product, onClose }) => {
             onClick={onClose}
             className="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors flex items-center gap-2 text-sm"
           >
-            <Check size={16} />
+            <HIcon icon={Tick01Icon} size={16}  />
             Continue
           </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Purchase Order Modal Component (saves as pending; receive from list when stock arrives)
-const PurchaseOrderModal = ({ products, suppliers = [], initialItems = [], onSave, onClose, showAlert = () => {} }) => {
-  const [supplierId, setSupplierId] = useState('')
-  const [supplierSearch, setSupplierSearch] = useState('')
-  const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false)
-  const [paymentType, setPaymentType] = useState('full_payment') // 'full_payment' | 'credit'
-  const [items, setItems] = useState(initialItems.length > 0 ? initialItems : [])
-  const [openProductIndex, setOpenProductIndex] = useState(null)
-  const [productSearchTerm, setProductSearchTerm] = useState('')
-
-  const selectedSupplier = suppliers.find(s => (s.uuid || s.id) === supplierId)
-  const debtOwing = selectedSupplier ? (Number(selectedSupplier.debt_owing) || 0) : 0
-
-  // Pre-compute lowercase fields once for faster PO product search
-  const productsSearchIndex = useMemo(() => products.map(p => ({
-    product: p,
-    name: (p.name || '').toLowerCase(),
-    sku: (p.sku || '').toLowerCase(),
-    barcode: (p.barcode || ''),
-    category: (p.category || '').toLowerCase(),
-  })), [products])
-
-  const filteredProductsForPO = useCallback((searchTerm, limit = 12) => {
-    if (!(searchTerm || '').trim()) return productsSearchIndex.slice(0, limit).map(i => i.product)
-    const term = (searchTerm || '').toLowerCase().trim()
-    const results = []
-    for (const item of productsSearchIndex) {
-      if (item.name.includes(term) || item.sku.includes(term) || item.barcode.includes(term) || item.category.includes(term)) {
-        results.push(item.product)
-        if (results.length >= limit) break
-      }
-    }
-    return results
-  }, [productsSearchIndex])
-
-  const filteredSuppliers = suppliers.filter(s => {
-    if (!supplierSearch.trim()) return true
-    const term = supplierSearch.toLowerCase().trim()
-    return (s.name || '').toLowerCase().includes(term) ||
-      (s.phone1 || '').includes(supplierSearch) ||
-      (s.phone2 || '').includes(supplierSearch) ||
-      (s.email || '').toLowerCase().includes(term) ||
-      (s.location || '').toLowerCase().includes(term)
-  }).slice(0, 15)
-
-  const addItem = () => {
-    setItems([...items, {
-      productId: '',
-      productName: '',
-      sku: '',
-      quantity: 1,
-      unitCost: 0
-    }])
-  }
-
-  const removeItem = (index) => {
-    setItems(items.filter((_, i) => i !== index))
-  }
-
-  const updateItem = (index, field, value) => {
-    const updatedItems = items.map((item, i) => {
-      if (i === index) {
-        if (field === 'productId') {
-          const product = products.find(p => (p.uuid || p.id) === value || p.id === parseInt(value))
-          return {
-            ...item,
-            productId: product?.uuid || value,
-            productName: product?.name || '',
-            sku: product?.sku || '',
-            unitCost: product?.cost || 0
-          }
-        }
-        return { ...item, [field]: value }
-      }
-      return item
-    })
-    setItems(updatedItems)
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!supplierId) {
-      showAlert('Please select a supplier', 'warning')
-      return
-    }
-    if (items.length === 0) {
-      showAlert('Please add at least one item to the purchase order', 'warning')
-      return
-    }
-
-    const validItems = items.filter(item => item.productId && item.quantity > 0).map(item => ({
-      productId: item.productId,
-      quantity: Number(item.quantity),
-      unitCost: parseFloat(item.unitCost) || 0
-    }))
-    if (validItems.length === 0) {
-      showAlert('Please add valid items to the purchase order', 'warning')
-      return
-    }
-
-    onSave({ supplier_id: supplierId, payment_type: paymentType, items: validItems })
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center">
-              <ClipboardList size={18} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Create Purchase Order</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Select supplier and add items</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
-            <X size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-auto p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="relative">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Supplier *</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    value={selectedSupplier ? selectedSupplier.name : supplierSearch}
-                    onChange={(e) => {
-                      setSupplierSearch(e.target.value)
-                      setSupplierId('')
-                      setSupplierDropdownOpen(true)
-                    }}
-                    onFocus={() => setSupplierDropdownOpen(true)}
-                    onBlur={() => setTimeout(() => setSupplierDropdownOpen(false), 200)}
-                    placeholder="Search supplier by name..."
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                </div>
-                {supplierDropdownOpen && (
-                  <div
-                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-52 overflow-auto"
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
-                    {filteredSuppliers.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-gray-500">No supplier found</div>
-                    ) : (
-                      filteredSuppliers.map((s) => (
-                        <button
-                          key={s.id}
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => {
-                            setSupplierId(s.uuid || String(s.id))
-                            setSupplierSearch('')
-                            setSupplierDropdownOpen(false)
-                          }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-primary-50 border-b border-gray-100 last:border-b-0"
-                        >
-                          <span className="font-medium text-gray-900">{s.name}</span>
-                          {(s.phone1 || s.phone2 || s.email) && (
-                            <span className="block text-xs text-gray-500 mt-0.5">
-                              {[s.phone1, s.phone2, s.email].filter(Boolean).join(' · ')}
-                            </span>
-                          )}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-                {selectedSupplier && debtOwing > 0 && (
-                  <p className="mt-1 text-sm text-amber-700">
-                    Amount owing: ₵{debtOwing.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Payment type</label>
-                <select
-                  value={paymentType}
-                  onChange={(e) => setPaymentType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  <option value="full_payment">Full payment</option>
-                  <option value="credit">Own credit</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Items</h3>
-                <button type="button" onClick={addItem} className="btn-primary flex items-center text-sm">
-                  <Plus size={16} className="mr-2" />
-                  Add Item
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {items.map((item, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="md:col-span-2 relative">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Product</label>
-                        <div className="relative">
-                          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                          <input
-                            type="text"
-                            value={openProductIndex === index ? productSearchTerm : (item.productName || '')}
-                            onChange={(e) => {
-                              setOpenProductIndex(index)
-                              setProductSearchTerm(e.target.value)
-                            }}
-                            onFocus={() => {
-                              setOpenProductIndex(index)
-                              setProductSearchTerm(item.productName || '')
-                            }}
-                            onBlur={() => {
-                              setTimeout(() => setOpenProductIndex(null), 180)
-                            }}
-                            placeholder="Search product by name, SKU..."
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          />
-                        </div>
-                        {openProductIndex === index && (
-                          <div
-                            className="absolute z-20 mt-1 w-full max-h-56 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg"
-                            onMouseDown={(e) => e.preventDefault()}
-                          >
-                            {filteredProductsForPO(productSearchTerm).length === 0 ? (
-                              <div className="px-4 py-3 text-sm text-gray-500">No products match</div>
-                            ) : (
-                              filteredProductsForPO(productSearchTerm).map((p) => (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onMouseDown={(e) => {
-                                    e.preventDefault()
-                                    updateItem(index, 'productId', p.uuid || String(p.id))
-                                    setOpenProductIndex(null)
-                                    setProductSearchTerm('')
-                                  }}
-                                  className="w-full px-4 py-2.5 text-left hover:bg-primary-50 border-b border-gray-100 last:border-b-0 text-sm"
-                                >
-                                  <span className="font-medium text-gray-900">{p.name}</span>
-                                  <span className="block text-xs text-gray-500 mt-0.5">
-                                    {p.sku}{p.barcode ? ` · ${p.barcode}` : ''} · Stock: {p.stock}
-                                  </span>
-                                </button>
-                              ))
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Unit Cost (₵)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min={0}
-                          value={item.unitCost}
-                          onChange={(e) => updateItem(index, 'unitCost', e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                      </div>
-                    </div>
-                    {item.productId && (
-                      <div className="mt-2 text-xs text-gray-600">
-                        Subtotal: ₵{(Number(item.quantity) * Number(item.unitCost)).toFixed(2)}
-                      </div>
-                    )}
-                    <button type="button" onClick={() => removeItem(index)} className="mt-2 text-red-600 text-xs hover:text-red-800">
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              {items.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Package size={48} className="mx-auto mb-2 text-gray-400" />
-                  <p>No items added. Click &quot;Add Item&quot; to start.</p>
-                </div>
-              )}
-
-              {items.length > 0 && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-900">Total Amount:</span>
-                    <span className="text-2xl font-bold text-primary-600">
-                      ₵{items.reduce((sum, it) => sum + (Number(it.quantity) * Number(it.unitCost)), 0).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 shrink-0">
-            <button type="button" onClick={onClose} className="bg-white border border-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm">
-              Cancel
-            </button>
-            <button type="submit" className="bg-primary-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-primary-600 text-sm">
-              Create Purchase Order
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
-
-// Purchase Order List Modal: click a PO to open its detail page
-const PurchaseOrderListModal = ({ purchaseOrders, loading, onSelectPo, onClose, onCreateNew }) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary-500 flex items-center justify-center">
-              <FileText size={18} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Purchase Orders</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Click an order to view details</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={onCreateNew} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors">
-              <Plus size={14} />
-              New Order
-            </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto p-5">
-          {loading ? (
-            <div className="text-center py-12 text-gray-500">
-              <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              Loading purchase orders…
-            </div>
-          ) : purchaseOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText size={48} className="mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 text-sm mb-4">No purchase orders yet</p>
-              <button onClick={onCreateNew} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600">
-                Create First Order
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {purchaseOrders.map((po) => {
-                const totalAmount = Number(po.totalAmount) || (Array.isArray(po.items) ? po.items.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0) : 0)
-                const itemCount = (po.items || []).length
-                const isPending = po.status === 'pending'
-                return (
-                  <button
-                    key={po.id}
-                    type="button"
-                    onClick={() => onSelectPo(po)}
-                    className="w-full text-left border border-gray-200 rounded-lg p-4 hover:bg-primary-50/50 hover:border-primary-200 transition-colors flex items-center justify-between gap-4"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-gray-900 text-sm truncate">{po.poNumber || `PO-${po.id}`}</span>
-                        {isPending ? (
-                          <span className="shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 flex items-center gap-1">
-                            <Clock size={12} />
-                            Pending
-                          </span>
-                        ) : (
-                          <span className="shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
-                            <CheckCircle2 size={12} />
-                            Received
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        {po.date ? new Date(po.date).toLocaleDateString() : (po.created_at ? new Date(po.created_at).toLocaleDateString() : '—')}
-                        {' · '}
-                        {po.supplier || po.supplier_name || '—'}
-                        {' · '}
-                        {itemCount} item{itemCount !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <div className="shrink-0 flex items-center gap-2">
-                      <span className="font-bold text-primary-500 text-sm">₵{totalAmount.toFixed(2)}</span>
-                      <ChevronRight className="text-gray-300" size={18} />
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -3261,7 +2743,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
         <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
           <div className="bg-green-50 px-6 py-8 flex flex-col items-center">
             <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <CheckCircle size={28} className="text-green-600" />
+              <HIcon icon={CheckmarkCircle02Icon} size={28} className="text-green-600"  />
             </div>
             <h2 className="text-xl font-bold text-gray-900">Return Processed</h2>
             <p className="text-sm text-gray-600 mt-2 text-center">
@@ -3283,7 +2765,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
           </div>
           <div className="px-6 py-4 flex justify-end bg-gray-50 border-t">
             <button onClick={onClose} className="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors text-sm flex items-center gap-2">
-              <Check size={16} /> Done
+              <HIcon icon={Tick01Icon} size={16}  /> Done
             </button>
           </div>
         </div>
@@ -3296,7 +2778,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
       {returning && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <Loader2 size={48} className="animate-spin text-orange-500" />
+            <HIcon icon={Loading03Icon} size={48} className="animate-spin text-orange-500"  />
             <p className="text-lg font-semibold text-gray-800">Processing Return...</p>
             <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
           </div>
@@ -3307,7 +2789,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
-              <RotateCcw size={18} className="text-orange-600" />
+              <HIcon icon={RotateLeft01Icon} size={18} className="text-orange-600"  />
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">Return Item</h2>
@@ -3315,7 +2797,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
-            <X size={20} />
+            <HIcon icon={Cancel01Icon} size={20}  />
           </button>
         </div>
 
@@ -3323,7 +2805,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
         <div className="flex-1 overflow-auto p-6 space-y-5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <XCircle size={16} className="text-red-500 shrink-0" />
+              <HIcon icon={Cancel02Icon} size={16} className="text-red-500 shrink-0"  />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
@@ -3331,7 +2813,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
           {/* Step 1: Receipt Lookup */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <Search size={15} className="text-gray-500" />
+              <HIcon icon={Search01Icon} size={15} className="text-gray-500"  />
               Look Up Sale
             </h3>
             <div className="flex flex-col sm:flex-row items-end gap-3">
@@ -3360,7 +2842,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
                 disabled={fetching || !receiptNumber.trim()}
                 className="w-full sm:w-auto px-5 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shrink-0"
               >
-                {fetching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                {fetching ? <HIcon icon={Loading03Icon} size={16} className="animate-spin"  /> : <HIcon icon={Search01Icon} size={16}  />}
                 {fetching ? 'Searching...' : 'Fetch Sale'}
               </button>
             </div>
@@ -3396,7 +2878,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
                 <h3 className="text-sm font-semibold text-gray-800 mb-3">Select items to return</h3>
                 {saleItems.length === 0 ? (
                   <div className="text-center py-8 text-gray-400 text-sm">
-                    <Package size={36} className="mx-auto mb-2 text-gray-300" />
+                    <HIcon icon={Package01Icon} size={36} className="mx-auto mb-2 text-gray-300"  />
                     No line items found in this sale.
                   </div>
                 ) : (
@@ -3451,7 +2933,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
                                   disabled={!item.checked || item.returnQty <= 0}
                                   className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
-                                  <Minus size={14} />
+                                  <HIcon icon={MinusSignIcon} size={14}  />
                                 </button>
                                 <input
                                   type="number"
@@ -3468,7 +2950,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
                                   disabled={!item.checked || item.returnQty >= item.quantitySold}
                                   className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
-                                  <Plus size={14} />
+                                  <HIcon icon={Add01Icon} size={14}  />
                                 </button>
                               </div>
                             </td>
@@ -3510,7 +2992,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
           {/* Empty state when no sale fetched */}
           {!sale && !fetching && (
             <div className="text-center py-10 text-gray-400">
-              <FileText size={40} className="mx-auto mb-3 text-gray-300" />
+              <HIcon icon={FileValidationIcon} size={40} className="mx-auto mb-3 text-gray-300"  />
               <p className="text-sm">Enter a receipt number above and click <span className="font-semibold text-gray-600">"Fetch Sale"</span> to look up the transaction.</p>
             </div>
           )}
@@ -3526,7 +3008,7 @@ const ReturnItemModal = ({ onReturn, onClose }) => {
             disabled={returning || selectedItems.length === 0}
             className="bg-orange-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-2"
           >
-            <RotateCcw size={16} />
+            <HIcon icon={RotateLeft01Icon} size={16}  />
             Process Return ({totalReturnItems})
           </button>
         </div>

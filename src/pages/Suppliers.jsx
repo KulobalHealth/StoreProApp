@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Plus, Edit, Trash2, Phone, MapPin, X, Eye, Search, DollarSign, AlertTriangle, Users, TrendingUp } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  Alert02Icon,
+  ArrowMoveUpRightIcon,
+  Building01Icon,
+  CallIcon,
+  Cancel01Icon,
+  Delete01Icon,
+  DollarCircleIcon,
+  MapPinIcon,
+  PencilEdit01Icon,
+  Search01Icon,
+  UserGroupIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
 import { listSuppliers, createSupplier, updateSupplier, deleteSupplier } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
 import Tooltip from '../components/Tooltip'
@@ -140,14 +155,14 @@ const Suppliers = () => {
   const suppliersWithDebt = list.filter(s => Number(s.debt_owing) > 0).length
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <Building2 size={18} strokeWidth={2} />
+                <HIcon icon={Building01Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Suppliers</h1>
@@ -160,7 +175,7 @@ const Suppliers = () => {
                 onClick={openAdd}
                 className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
               >
-                <Plus size={16} strokeWidth={2.5} />
+                <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
                 Add Supplier
               </button>
             </Tooltip>
@@ -178,7 +193,7 @@ const Suppliers = () => {
                 <p className="text-2xl font-bold text-gray-900 mt-1">{list.length}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <Users className="text-primary-500" size={20} />
+                <HIcon icon={UserGroupIcon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
@@ -189,7 +204,7 @@ const Suppliers = () => {
                 <p className="text-2xl font-bold text-primary-500 mt-1">₵{formatMoney(totalSupplied)}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <TrendingUp className="text-primary-500" size={20} />
+                <HIcon icon={ArrowMoveUpRightIcon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
@@ -200,7 +215,7 @@ const Suppliers = () => {
                 <p className="text-2xl font-bold text-gray-900 mt-1">₵{formatMoney(totalDebt)}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <DollarSign className="text-primary-500" size={20} />
+                <HIcon icon={DollarCircleIcon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
@@ -211,7 +226,7 @@ const Suppliers = () => {
                 <p className="text-2xl font-bold text-white mt-1">{suppliersWithDebt}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <AlertTriangle className="text-white" size={20} />
+                <HIcon icon={Alert02Icon} className="text-white" size={20}  />
               </div>
             </div>
           </div>
@@ -220,7 +235,7 @@ const Suppliers = () => {
         {/* Search */}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
             <input
               type="text"
               placeholder="Search by name, phone, email or location..."
@@ -234,7 +249,7 @@ const Suppliers = () => {
         {/* Error */}
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-2 text-red-700 text-sm">
-            <AlertTriangle size={16} />
+            <HIcon icon={Alert02Icon} size={16}  />
             {error}
           </div>
         )}
@@ -269,7 +284,7 @@ const Suppliers = () => {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                              <Building2 size={14} className="text-primary-500" />
+                              <HIcon icon={Building01Icon} size={14} className="text-primary-500"  />
                             </div>
                             <div className="min-w-0">
                               <button
@@ -289,13 +304,13 @@ const Suppliers = () => {
                           <div className="space-y-0.5">
                             {s.phone1 && (
                               <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                <Phone size={12} className="text-gray-400 shrink-0" />
+                                <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                 {s.phone1}
                               </div>
                             )}
                             {s.phone2 && (
                               <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                                <Phone size={12} className="text-gray-400 shrink-0" />
+                                <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                 {s.phone2}
                               </div>
                             )}
@@ -307,7 +322,7 @@ const Suppliers = () => {
                         <td className="py-3 px-4">
                           {s.location ? (
                             <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                              <MapPin size={12} className="text-gray-400 shrink-0" />
+                              <HIcon icon={MapPinIcon} size={12} className="text-gray-400 shrink-0"  />
                               <span className="truncate max-w-[180px]">{s.location}</span>
                             </div>
                           ) : (
@@ -335,7 +350,7 @@ const Suppliers = () => {
                                 onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                               >
-                                <Eye size={15} />
+                                <HIcon icon={ViewIcon} size={15}  />
                               </button>
                             </Tooltip>
                             <Tooltip text="Edit supplier information">
@@ -344,7 +359,7 @@ const Suppliers = () => {
                                 onClick={() => openEdit(s)}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                               >
-                                <Edit size={15} />
+                                <HIcon icon={PencilEdit01Icon} size={15}  />
                               </button>
                             </Tooltip>
                             <Tooltip text="Delete this supplier">
@@ -353,7 +368,7 @@ const Suppliers = () => {
                                 onClick={() => handleDelete(s.uuid || s.id)}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                               >
-                                <Trash2 size={15} />
+                                <HIcon icon={Delete01Icon} size={15}  />
                               </button>
                             </Tooltip>
                           </div>
@@ -367,7 +382,7 @@ const Suppliers = () => {
           ) : (
             <div className="py-16 text-center">
               <div className="flex flex-col items-center gap-3 text-gray-400">
-                <Building2 size={40} />
+                <HIcon icon={Building01Icon} size={40}  />
                 <p className="text-sm font-medium text-gray-500">
                   {searchTerm.trim() ? 'No suppliers match your search' : 'No suppliers yet'}
                 </p>
@@ -379,7 +394,7 @@ const Suppliers = () => {
                     onClick={openAdd}
                     className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
                   >
-                    <Plus size={16} />
+                    <HIcon icon={Add01Icon} size={16}  />
                     Add Supplier
                   </button>
                 )}
@@ -406,7 +421,7 @@ const Suppliers = () => {
             <div className="bg-gray-900 rounded-t-xl px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-primary-500/20 flex items-center justify-center">
-                  {editingId ? <Edit size={18} className="text-primary-400" /> : <Plus size={18} className="text-primary-400" />}
+                  {editingId ? <HIcon icon={PencilEdit01Icon} size={18} className="text-primary-400"  /> : <HIcon icon={Add01Icon} size={18} className="text-primary-400"  />}
                 </div>
                 <div>
                   <h2 className="text-white font-bold text-lg">{editingId ? 'Edit Supplier' : 'Add Supplier'}</h2>
@@ -418,7 +433,7 @@ const Suppliers = () => {
                 onClick={() => setShowForm(false)}
                 className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
               >
-                <X size={18} />
+                <HIcon icon={Cancel01Icon} size={18}  />
               </button>
             </div>
 
@@ -426,7 +441,7 @@ const Suppliers = () => {
             <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-4">
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm flex items-center gap-2">
-                  <AlertTriangle size={14} />
+                  <HIcon icon={Alert02Icon} size={14}  />
                   {error}
                 </div>
               )}

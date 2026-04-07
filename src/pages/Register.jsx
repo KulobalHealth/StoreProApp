@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import logo from '../MainLogo.jpeg'
-import { Mail, Phone, User, Store, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import { Mail01Icon, CallIcon, UserIcon, Store01Icon, LockIcon, ViewIcon, ViewOffIcon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { register as apiRegister } from '../api/awoselDb.js'
 import { sanitizeInput, validateEmail, validatePhoneNumber } from '../utils/validation.js'
 
-const Register = () => {
+  const Register = () => {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -84,9 +85,12 @@ const Register = () => {
         password: password,
       })
 
-      setSuccess('Account created successfully! Redirecting to login…')
+      setSuccess('Account created successfully! Redirecting…')
       setIsLoading(false)
-      setTimeout(() => navigate('/login', { replace: true }), 1500)
+      setTimeout(() => navigate('/welcome', {
+        replace: true,
+        state: { firstName: trimmedFirstName, storeName: trimmedStoreName }
+      }), 1500)
     } catch (err) {
       console.error('Register error:', err)
       setError(err?.message || 'Could not reach server. Is the backend running?')
@@ -130,12 +134,14 @@ const Register = () => {
             </div>
           )}
 
+
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <HIcon icon={Mail01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type="email"
                   value={email}
@@ -153,7 +159,7 @@ const Register = () => {
                 Phone <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <HIcon icon={CallIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type="tel"
                   value={phone}
@@ -170,7 +176,7 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">First name</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={UserIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
                     value={firstName}
@@ -184,7 +190,7 @@ const Register = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Last name</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={UserIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
                     type="text"
                     value={lastName}
@@ -201,7 +207,7 @@ const Register = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Store name</label>
               <div className="relative">
-                <Store className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <HIcon icon={Store01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type="text"
                   value={storeName}
@@ -217,7 +223,7 @@ const Register = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <HIcon icon={LockIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -231,7 +237,7 @@ const Register = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <HIcon icon={ViewOffIcon} size={16} /> : <HIcon icon={ViewIcon} size={16} />}
                 </button>
               </div>
             </div>
@@ -254,7 +260,7 @@ const Register = () => {
               ) : (
                 <>
                   Create Account
-                  <ArrowRight size={15} />
+                  <HIcon icon={ArrowRight01Icon} size={15} />
                 </>
               )}
             </button>

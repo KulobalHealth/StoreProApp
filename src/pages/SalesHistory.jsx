@@ -1,33 +1,90 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useDeferredValue, useRef } from 'react'
 import Tooltip from '../components/Tooltip'
+import { HIcon } from '../components/HIcon'
 import {
-  Calendar,
-  TrendingUp,
-  DollarSign,
-  CreditCard,
-  FileText,
-  X,
-  Package,
-  Eye,
-  Search,
-  Download,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Clock,
-  ShoppingCart,
-  ArrowUpDown,
-  BarChart3,
-  Receipt,
-  User,
-} from 'lucide-react'
+  Analytics02Icon,
+  ArrowLeft01Icon,
+  ArrowMoveUpRightIcon,
+  ArrowRight01Icon,
+  ArrowUpDownIcon,
+  Calendar01Icon,
+  Cancel01Icon,
+  Clock01Icon,
+  CreditCardIcon,
+  DollarCircleIcon,
+  Download01Icon,
+  FileValidationIcon,
+  FilterIcon,
+  Package01Icon,
+  ReceiptTextIcon,
+  RefreshIcon,
+  Search01Icon,
+  ShoppingCart01Icon,
+  UserIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
 import { listSales } from '../api/awoselDb.js'
 import { getSessionBranchId } from '../utils/branch'
 
+const getSaleDateValue = (sale) => sale?.created_at || sale?.createdAt || sale?.date || sale?.timestamp || null
+
+const toIsoDate = (value) => {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toISOString().slice(0, 10)
+}
+
+const normalizeSale = (sale) => {
+  const saleDate = getSaleDateValue(sale)
+  const saleTimestamp = saleDate ? new Date(saleDate).getTime() : 0
+  const receiptNumber = sale.receipt_number || sale.receiptNumber || ''
+  const customerName = sale.customer_name || sale.customerName || sale.customer || 'Walk-in'
+  const paymentMethod = sale.payment_method || sale.paymentMethod || 'Other'
+  const paymentMethodLower = paymentMethod.toLowerCase()
+  const items = Array.isArray(sale.items) ? sale.items : []
+
+  return {
+    ...sale,
+    _saleDate: saleDate,
+    _saleTimestamp: saleTimestamp,
+    _receiptNumber: receiptNumber,
+    _customerName: customerName,
+    _paymentMethod: paymentMethod,
+    _paymentMethodLower: paymentMethodLower,
+    _itemCount: items.length,
+    _searchText: `${receiptNumber} ${customerName} ${paymentMethod}`.toLowerCase(),
+  }
+}
+
+const buildSummary = (salesList) => {
+  let totalAmount = 0
+  let totalProfit = 0
+  const paymentMethods = {}
+  const paymentMethodCounts = {}
+
+  for (const sale of salesList) {
+    const total = Number(sale.total) || 0
+    const totalProfitValue = Number(sale.total_profit) || 0
+    const paymentMethod = sale._paymentMethod || sale.payment_method || 'Other'
+
+    totalAmount += total
+    totalProfit += totalProfitValue
+    paymentMethods[paymentMethod] = (paymentMethods[paymentMethod] || 0) + total
+    paymentMethodCounts[paymentMethod] = (paymentMethodCounts[paymentMethod] || 0) + 1
+  }
+
+  return {
+    total_amount: totalAmount,
+    total_profit: totalProfit,
+    sale_count: salesList.length,
+    payment_methods: paymentMethods,
+    payment_method_counts: paymentMethodCounts,
+  }
+}
+
 const SalesHistory = () => {
   const [sales, setSales] = useState([])
-  const [summary, setSummary] = useState({ total_amount: 0, total_profit: 0, sale_count: 0, payment_methods: {} })
+  const [summary, setSummary] = useState({ total_amount: 0, total_profit: 0, sale_count: 0, payment_methods: {}, payment_method_counts: {} })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('today')
@@ -40,22 +97,46 @@ const SalesHistory = () => {
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const PAGE_SIZE = 10
+  const deferredSearchTerm = useDeferredValue(searchTerm)
+  const salesCacheRef = useRef(new Map())
+  const fetchRequestIdRef = useRef(0)
 
-  /**
-   * Build the date string to send to the API based on the active filter.
-   * The backend endpoint is: /sales?branch_id=<uuid>&date=<YYYY-MM-DD>
-   * For filters that cover a range (month, year, all) we fetch each day the
-   * user picks; for "all" we omit the date param entirely.
-   */
-  const getQueryDate = () => {
-    if (filter === 'today') return new Date().toISOString().slice(0, 10)
-    if (filter === 'date') return date
-    // For month / year / all we omit date so the backend returns everything,
-    // and we do a lightweight client-side filter on the result.
-    return undefined
+  const getQueryParams = () => {
+    const today = new Date()
+
+    if (filter === 'today') {
+      return { date: toIsoDate(today) }
+    }
+
+    if (filter === 'date') {
+      return { date }
+    }
+
+    if (filter === 'month') {
+      return {
+        year,
+        month,
+      }
+    }
+
+    if (filter === 'year') {
+      return {
+        year,
+      }
+    }
+
+    if (filter === 'all') {
+      return {
+        start_date: '2000-01-01',
+        end_date: toIsoDate(today),
+      }
+    }
+
+    return {}
   }
 
-  const fetchSales = () => {
+  const fetchSales = useCallback((options = {}) => {
+    const { forceRefresh = false } = options
     // Always use the branch UUID — backend expects UUID in branch_id param
     const branchId = getSessionBranchId()
     if (!branchId) {
@@ -63,85 +144,113 @@ const SalesHistory = () => {
       setLoading(false)
       return
     }
+    const query = { branch_id: branchId }
+    Object.assign(query, getQueryParams())
+    const queryKey = JSON.stringify(query)
+
+    if (!forceRefresh && salesCacheRef.current.has(queryKey)) {
+      const cached = salesCacheRef.current.get(queryKey)
+      setSales(cached.sales)
+      setSummary(cached.summary)
+      setError('')
+      setLoading(false)
+      setCurrentPage(1)
+      return
+    }
+
+    const requestId = ++fetchRequestIdRef.current
     setLoading(true)
     setError('')
-    const queryDate = getQueryDate()
-    const query = { branch_id: branchId }
-    if (queryDate) query.date = queryDate
+
     listSales(query)
       .then(res => {
+        if (requestId !== fetchRequestIdRef.current) return
         const payload = res?.data || res
         let salesList = payload?.sales || (Array.isArray(payload) ? payload : [])
 
-        // Client-side filter for month / year ranges (API returned all branch sales)
+        // Client-side filter as a fallback in case backend range filtering is incomplete.
         if (filter === 'month') {
           salesList = salesList.filter(s => {
-            if (!s.created_at) return false
-            const d = new Date(s.created_at)
+            const saleDate = getSaleDateValue(s)
+            if (!saleDate) return false
+            const d = new Date(saleDate)
             return d.getFullYear() === Number(year) && (d.getMonth() + 1) === Number(month)
           })
         } else if (filter === 'year') {
           salesList = salesList.filter(s => {
-            if (!s.created_at) return false
-            return new Date(s.created_at).getFullYear() === Number(year)
+            const saleDate = getSaleDateValue(s)
+            if (!saleDate) return false
+            return new Date(saleDate).getFullYear() === Number(year)
+          })
+        } else if (filter === 'date') {
+          salesList = salesList.filter(s => {
+            const saleDate = getSaleDateValue(s)
+            return saleDate ? toIsoDate(saleDate) === date : false
+          })
+        } else if (filter === 'today') {
+          const todayDate = toIsoDate(new Date())
+          salesList = salesList.filter(s => {
+            const saleDate = getSaleDateValue(s)
+            return saleDate ? toIsoDate(saleDate) === todayDate : false
           })
         }
 
-        setSales(salesList)
+        const normalizedSales = salesList.map(normalizeSale)
+        const nextSummary = buildSummary(normalizedSales)
 
-        // Build summary
-        const totalAmount = salesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0)
-        const totalProfit = salesList.reduce((sum, s) => sum + (Number(s.total_profit) || 0), 0)
-        const methods = {}
-        salesList.forEach(s => {
-          const m = s.payment_method || 'Other'
-          methods[m] = (methods[m] || 0) + (Number(s.total) || 0)
+        salesCacheRef.current.set(queryKey, {
+          sales: normalizedSales,
+          summary: nextSummary,
         })
-        setSummary({ total_amount: totalAmount, total_profit: totalProfit, sale_count: salesList.length, payment_methods: methods })
+
+        setSales(normalizedSales)
+        setSummary(nextSummary)
         setCurrentPage(1)
       })
       .catch(err => {
+        if (requestId !== fetchRequestIdRef.current) return
         setError(err.message || 'Could not load sales')
         setSales([])
       })
-      .finally(() => setLoading(false))
-  }
+      .finally(() => {
+        if (requestId === fetchRequestIdRef.current) {
+          setLoading(false)
+        }
+      })
+  }, [filter, date, month, year])
 
   // Re-fetch whenever the filter criteria change
   useEffect(() => {
     fetchSales()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, date, month, year])
 
-  const paymentEntries = Object.entries(summary.payment_methods || {}).filter(([, v]) => v > 0)
+  const paymentEntries = useMemo(
+    () => Object.entries(summary.payment_methods || {}).filter(([, value]) => value > 0),
+    [summary.payment_methods],
+  )
 
   // Unique payment methods for filter chips
   const paymentMethods = useMemo(() => {
-    const methods = new Set()
-    sales.forEach(s => { if (s.payment_method) methods.add(s.payment_method) })
-    return Array.from(methods)
-  }, [sales])
+    return Object.keys(summary.payment_method_counts || {})
+  }, [summary.payment_method_counts])
 
   // Filtered + sorted + searched sales
   const processedSales = useMemo(() => {
     let result = [...sales]
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase().trim()
-      result = result.filter(s =>
-        (s.receipt_number || '').toLowerCase().includes(q) ||
-        (s.customer_name || '').toLowerCase().includes(q) ||
-        (s.payment_method || '').toLowerCase().includes(q)
-      )
+    if (deferredSearchTerm.trim()) {
+      const query = deferredSearchTerm.toLowerCase().trim()
+      result = result.filter(sale => sale._searchText.includes(query))
     }
     if (paymentFilter !== 'all') {
-      result = result.filter(s => (s.payment_method || '').toLowerCase() === paymentFilter.toLowerCase())
+      const normalizedPaymentFilter = paymentFilter.toLowerCase()
+      result = result.filter(sale => sale._paymentMethodLower === normalizedPaymentFilter)
     }
-    if (sortBy === 'newest') result.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-    else if (sortBy === 'oldest') result.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0))
+    if (sortBy === 'newest') result.sort((a, b) => b._saleTimestamp - a._saleTimestamp)
+    else if (sortBy === 'oldest') result.sort((a, b) => a._saleTimestamp - b._saleTimestamp)
     else if (sortBy === 'highest') result.sort((a, b) => (Number(b.total) || 0) - (Number(a.total) || 0))
     else if (sortBy === 'lowest') result.sort((a, b) => (Number(a.total) || 0) - (Number(b.total) || 0))
     return result
-  }, [sales, searchTerm, paymentFilter, sortBy])
+  }, [sales, deferredSearchTerm, paymentFilter, sortBy])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(processedSales.length / PAGE_SIZE))
@@ -161,15 +270,15 @@ const SalesHistory = () => {
     const csvRows = [
       headers.join(','),
       ...processedSales.map(sale => [
-        sale.created_at ? new Date(sale.created_at).toLocaleString() : '',
-        `"${sale.receipt_number || ''}"`,
-        `"${(sale.customer_name || 'Walk-in').replace(/"/g, '""')}"`,
-        (sale.items || []).length,
+        sale._saleDate ? new Date(sale._saleDate).toLocaleString() : '',
+        `"${sale._receiptNumber || ''}"`,
+        `"${(sale._customerName || 'Walk-in').replace(/"/g, '""')}"`,
+        sale._itemCount,
         (Number(sale.discount) || 0).toFixed(2),
         (Number(sale.tax) || 0).toFixed(2),
         (Number(sale.total) || 0).toFixed(2),
         (Number(sale.total_profit) || 0).toFixed(2),
-        `"${sale.payment_method || ''}"`,
+        `"${sale._paymentMethod || ''}"`,
       ].join(','))
     ]
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' })
@@ -192,14 +301,14 @@ const SalesHistory = () => {
   })()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Compact Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <BarChart3 size={18} strokeWidth={2} />
+                <HIcon icon={Analytics02Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Sales History</h1>
@@ -209,11 +318,11 @@ const SalesHistory = () => {
             <div className="flex flex-wrap items-center gap-2">
               <Tooltip text="Reload sales data from the server">
                 <button
-                  onClick={fetchSales}
+                  onClick={() => fetchSales({ forceRefresh: true })}
                   disabled={loading}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <RefreshCw size={16} className={`text-primary-500 ${loading ? 'animate-spin' : ''}`} />
+                  <HIcon icon={RefreshIcon} size={16} className={`text-primary-500 ${loading ? 'animate-spin' : ''}`}  />
                   Refresh
                 </button>
               </Tooltip>
@@ -223,7 +332,7 @@ const SalesHistory = () => {
                   disabled={processedSales.length === 0}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <Download size={16} className="text-primary-500" />
+                  <HIcon icon={Download01Icon} size={16} className="text-primary-500"  />
                   Export CSV
                 </button>
               </Tooltip>
@@ -235,7 +344,7 @@ const SalesHistory = () => {
       <div className="px-4 sm:px-6 lg:px-8 py-5 space-y-5">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
-            <X size={16} className="shrink-0" />
+            <HIcon icon={Cancel01Icon} size={16} className="shrink-0"  />
             {error}
           </div>
         )}
@@ -244,7 +353,7 @@ const SalesHistory = () => {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-1.5 text-gray-500 mr-1">
-              <Calendar size={14} />
+              <HIcon icon={Calendar01Icon} size={14}  />
               <span className="text-xs font-medium uppercase tracking-wider">Period:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -318,7 +427,7 @@ const SalesHistory = () => {
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Transactions</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{summary.sale_count ?? 0}</p>
               </div>
-              <ShoppingCart className="text-primary-500" size={20} />
+              <HIcon icon={ShoppingCart01Icon} className="text-primary-500" size={20}  />
             </div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -327,7 +436,7 @@ const SalesHistory = () => {
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</p>
                 <p className="text-2xl font-bold text-primary-500 mt-1">₵{(Number(summary.total_amount) || 0).toFixed(2)}</p>
               </div>
-              <DollarSign className="text-primary-500" size={20} />
+              <HIcon icon={DollarCircleIcon} className="text-primary-500" size={20}  />
             </div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -336,7 +445,7 @@ const SalesHistory = () => {
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</p>
                 <p className="text-2xl font-bold text-emerald-600 mt-1">₵{(Number(summary.total_profit) || 0).toFixed(2)}</p>
               </div>
-              <TrendingUp className="text-emerald-500" size={20} />
+              <HIcon icon={ArrowMoveUpRightIcon} className="text-emerald-500" size={20}  />
             </div>
           </div>
           <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -345,7 +454,7 @@ const SalesHistory = () => {
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Sale</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">₵{avgSale.toFixed(2)}</p>
               </div>
-              <BarChart3 className="text-primary-500" size={20} />
+              <HIcon icon={Analytics02Icon} className="text-primary-500" size={20}  />
             </div>
           </div>
           <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
@@ -354,7 +463,7 @@ const SalesHistory = () => {
                 <p className="text-xs font-medium text-white/80 uppercase tracking-wider">Margin</p>
                 <p className="text-2xl font-bold text-white mt-1">{profitMargin.toFixed(1)}%</p>
               </div>
-              <TrendingUp className="text-white/80" size={20} />
+              <HIcon icon={ArrowMoveUpRightIcon} className="text-white/80" size={20}  />
             </div>
           </div>
         </div>
@@ -364,7 +473,7 @@ const SalesHistory = () => {
           <div className="bg-white rounded-lg border border-gray-200 px-4 py-2.5">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 shrink-0">
-                <CreditCard size={14} className="text-primary-500" />
+                <HIcon icon={CreditCardIcon} size={14} className="text-primary-500"  />
                 <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Payment Breakdown — {periodLabel}</h3>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -386,7 +495,7 @@ const SalesHistory = () => {
         <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <input
                 type="text"
                 placeholder="Search by receipt #, customer, or payment method..."
@@ -396,7 +505,7 @@ const SalesHistory = () => {
               />
             </div>
             <div className="relative">
-              <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <HIcon icon={ArrowUpDownIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
@@ -412,7 +521,7 @@ const SalesHistory = () => {
           {paymentMethods.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 text-gray-500 mr-1">
-                <Filter size={14} />
+                <HIcon icon={FilterIcon} size={14}  />
                 <span className="text-xs font-medium">Payment:</span>
               </div>
               <button
@@ -429,7 +538,7 @@ const SalesHistory = () => {
                 }`}>{sales.length}</span>
               </button>
               {paymentMethods.map(method => {
-                const count = sales.filter(s => (s.payment_method || '').toLowerCase() === method.toLowerCase()).length
+                const count = summary.payment_method_counts?.[method] || 0
                 return (
                   <button
                     key={method}
@@ -462,7 +571,7 @@ const SalesHistory = () => {
             </div>
           ) : processedSales.length === 0 ? (
             <div className="py-20 text-center">
-              <Receipt size={48} className="mx-auto mb-3 text-gray-300" />
+              <HIcon icon={ReceiptTextIcon} size={48} className="mx-auto mb-3 text-gray-300"  />
               <p className="text-gray-500 font-medium">No sales found</p>
               <p className="text-gray-500 text-sm mt-1">
                 {searchTerm || paymentFilter !== 'all'
@@ -496,24 +605,24 @@ const SalesHistory = () => {
                       >
                         <td className="py-3 px-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1.5">
-                            <Clock size={13} className="text-gray-400 shrink-0" />
-                            {sale.created_at
-                              ? new Date(sale.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+                            <HIcon icon={Clock01Icon} size={13} className="text-gray-400 shrink-0"  />
+                            {sale._saleDate
+                              ? new Date(sale._saleDate).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
                               : '—'}
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="text-sm font-semibold text-gray-900">{sale.receipt_number || '—'}</span>
+                          <span className="text-sm font-semibold text-gray-900">{sale._receiptNumber || '—'}</span>
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5">
-                            <User size={13} className="text-gray-400 shrink-0" />
-                            <span className="text-sm text-gray-700">{sale.customer_name || 'Walk-in'}</span>
+                            <HIcon icon={UserIcon} size={13} className="text-gray-400 shrink-0"  />
+                            <span className="text-sm text-gray-700">{sale._customerName || 'Walk-in'}</span>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-100 text-gray-700 text-xs font-semibold">
-                            {(sale.items || []).length}
+                            {sale._itemCount}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right text-sm text-orange-600 font-medium">
@@ -530,15 +639,15 @@ const SalesHistory = () => {
                         </td>
                         <td className="py-3 px-4">
                           <span className={`inline-block px-2.5 py-1 rounded-sm text-xs font-semibold capitalize ${
-                            (sale.payment_method || '').toLowerCase() === 'cash'
+                            sale._paymentMethodLower === 'cash'
                               ? 'bg-emerald-50 text-emerald-700'
-                              : (sale.payment_method || '').toLowerCase() === 'mobile money' || (sale.payment_method || '').toLowerCase() === 'momo'
+                              : sale._paymentMethodLower === 'mobile money' || sale._paymentMethodLower === 'momo'
                                 ? 'bg-amber-50 text-amber-700'
-                                : (sale.payment_method || '').toLowerCase() === 'card'
+                                : sale._paymentMethodLower === 'card'
                                   ? 'bg-primary-50 text-primary-700'
                                   : 'bg-gray-100 text-gray-700'
                           }`}>
-                            {sale.payment_method || '—'}
+                            {sale._paymentMethod || '—'}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -548,7 +657,7 @@ const SalesHistory = () => {
                               onClick={() => setSelectedSale(sale)}
                               className="inline-flex items-center justify-center p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors opacity-70 group-hover:opacity-100"
                             >
-                              <Eye size={16} />
+                              <HIcon icon={ViewIcon} size={16}  />
                             </button>
                           </Tooltip>
                         </td>
@@ -570,7 +679,7 @@ const SalesHistory = () => {
                     disabled={currentPage <= 1}
                     className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronLeft size={16} />
+                    <HIcon icon={ArrowLeft01Icon} size={16}  />
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
@@ -601,7 +710,7 @@ const SalesHistory = () => {
                     disabled={currentPage >= totalPages}
                     className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronRight size={16} />
+                    <HIcon icon={ArrowRight01Icon} size={16}  />
                   </button>
                 </div>
               </div>
@@ -623,14 +732,14 @@ const SalesHistory = () => {
               <div className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-11 h-11 rounded-xl bg-primary-500 flex items-center justify-center shadow-lg shadow-primary-500/30">
-                    <Receipt size={22} className="text-white" />
+                    <HIcon icon={ReceiptTextIcon} size={22} className="text-white"  />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold tracking-tight text-gray-900">Sale Details</h2>
                     <p className="text-gray-400 text-sm mt-0.5">
                       Receipt <span className="text-primary-500 font-semibold">{selectedSale.receipt_number || '—'}</span>
                       &nbsp;·&nbsp;
-                      {selectedSale.created_at ? new Date(selectedSale.created_at).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' }) : '—'}
+                      {getSaleDateValue(selectedSale) ? new Date(getSaleDateValue(selectedSale)).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' }) : '—'}
                     </p>
                   </div>
                 </div>
@@ -638,7 +747,7 @@ const SalesHistory = () => {
                   onClick={() => setSelectedSale(null)}
                   className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-500 hover:text-gray-700"
                 >
-                  <X size={22} />
+                  <HIcon icon={Cancel01Icon} size={22}  />
                 </button>
               </div>
 
@@ -654,7 +763,7 @@ const SalesHistory = () => {
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Customer</p>
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                          <User size={15} className="text-primary-600" />
+                          <HIcon icon={UserIcon} size={15} className="text-primary-600"  />
                         </div>
                         <p className="text-gray-900 font-semibold text-sm">{selectedSale.customer_name || 'Walk-in'}</p>
                       </div>
@@ -755,7 +864,7 @@ const SalesHistory = () => {
                 <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
                   <div className="px-8 py-4 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
                     <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2 uppercase tracking-wider">
-                      <Package size={16} className="text-primary-500" />
+                      <HIcon icon={Package01Icon} size={16} className="text-primary-500"  />
                       Line Items
                       <span className="ml-1 px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 text-xs font-bold">
                         {(selectedSale.items || []).length}
@@ -765,7 +874,7 @@ const SalesHistory = () => {
                   <div className="flex-1 overflow-auto">
                     {(selectedSale.items || []).length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                        <Package size={48} className="mb-3 opacity-30" />
+                        <HIcon icon={Package01Icon} size={48} className="mb-3 opacity-30"  />
                         <p className="text-sm font-medium">No items recorded</p>
                       </div>
                     ) : (
@@ -793,7 +902,7 @@ const SalesHistory = () => {
                                 <td className="py-4 px-6">
                                   <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                                      <Package size={14} className="text-primary-500" />
+                                      <HIcon icon={Package01Icon} size={14} className="text-primary-500"  />
                                     </div>
                                     <span className="font-semibold text-gray-900">{item.product_name || '—'}</span>
                                   </div>

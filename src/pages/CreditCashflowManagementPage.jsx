@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
-import logo from '../MainLogo.jpeg'
 import featureImage from '../mobile-mockups/06.png'
 
 const fadeUp = {
@@ -70,24 +70,7 @@ const workflowSteps = [
 const CreditCashflowManagementPage = () => {
   return (
     <div className="ccm-page">
-      <motion.nav
-        className="ccm-nav"
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <Link to="/" className="ccm-logo">
-          <img src={logo} alt="MicroBiz" className="ccm-logo-img" />
-        </Link>
-        <ul className="ccm-nav-links">
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#how">How It Works</a></li>
-          <li><a href="/#pricing">Pricing</a></li>
-          <li><a href="/#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="ccm-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="ccm-nav-cta">Get Started →</Link></li>
-        </ul>
-      </motion.nav>
+      <MarketingHeader />
 
       <section className="ccm-hero">
         <div className="ccm-shell">

@@ -1,5 +1,36 @@
 import React, { useState, useEffect } from 'react'
-import { Download, FileText, Calculator, Shield, TrendingUp, DollarSign, Receipt, Calendar, Filter, X, Eye, CheckCircle, ArrowUp, ArrowDown, Percent, TrendingDown, Package, Users, Building2, Zap, Wallet, CreditCard, FileCheck, Landmark, Scale, AlertCircle, Activity, Database, Clock, UserCheck } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Activity01Icon,
+  AlertCircleIcon,
+  ArrowDown01Icon,
+  ArrowMoveDownRightIcon,
+  ArrowMoveUpRightIcon,
+  ArrowUp01Icon,
+  Building01Icon,
+  CalculatorIcon,
+  Calendar01Icon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  CreditCardIcon,
+  DatabaseIcon,
+  DollarCircleIcon,
+  Download01Icon,
+  FileValidationIcon,
+  FilterIcon,
+  FlashIcon,
+  LandmarkIcon,
+  Package01Icon,
+  PercentIcon,
+  ReceiptTextIcon,
+  Shield01Icon,
+  TaskDone01Icon,
+  UserCheck01Icon,
+  UserGroupIcon,
+  ViewIcon,
+  Wallet02Icon,
+} from '@hugeicons/core-free-icons'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
 
 const Accounting = () => {
@@ -337,13 +368,13 @@ const Accounting = () => {
   }, [dateRange])
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <Calculator size={18} strokeWidth={2} />
+                <HIcon icon={CalculatorIcon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Accounting & Audit Tools</h1>
@@ -355,14 +386,14 @@ const Accounting = () => {
                 onClick={() => handleExportCSV('transactions')}
                 className="btn-secondary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export CSV
               </button>
               <button 
                 onClick={handleExportPDF}
                 className="btn-secondary flex items-center"
               >
-                <FileText size={18} className="mr-2" />
+                <HIcon icon={FileValidationIcon} size={18} className="mr-2"  />
                 Export PDF
               </button>
             </div>
@@ -383,7 +414,7 @@ const Accounting = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <TrendingUp size={18} className="inline mr-2" />
+            <HIcon icon={ArrowMoveUpRightIcon} size={18} className="inline mr-2"  />
             Overview
           </button>
           <button
@@ -394,7 +425,7 @@ const Accounting = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <DollarSign size={18} className="inline mr-2" />
+            <HIcon icon={DollarCircleIcon} size={18} className="inline mr-2"  />
             Income Statement
           </button>
           <button
@@ -405,7 +436,7 @@ const Accounting = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <FileText size={18} className="inline mr-2" />
+            <HIcon icon={FileValidationIcon} size={18} className="inline mr-2"  />
             Balance Sheet
           </button>
           <button
@@ -416,7 +447,7 @@ const Accounting = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Calculator size={18} className="inline mr-2" />
+            <HIcon icon={CalculatorIcon} size={18} className="inline mr-2"  />
             Tax Reports
           </button>
           <button
@@ -427,7 +458,7 @@ const Accounting = () => {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Shield size={18} className="inline mr-2" />
+            <HIcon icon={Shield01Icon} size={18} className="inline mr-2"  />
             Audit Trail
           </button>
         </div>
@@ -436,7 +467,7 @@ const Accounting = () => {
       {/* Date Range Filter */}
       <div className="mb-6 flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-gray-500" />
+          <HIcon icon={Calendar01Icon} size={18} className="text-gray-500"  />
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
@@ -480,12 +511,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">₵{financials.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <TrendingUp size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">{filteredTransactions.filter(t => t.type === 'sale').length} sales</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <DollarSign size={24} className="text-white" />
+                  <HIcon icon={DollarCircleIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -496,14 +527,14 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Gross Profit</p>
                   <p className="text-2xl font-bold text-green-700">₵{financials.grossProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Percent size={14} className="text-green-600 mr-1" />
+                    <HIcon icon={PercentIcon} size={14} className="text-green-600 mr-1"  />
                     <span className="text-xs text-gray-600">
                       Margin: {financials.totalRevenue > 0 ? ((financials.grossProfit / financials.totalRevenue) * 100).toFixed(1) : '0.0'}%
                     </span>
                   </div>
                 </div>
                 <div className="bg-green-600 p-3 rounded-lg">
-                  <TrendingUp size={24} className="text-white" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -514,12 +545,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Net Profit</p>
                   <p className="text-2xl font-bold text-primary-700">₵{financials.netProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <CheckCircle size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={CheckmarkCircle02Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">After expenses</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <DollarSign size={24} className="text-white" />
+                  <HIcon icon={DollarCircleIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -530,12 +561,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Tax</p>
                   <p className="text-2xl font-bold text-orange-700">₵{financials.totalTax.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Calculator size={14} className="text-orange-600 mr-1" />
+                    <HIcon icon={CalculatorIcon} size={14} className="text-orange-600 mr-1"  />
                     <span className="text-xs text-gray-600">VAT, NHIL, GETFund</span>
                   </div>
                 </div>
                 <div className="bg-orange-600 p-3 rounded-lg">
-                  <Shield size={24} className="text-white" />
+                  <HIcon icon={Shield01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -546,11 +577,11 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <TrendingUp size={24} className="mr-3 text-primary-600" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="mr-3 text-primary-600"  />
                   Financial Trend
                 </h2>
                 <p className="text-sm text-gray-600 mt-2 flex items-center">
-                  <Calendar size={16} className="mr-2" />
+                  <HIcon icon={Calendar01Icon} size={16} className="mr-2"  />
                   Period: {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} to {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
@@ -616,7 +647,7 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Activity size={24} className="mr-3 text-primary-600" />
+                  <HIcon icon={Activity01Icon} size={24} className="mr-3 text-primary-600"  />
                   Recent Transactions
                 </h2>
                 <p className="text-sm text-gray-600 mt-2">All transactions for the selected period</p>
@@ -625,7 +656,7 @@ const Accounting = () => {
                 onClick={() => handleExportCSV('transactions')}
                 className="btn-secondary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export
               </button>
             </div>
@@ -648,7 +679,7 @@ const Accounting = () => {
                     <tr key={transaction.id} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 text-sm text-gray-700">
                         <div className="flex items-center">
-                          <Calendar size={14} className="text-gray-400 mr-2" />
+                          <HIcon icon={Calendar01Icon} size={14} className="text-gray-400 mr-2"  />
                           {new Date(transaction.date).toLocaleDateString('en-GB')}
                         </div>
                       </td>
@@ -658,9 +689,9 @@ const Accounting = () => {
                           transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
                           'bg-primary-100 text-primary-800'
                         }`}>
-                          {transaction.type === 'sale' && <TrendingUp size={12} className="mr-1" />}
-                          {transaction.type === 'expense' && <TrendingDown size={12} className="mr-1" />}
-                          {transaction.type === 'purchase' && <Package size={12} className="mr-1" />}
+                          {transaction.type === 'sale' && <HIcon icon={ArrowMoveUpRightIcon} size={12} className="mr-1"  />}
+                          {transaction.type === 'expense' && <HIcon icon={ArrowMoveDownRightIcon} size={12} className="mr-1"  />}
+                          {transaction.type === 'purchase' && <HIcon icon={Package01Icon} size={12} className="mr-1"  />}
                           {transaction.type.toUpperCase()}
                         </span>
                       </td>
@@ -723,12 +754,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">₵{incomeStatement.revenue.totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <DollarSign size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={DollarCircleIcon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">Sales & Income</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <TrendingUp size={24} className="text-white" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -739,7 +770,7 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Gross Profit</p>
                   <p className="text-2xl font-bold text-gray-900">₵{incomeStatement.grossProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Percent size={14} className="text-green-600 mr-1" />
+                    <HIcon icon={PercentIcon} size={14} className="text-green-600 mr-1"  />
                     <span className="text-xs text-gray-600">
                       {incomeStatement.revenue.totalRevenue > 0 
                         ? `${((incomeStatement.grossProfit / incomeStatement.revenue.totalRevenue) * 100).toFixed(1)}% margin`
@@ -748,7 +779,7 @@ const Accounting = () => {
                   </div>
                 </div>
                 <div className="bg-green-600 p-3 rounded-lg">
-                  <ArrowUp size={24} className="text-white" />
+                  <HIcon icon={ArrowUp01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -759,12 +790,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Operating Profit</p>
                   <p className="text-2xl font-bold text-gray-900">₵{incomeStatement.operatingProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Building2 size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={Building01Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">Before taxes</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <TrendingUp size={24} className="text-white" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -775,12 +806,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Net Profit</p>
                   <p className="text-2xl font-bold text-emerald-700">₵{incomeStatement.netProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <CheckCircle size={14} className="text-emerald-600 mr-1" />
+                    <HIcon icon={CheckmarkCircle02Icon} size={14} className="text-emerald-600 mr-1"  />
                     <span className="text-xs text-gray-600">After all taxes</span>
                   </div>
                 </div>
                 <div className="bg-emerald-600 p-3 rounded-lg">
-                  <DollarSign size={24} className="text-white" />
+                  <HIcon icon={DollarCircleIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -791,11 +822,11 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-8 pb-4 border-b">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <FileText size={28} className="mr-3 text-primary-600" />
+                  <HIcon icon={FileValidationIcon} size={28} className="mr-3 text-primary-600"  />
                   Income Statement
                 </h2>
                 <p className="text-sm text-gray-600 mt-2 flex items-center">
-                  <Calendar size={16} className="mr-2" />
+                  <HIcon icon={Calendar01Icon} size={16} className="mr-2"  />
                   For the period: {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} to {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
@@ -803,7 +834,7 @@ const Accounting = () => {
                 onClick={() => handleExportCSV('tax')}
                 className="btn-primary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export Report
               </button>
             </div>
@@ -812,7 +843,7 @@ const Accounting = () => {
               {/* Revenue Section */}
               <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600">
                 <div className="flex items-center mb-4">
-                  <DollarSign size={20} className="text-primary-600 mr-2" />
+                  <HIcon icon={DollarCircleIcon} size={20} className="text-primary-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Revenue</h3>
                 </div>
                 <div className="space-y-3">
@@ -834,7 +865,7 @@ const Accounting = () => {
               {/* Cost of Goods Sold */}
               <div className="bg-gradient-to-r from-orange-50 to-transparent p-6 rounded-lg border-l-4 border-orange-600">
                 <div className="flex items-center mb-4">
-                  <Package size={20} className="text-orange-600 mr-2" />
+                  <HIcon icon={Package01Icon} size={20} className="text-orange-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Cost of Goods Sold</h3>
                 </div>
                 <div className="space-y-3">
@@ -860,7 +891,7 @@ const Accounting = () => {
               {/* Gross Profit */}
               <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-green-100 to-green-50 rounded-lg border-2 border-green-400 shadow-md">
                 <div className="flex items-center">
-                  <TrendingUp size={24} className="text-green-700 mr-3" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-green-700 mr-3"  />
                   <span className="font-bold text-xl text-gray-900">Gross Profit</span>
                 </div>
                 <span className="font-bold text-3xl text-green-700">₵{incomeStatement.grossProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -869,27 +900,27 @@ const Accounting = () => {
               {/* Operating Expenses */}
               <div className="bg-gradient-to-r from-red-50 to-transparent p-6 rounded-lg border-l-4 border-red-600">
                 <div className="flex items-center mb-4">
-                  <TrendingDown size={20} className="text-red-600 mr-2" />
+                  <HIcon icon={ArrowMoveDownRightIcon} size={20} className="text-red-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Operating Expenses</h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center">
-                      <Users size={16} className="text-gray-400 mr-2" />
+                      <HIcon icon={UserGroupIcon} size={16} className="text-gray-400 mr-2"  />
                       <span className="text-gray-700">Salaries</span>
                     </div>
                     <span className="font-semibold text-gray-900">₵{incomeStatement.operatingExpenses.salaries.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center">
-                      <Building2 size={16} className="text-gray-400 mr-2" />
+                      <HIcon icon={Building01Icon} size={16} className="text-gray-400 mr-2"  />
                       <span className="text-gray-700">Rent</span>
                     </div>
                     <span className="font-semibold text-gray-900">₵{incomeStatement.operatingExpenses.rent.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center">
-                      <Zap size={16} className="text-gray-400 mr-2" />
+                      <HIcon icon={FlashIcon} size={16} className="text-gray-400 mr-2"  />
                       <span className="text-gray-700">Utilities</span>
                     </div>
                     <span className="font-semibold text-gray-900">₵{incomeStatement.operatingExpenses.utilities.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -914,7 +945,7 @@ const Accounting = () => {
               {/* Taxes */}
               <div className="bg-gradient-to-r from-yellow-50 to-transparent p-6 rounded-lg border-l-4 border-yellow-600">
                 <div className="flex items-center mb-4">
-                  <Calculator size={20} className="text-yellow-600 mr-2" />
+                  <HIcon icon={CalculatorIcon} size={20} className="text-yellow-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Taxes & Levies</h3>
                 </div>
                 <div className="space-y-3">
@@ -940,7 +971,7 @@ const Accounting = () => {
               {/* Net Profit */}
               <div className="flex justify-between items-center py-6 px-8 bg-gradient-to-r from-emerald-200 to-emerald-100 rounded-lg border-4 border-emerald-400 shadow-lg">
                 <div className="flex items-center">
-                  <CheckCircle size={28} className="text-emerald-700 mr-3" />
+                  <HIcon icon={CheckmarkCircle02Icon} size={28} className="text-emerald-700 mr-3"  />
                   <span className="font-bold text-2xl text-gray-900">Net Profit After Tax</span>
                 </div>
                 <span className="font-bold text-4xl text-emerald-700">₵{incomeStatement.netProfit.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -961,12 +992,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Assets</p>
                   <p className="text-2xl font-bold text-gray-900">₵{balanceSheet.assets.totalAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Wallet size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={Wallet02Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">All assets</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <TrendingUp size={24} className="text-white" />
+                  <HIcon icon={ArrowMoveUpRightIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -977,12 +1008,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Liabilities</p>
                   <p className="text-2xl font-bold text-gray-900">₵{balanceSheet.liabilities.totalLiabilities.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <CreditCard size={14} className="text-red-600 mr-1" />
+                    <HIcon icon={CreditCardIcon} size={14} className="text-red-600 mr-1"  />
                     <span className="text-xs text-gray-600">All debts</span>
                   </div>
                 </div>
                 <div className="bg-red-600 p-3 rounded-lg">
-                  <TrendingDown size={24} className="text-white" />
+                  <HIcon icon={ArrowMoveDownRightIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -993,12 +1024,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Equity</p>
                   <p className="text-2xl font-bold text-gray-900">₵{balanceSheet.equity.totalEquity.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Landmark size={14} className="text-green-600 mr-1" />
+                    <HIcon icon={LandmarkIcon} size={14} className="text-green-600 mr-1"  />
                     <span className="text-xs text-gray-600">Owner's equity</span>
                   </div>
                 </div>
                 <div className="bg-green-600 p-3 rounded-lg">
-                  <DollarSign size={24} className="text-white" />
+                  <HIcon icon={DollarCircleIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1020,9 +1051,9 @@ const Accounting = () => {
                   </p>
                   <div className="flex items-center mt-2">
                     {Math.abs(balanceSheet.liabilities.totalLiabilities + balanceSheet.equity.totalEquity - balanceSheet.assets.totalAssets) < 0.01 ? (
-                      <CheckCircle size={14} className="text-emerald-600 mr-1" />
+                      <HIcon icon={CheckmarkCircle02Icon} size={14} className="text-emerald-600 mr-1"  />
                     ) : (
-                      <AlertCircle size={14} className="text-yellow-600 mr-1" />
+                      <HIcon icon={AlertCircleIcon} size={14} className="text-yellow-600 mr-1"  />
                     )}
                     <span className="text-xs text-gray-600">Assets = Liab + Equity</span>
                   </div>
@@ -1033,9 +1064,9 @@ const Accounting = () => {
                     : 'bg-yellow-600'
                 }`}>
                   {Math.abs(balanceSheet.liabilities.totalLiabilities + balanceSheet.equity.totalEquity - balanceSheet.assets.totalAssets) < 0.01 ? (
-                    <Scale size={24} className="text-white" />
+                    <HIcon icon={LandmarkIcon} size={24} className="text-white"  />
                   ) : (
-                    <AlertCircle size={24} className="text-white" />
+                    <HIcon icon={AlertCircleIcon} size={24} className="text-white"  />
                   )}
                 </div>
               </div>
@@ -1049,11 +1080,11 @@ const Accounting = () => {
               <div className="flex justify-between items-center mb-6 pb-4 border-b">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <Wallet size={24} className="mr-3 text-primary-600" />
+                    <HIcon icon={Wallet02Icon} size={24} className="mr-3 text-primary-600"  />
                     Assets
                   </h2>
                   <p className="text-sm text-gray-600 mt-2 flex items-center">
-                    <Calendar size={16} className="mr-2" />
+                    <HIcon icon={Calendar01Icon} size={16} className="mr-2"  />
                     As at: {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
@@ -1063,34 +1094,34 @@ const Accounting = () => {
                 {/* Current Assets */}
                 <div className="bg-gradient-to-r from-primary-50 to-transparent p-5 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center mb-4">
-                    <TrendingUp size={18} className="text-primary-600 mr-2" />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={18} className="text-primary-600 mr-2"  />
                     <h3 className="text-lg font-bold text-gray-900">Current Assets</h3>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <DollarSign size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={DollarCircleIcon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Cash</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.currentAssets.cash.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <Receipt size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={ReceiptTextIcon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Accounts Receivable</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.currentAssets.accountsReceivable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <Package size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={Package01Icon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Inventory</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.currentAssets.inventory.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <Calendar size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={Calendar01Icon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Prepaid Expenses</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.currentAssets.prepaidExpenses.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1105,27 +1136,27 @@ const Accounting = () => {
                 {/* Fixed Assets */}
                 <div className="bg-gradient-to-r from-primary-50 to-transparent p-5 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center mb-4">
-                    <Building2 size={18} className="text-primary-600 mr-2" />
+                    <HIcon icon={Building01Icon} size={18} className="text-primary-600 mr-2"  />
                     <h3 className="text-lg font-bold text-gray-900">Fixed Assets</h3>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <Zap size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={FlashIcon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Equipment</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.fixedAssets.equipment.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <Building2 size={16} className="text-gray-400 mr-2" />
+                        <HIcon icon={Building01Icon} size={16} className="text-gray-400 mr-2"  />
                         <span className="text-gray-700">Furniture</span>
                       </div>
                       <span className="font-semibold text-gray-900">₵{balanceSheet.assets.fixedAssets.furniture.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
-                        <TrendingDown size={16} className="text-red-400 mr-2" />
+                        <HIcon icon={ArrowMoveDownRightIcon} size={16} className="text-red-400 mr-2"  />
                         <span className="text-gray-700">Less: Accumulated Depreciation</span>
                       </div>
                       <span className="font-semibold text-red-600">(₵{Math.abs(balanceSheet.assets.fixedAssets.accumulatedDepreciation).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span>
@@ -1140,7 +1171,7 @@ const Accounting = () => {
                 {/* Total Assets */}
                 <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-primary-200 to-primary-100 rounded-lg border-4 border-primary-400 shadow-lg">
                   <div className="flex items-center">
-                    <Wallet size={28} className="text-primary-700 mr-3" />
+                    <HIcon icon={Wallet02Icon} size={28} className="text-primary-700 mr-3"  />
                     <span className="font-bold text-2xl text-gray-900">Total Assets</span>
                   </div>
                   <span className="font-bold text-3xl text-primary-700">₵{balanceSheet.assets.totalAssets.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1155,7 +1186,7 @@ const Accounting = () => {
                 <div className="flex justify-between items-center mb-6 pb-4 border-b">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                      <CreditCard size={24} className="mr-3 text-red-600" />
+                      <HIcon icon={CreditCardIcon} size={24} className="mr-3 text-red-600"  />
                       Liabilities
                     </h2>
                   </div>
@@ -1165,41 +1196,41 @@ const Accounting = () => {
                   {/* Current Liabilities */}
                   <div className="bg-gradient-to-r from-red-50 to-transparent p-5 rounded-lg border-l-4 border-red-600">
                     <div className="flex items-center mb-4">
-                      <TrendingDown size={18} className="text-red-600 mr-2" />
+                      <HIcon icon={ArrowMoveDownRightIcon} size={18} className="text-red-600 mr-2"  />
                       <h3 className="text-lg font-bold text-gray-900">Current Liabilities</h3>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <Receipt size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={ReceiptTextIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">Accounts Payable</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.currentLiabilities.accountsPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <Calculator size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={CalculatorIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">VAT Payable</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.currentLiabilities.vatPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <Calculator size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={CalculatorIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">NHIL Payable</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.currentLiabilities.nhilPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <Calculator size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={CalculatorIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">GETFund Payable</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.currentLiabilities.getfundPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <CreditCard size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={CreditCardIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">Short-term Debt</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.currentLiabilities.shortTermDebt.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1214,13 +1245,13 @@ const Accounting = () => {
                   {/* Long-term Liabilities */}
                   <div className="bg-gradient-to-r from-orange-50 to-transparent p-5 rounded-lg border-l-4 border-orange-600">
                     <div className="flex items-center mb-4">
-                      <Landmark size={18} className="text-orange-600 mr-2" />
+                      <HIcon icon={LandmarkIcon} size={18} className="text-orange-600 mr-2"  />
                       <h3 className="text-lg font-bold text-gray-900">Long-term Liabilities</h3>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center py-2.5 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <CreditCard size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={CreditCardIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">Long-term Debt</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.liabilities.longTermLiabilities.longTermDebt.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1235,7 +1266,7 @@ const Accounting = () => {
                   {/* Total Liabilities */}
                   <div className="flex justify-between items-center py-4 px-6 bg-gradient-to-r from-red-200 to-red-100 rounded-lg border-4 border-red-400 shadow-lg">
                     <div className="flex items-center">
-                      <CreditCard size={24} className="text-red-700 mr-3" />
+                      <HIcon icon={CreditCardIcon} size={24} className="text-red-700 mr-3"  />
                       <span className="font-bold text-xl text-gray-900">Total Liabilities</span>
                     </div>
                     <span className="font-bold text-2xl text-red-700">₵{balanceSheet.liabilities.totalLiabilities.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1248,7 +1279,7 @@ const Accounting = () => {
                 <div className="flex justify-between items-center mb-6 pb-4 border-b">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                      <Landmark size={24} className="mr-3 text-green-600" />
+                      <HIcon icon={LandmarkIcon} size={24} className="mr-3 text-green-600"  />
                       Equity
                     </h2>
                   </div>
@@ -1259,14 +1290,14 @@ const Accounting = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <DollarSign size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={DollarCircleIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700 font-medium">Capital</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.equity.capital.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center py-3 px-4 bg-white rounded-lg shadow-sm">
                         <div className="flex items-center">
-                          <TrendingUp size={16} className="text-gray-400 mr-2" />
+                          <HIcon icon={ArrowMoveUpRightIcon} size={16} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700 font-medium">Retained Earnings</span>
                         </div>
                         <span className="font-semibold text-gray-900">₵{balanceSheet.equity.retainedEarnings.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1289,9 +1320,9 @@ const Accounting = () => {
                 <div className="flex justify-between items-center py-5">
                   <div className="flex items-center">
                     {Math.abs(balanceSheet.liabilities.totalLiabilities + balanceSheet.equity.totalEquity - balanceSheet.assets.totalAssets) < 0.01 ? (
-                      <CheckCircle size={28} className="text-emerald-700 mr-3" />
+                      <HIcon icon={CheckmarkCircle02Icon} size={28} className="text-emerald-700 mr-3"  />
                     ) : (
-                      <AlertCircle size={28} className="text-yellow-700 mr-3" />
+                      <HIcon icon={AlertCircleIcon} size={28} className="text-yellow-700 mr-3"  />
                     )}
                     <span className="font-bold text-xl text-gray-900">Total Liabilities + Equity</span>
                   </div>
@@ -1305,12 +1336,12 @@ const Accounting = () => {
                 </div>
                 {Math.abs(balanceSheet.liabilities.totalLiabilities + balanceSheet.equity.totalEquity - balanceSheet.assets.totalAssets) < 0.01 ? (
                   <div className="flex items-center justify-center pt-2 pb-1">
-                    <Scale size={20} className="text-emerald-700 mr-2" />
+                    <HIcon icon={LandmarkIcon} size={20} className="text-emerald-700 mr-2"  />
                     <span className="text-sm font-semibold text-emerald-700">Balance Sheet is Balanced ✓</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center pt-2 pb-1">
-                    <AlertCircle size={20} className="text-yellow-700 mr-2" />
+                    <HIcon icon={AlertCircleIcon} size={20} className="text-yellow-700 mr-2"  />
                     <span className="text-sm font-semibold text-yellow-700">
                       Difference: ₵{Math.abs(balanceSheet.liabilities.totalLiabilities + balanceSheet.equity.totalEquity - balanceSheet.assets.totalAssets).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
@@ -1333,12 +1364,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">VAT Output</p>
                   <p className="text-2xl font-bold text-gray-900">₵{financials.totalVAT.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <TrendingUp size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">From sales</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <Receipt size={24} className="text-white" />
+                  <HIcon icon={ReceiptTextIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1351,12 +1382,12 @@ const Accounting = () => {
                     ₵{filteredTransactions.filter(t => t.type === 'purchase').reduce((sum, t) => sum + t.vat, 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   <div className="flex items-center mt-2">
-                    <TrendingDown size={14} className="text-cyan-600 mr-1" />
+                    <HIcon icon={ArrowMoveDownRightIcon} size={14} className="text-cyan-600 mr-1"  />
                     <span className="text-xs text-gray-600">From purchases</span>
                   </div>
                 </div>
                 <div className="bg-cyan-600 p-3 rounded-lg">
-                  <Package size={24} className="text-white" />
+                  <HIcon icon={Package01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1367,12 +1398,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">VAT Payable</p>
                   <p className="text-2xl font-bold text-orange-700">₵{financials.taxPayable.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Calculator size={14} className="text-orange-600 mr-1" />
+                    <HIcon icon={CalculatorIcon} size={14} className="text-orange-600 mr-1"  />
                     <span className="text-xs text-gray-600">Output - Input</span>
                   </div>
                 </div>
                 <div className="bg-orange-600 p-3 rounded-lg">
-                  <Calculator size={24} className="text-white" />
+                  <HIcon icon={CalculatorIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1383,12 +1414,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Tax Liability</p>
                   <p className="text-2xl font-bold text-red-700">₵{financials.totalTax.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className="flex items-center mt-2">
-                    <Shield size={14} className="text-red-600 mr-1" />
+                    <HIcon icon={Shield01Icon} size={14} className="text-red-600 mr-1"  />
                     <span className="text-xs text-gray-600">All taxes combined</span>
                   </div>
                 </div>
                 <div className="bg-red-600 p-3 rounded-lg">
-                  <Shield size={24} className="text-white" />
+                  <HIcon icon={Shield01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1399,11 +1430,11 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <Calculator size={28} className="mr-3 text-primary-600" />
+                  <HIcon icon={CalculatorIcon} size={28} className="mr-3 text-primary-600"  />
                   Ghanaian Tax Breakdown
                 </h2>
                 <p className="text-sm text-gray-600 mt-2 flex items-center">
-                  <Calendar size={16} className="mr-2" />
+                  <HIcon icon={Calendar01Icon} size={16} className="mr-2"  />
                   For the period: {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} to {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
@@ -1411,7 +1442,7 @@ const Accounting = () => {
                 onClick={() => handleExportCSV('tax')}
                 className="btn-primary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export Tax Report
               </button>
             </div>
@@ -1420,7 +1451,7 @@ const Accounting = () => {
               {/* VAT Section */}
               <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <Receipt size={20} className="text-primary-600 mr-2" />
+                  <HIcon icon={ReceiptTextIcon} size={20} className="text-primary-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Value Added Tax (VAT)</h3>
                 </div>
                 <div className="space-y-3">
@@ -1448,7 +1479,7 @@ const Accounting = () => {
               {/* NHIL Section */}
               <div className="bg-gradient-to-r from-green-50 to-transparent p-6 rounded-lg border-l-4 border-green-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <Shield size={20} className="text-green-600 mr-2" />
+                  <HIcon icon={Shield01Icon} size={20} className="text-green-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">National Health Insurance Levy (NHIL)</h3>
                 </div>
                 <div className="space-y-3">
@@ -1470,7 +1501,7 @@ const Accounting = () => {
               {/* GETFund Section */}
               <div className="bg-gradient-to-r from-primary-50 to-transparent p-6 rounded-lg border-l-4 border-primary-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <FileText size={20} className="text-primary-600 mr-2" />
+                  <HIcon icon={FileValidationIcon} size={20} className="text-primary-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">GETFund Levy</h3>
                 </div>
                 <div className="space-y-3">
@@ -1492,7 +1523,7 @@ const Accounting = () => {
               {/* Corporate Tax Section */}
               <div className="bg-gradient-to-r from-yellow-50 to-transparent p-6 rounded-lg border-l-4 border-yellow-600 shadow-md">
                 <div className="flex items-center mb-4">
-                  <Calculator size={20} className="text-yellow-600 mr-2" />
+                  <HIcon icon={CalculatorIcon} size={20} className="text-yellow-600 mr-2"  />
                   <h3 className="text-xl font-bold text-gray-900">Corporate Income Tax</h3>
                 </div>
                 <div className="space-y-3">
@@ -1517,7 +1548,7 @@ const Accounting = () => {
             {/* Total Tax Summary */}
             <div className="mt-6 flex justify-between items-center py-5 px-6 bg-gradient-to-r from-red-200 to-red-100 rounded-lg border-4 border-red-400 shadow-lg">
               <div className="flex items-center">
-                <Shield size={28} className="text-red-700 mr-3" />
+                <HIcon icon={Shield01Icon} size={28} className="text-red-700 mr-3"  />
                 <span className="font-bold text-2xl text-gray-900">Total Tax Liability to GRA</span>
               </div>
               <span className="font-bold text-4xl text-red-700">₵{financials.totalTax.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1529,7 +1560,7 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <FileText size={24} className="mr-3 text-primary-600" />
+                  <HIcon icon={FileValidationIcon} size={24} className="mr-3 text-primary-600"  />
                   Tax Transaction Details
                 </h2>
                 <p className="text-sm text-gray-600 mt-2">Detailed breakdown of all transactions with tax components</p>
@@ -1595,12 +1626,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Total Transactions</p>
                   <p className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</p>
                   <div className="flex items-center mt-2">
-                    <Activity size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={Activity01Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">All transactions</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <Database size={24} className="text-white" />
+                  <HIcon icon={DatabaseIcon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1613,12 +1644,12 @@ const Accounting = () => {
                     {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                   <div className="flex items-center mt-2">
-                    <Calendar size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={Calendar01Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">Date range</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <Clock size={24} className="text-white" />
+                  <HIcon icon={Clock01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1631,12 +1662,12 @@ const Accounting = () => {
                     100%
                   </p>
                   <div className="flex items-center mt-2">
-                    <CheckCircle size={14} className="text-emerald-600 mr-1" />
+                    <HIcon icon={CheckmarkCircle02Icon} size={14} className="text-emerald-600 mr-1"  />
                     <span className="text-xs text-gray-600">Verified</span>
                   </div>
                 </div>
                 <div className="bg-emerald-600 p-3 rounded-lg">
-                  <Shield size={24} className="text-white" />
+                  <HIcon icon={Shield01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1647,12 +1678,12 @@ const Accounting = () => {
                   <p className="text-sm text-gray-600 mb-1">Verified Users</p>
                   <p className="text-2xl font-bold text-gray-900">1</p>
                   <div className="flex items-center mt-2">
-                    <UserCheck size={14} className="text-primary-600 mr-1" />
+                    <HIcon icon={UserCheck01Icon} size={14} className="text-primary-600 mr-1"  />
                     <span className="text-xs text-gray-600">Active users</span>
                   </div>
                 </div>
                 <div className="bg-primary-600 p-3 rounded-lg">
-                  <UserCheck size={24} className="text-white" />
+                  <HIcon icon={UserCheck01Icon} size={24} className="text-white"  />
                 </div>
               </div>
             </div>
@@ -1663,11 +1694,11 @@ const Accounting = () => {
             <div className="flex justify-between items-center mb-6 pb-4 border-b">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <Shield size={28} className="mr-3 text-primary-600" />
+                  <HIcon icon={Shield01Icon} size={28} className="mr-3 text-primary-600"  />
                   Complete Audit Trail
                 </h2>
                 <p className="text-sm text-gray-600 mt-2 flex items-center">
-                  <Calendar size={16} className="mr-2" />
+                  <HIcon icon={Calendar01Icon} size={16} className="mr-2"  />
                   For the period: {getDateRange().start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} to {getDateRange().end.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               </div>
@@ -1675,7 +1706,7 @@ const Accounting = () => {
                 onClick={() => handleExportCSV('transactions')}
                 className="btn-primary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export Audit Log
               </button>
             </div>
@@ -1698,7 +1729,7 @@ const Accounting = () => {
                     <tr key={transaction.id} className="border-b hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 text-sm text-gray-700">
                         <div className="flex items-center">
-                          <Clock size={14} className="text-gray-400 mr-2" />
+                          <HIcon icon={Clock01Icon} size={14} className="text-gray-400 mr-2"  />
                           {new Date(transaction.date).toLocaleString('en-GB', { 
                             day: 'numeric', 
                             month: 'short', 
@@ -1715,16 +1746,16 @@ const Accounting = () => {
                           transaction.type === 'expense' ? 'bg-red-100 text-red-800' :
                           'bg-primary-100 text-primary-800'
                         }`}>
-                          {transaction.type === 'sale' && <TrendingUp size={12} className="mr-1" />}
-                          {transaction.type === 'expense' && <TrendingDown size={12} className="mr-1" />}
-                          {transaction.type === 'purchase' && <Package size={12} className="mr-1" />}
+                          {transaction.type === 'sale' && <HIcon icon={ArrowMoveUpRightIcon} size={12} className="mr-1"  />}
+                          {transaction.type === 'expense' && <HIcon icon={ArrowMoveDownRightIcon} size={12} className="mr-1"  />}
+                          {transaction.type === 'purchase' && <HIcon icon={Package01Icon} size={12} className="mr-1"  />}
                           {transaction.type.toUpperCase()}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-gray-700">{transaction.description}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center">
-                          <UserCheck size={14} className="text-gray-400 mr-2" />
+                          <HIcon icon={UserCheck01Icon} size={14} className="text-gray-400 mr-2"  />
                           <span className="text-gray-700">System User</span>
                         </div>
                       </td>
@@ -1740,7 +1771,7 @@ const Accounting = () => {
                       <td className="py-3 px-4 text-gray-700">{transaction.account}</td>
                       <td className="py-3 px-4 text-center">
                         <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center justify-center w-fit mx-auto">
-                          <CheckCircle size={12} className="mr-1" />
+                          <HIcon icon={CheckmarkCircle02Icon} size={12} className="mr-1"  />
                           Verified
                         </span>
                       </td>
@@ -1756,27 +1787,27 @@ const Accounting = () => {
             {/* Transaction Types */}
             <div className="card">
               <div className="flex items-center mb-6 pb-4 border-b">
-                <Activity size={20} className="text-primary-600 mr-2" />
+                <HIcon icon={Activity01Icon} size={20} className="text-primary-600 mr-2"  />
                 <h2 className="text-2xl font-bold text-gray-900">Transaction Types</h2>
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 px-4 bg-green-50 rounded-lg border-l-4 border-green-600">
                   <div className="flex items-center">
-                    <TrendingUp size={18} className="text-green-600 mr-2" />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={18} className="text-green-600 mr-2"  />
                     <span className="text-gray-700 font-medium">Sales Transactions</span>
                   </div>
                   <span className="font-bold text-lg text-green-700">{filteredTransactions.filter(t => t.type === 'sale').length}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 px-4 bg-primary-50 rounded-lg border-l-4 border-primary-600">
                   <div className="flex items-center">
-                    <Package size={18} className="text-primary-600 mr-2" />
+                    <HIcon icon={Package01Icon} size={18} className="text-primary-600 mr-2"  />
                     <span className="text-gray-700 font-medium">Purchase Transactions</span>
                   </div>
                   <span className="font-bold text-lg text-primary-700">{filteredTransactions.filter(t => t.type === 'purchase').length}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 px-4 bg-red-50 rounded-lg border-l-4 border-red-600">
                   <div className="flex items-center">
-                    <TrendingDown size={18} className="text-red-600 mr-2" />
+                    <HIcon icon={ArrowMoveDownRightIcon} size={18} className="text-red-600 mr-2"  />
                     <span className="text-gray-700 font-medium">Expense Transactions</span>
                   </div>
                   <span className="font-bold text-lg text-red-700">{filteredTransactions.filter(t => t.type === 'expense').length}</span>
@@ -1787,13 +1818,13 @@ const Accounting = () => {
             {/* Financial Totals */}
             <div className="card">
               <div className="flex items-center mb-6 pb-4 border-b">
-                <DollarSign size={20} className="text-primary-600 mr-2" />
+                <HIcon icon={DollarCircleIcon} size={20} className="text-primary-600 mr-2"  />
                 <h2 className="text-2xl font-bold text-gray-900">Financial Totals</h2>
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 px-4 bg-red-50 rounded-lg border-l-4 border-red-600">
                   <div className="flex items-center">
-                    <TrendingDown size={18} className="text-red-600 mr-2" />
+                    <HIcon icon={ArrowMoveDownRightIcon} size={18} className="text-red-600 mr-2"  />
                     <span className="text-gray-700 font-medium">Total Debits</span>
                   </div>
                   <span className="font-bold text-lg text-red-700">
@@ -1802,7 +1833,7 @@ const Accounting = () => {
                 </div>
                 <div className="flex justify-between items-center py-3 px-4 bg-green-50 rounded-lg border-l-4 border-green-600">
                   <div className="flex items-center">
-                    <TrendingUp size={18} className="text-green-600 mr-2" />
+                    <HIcon icon={ArrowMoveUpRightIcon} size={18} className="text-green-600 mr-2"  />
                     <span className="text-gray-700 font-medium">Total Credits</span>
                   </div>
                   <span className="font-bold text-lg text-green-700">

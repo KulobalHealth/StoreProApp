@@ -1,5 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Users, Plus, Edit, Trash2, Phone, Mail, MapPin, X, Eye, Search, DollarSign, AlertTriangle, TrendingUp, ShoppingBag, Calendar, User, Filter, RefreshCw, CreditCard, Hash } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  Alert02Icon,
+  ArrowMoveUpRightIcon,
+  Calendar01Icon,
+  CallIcon,
+  Cancel01Icon,
+  CreditCardIcon,
+  Delete01Icon,
+  DollarCircleIcon,
+  FilterIcon,
+  HashtagIcon,
+  Mail01Icon,
+  MapPinIcon,
+  PencilEdit01Icon,
+  RefreshIcon,
+  Search01Icon,
+  ShoppingBag01Icon,
+  UserGroupIcon,
+  UserIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
 import { listCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer as apiDeleteCustomer } from '../api/awoselDb.js'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch'
@@ -180,37 +202,38 @@ const Customers = () => {
   const customersOwing = list.filter(c => Number(c.owing_amount) > 0).length
 
   return (
-    <div className="min-h-screen bg-gray-50/80">
+    <div className="app-page">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/25">
-                <Users size={20} strokeWidth={2.2} />
+      <div className="app-page-header">
+        <div className="app-page-header-inner">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="app-page-title-wrap">
+              <div className="app-page-icon">
+                <HIcon icon={UserGroupIcon} size={20} strokeWidth={2.2}  />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">Customers</h1>
-                <p className="text-gray-500 text-xs mt-0.5">Manage your customer database & track balances</p>
+                <p className="app-page-kicker">CRM</p>
+                <h1 className="app-page-title">Customers</h1>
+                <p className="app-page-subtitle">Manage your customer database and track balances</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="app-page-actions">
               <Tooltip text="Reload customer list">
                 <button
                   type="button"
                   onClick={fetchCustomers}
-                  className="p-2.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                  className="app-btn-secondary px-3"
                 >
-                  <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                  <HIcon icon={RefreshIcon} size={16} className={loading ? 'animate-spin' : ''}  />
                 </button>
               </Tooltip>
               <Tooltip text="Add a new customer to your database">
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-md shadow-primary-500/25 active:scale-[0.98]"
+                  className="app-btn-primary px-5"
                 >
-                  <Plus size={16} strokeWidth={2.5} />
+                  <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
                   Add Customer
                 </button>
               </Tooltip>
@@ -219,109 +242,109 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="app-page-content space-y-5">
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div className="app-stat-grid gap-3 sm:gap-4">
+          <div className="app-stat-card hover:shadow-panel transition-shadow">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                <Users size={18} className="text-blue-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary-50">
+                <HIcon icon={UserGroupIcon} size={18} className="text-primary-500"  />
               </div>
-              <span className="text-[10px] font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Total</span>
+              <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-600">Total</span>
             </div>
-            <p className="text-2xl font-extrabold text-gray-900">{list.length}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Customers</p>
+            <p className="app-stat-value mt-0">{list.length}</p>
+            <p className="app-stat-meta">Customers</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="app-stat-card hover:shadow-panel transition-shadow">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <TrendingUp size={18} className="text-emerald-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-success-50">
+                <HIcon icon={ArrowMoveUpRightIcon} size={18} className="text-success-600"  />
               </div>
-              <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Revenue</span>
+              <span className="rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700">Revenue</span>
             </div>
-            <p className="text-2xl font-extrabold text-gray-900">₵{formatMoney(totalSales)}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Total Sales</p>
+            <p className="app-stat-value mt-0">₵{formatMoney(totalSales)}</p>
+            <p className="app-stat-meta">Total Sales</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="app-stat-card hover:shadow-panel transition-shadow">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
-                <CreditCard size={18} className="text-amber-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-warning-50">
+                <HIcon icon={CreditCardIcon} size={18} className="text-warning-600"  />
               </div>
-              <span className="text-[10px] font-semibold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wider">Credit</span>
+              <span className="rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-warning-700">Credit</span>
             </div>
-            <p className="text-2xl font-extrabold text-gray-900">₵{formatMoney(totalOwing)}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Total Owing</p>
+            <p className="app-stat-value mt-0">₵{formatMoney(totalOwing)}</p>
+            <p className="app-stat-meta">Total Owing</p>
           </div>
 
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl p-4 shadow-md shadow-primary-500/20">
+          <div className="app-stat-card-accent relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-6 translate-x-6" />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
-                <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
-                  <AlertTriangle size={18} className="text-white" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-control bg-white/20">
+                  <HIcon icon={Alert02Icon} size={18} className="text-white"  />
                 </div>
                 <span className="text-[10px] font-semibold text-white/90 bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Alert</span>
               </div>
-              <p className="text-2xl font-extrabold text-white">{customersOwing}</p>
-              <p className="text-xs text-white/80 mt-0.5">Owing Customers</p>
+              <p className="app-stat-value mt-0 text-white">{customersOwing}</p>
+              <p className="app-stat-meta text-white/80">Owing Customers</p>
             </div>
           </div>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="app-filter-bar flex flex-col items-stretch gap-3 p-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
             <input
               type="text"
               placeholder="Search by name, phone, email or address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 focus:bg-white text-gray-900 placeholder-gray-400 text-sm transition-colors"
+              className="app-input-muted pl-9 pr-9"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <X size={14} />
+                <HIcon icon={Cancel01Icon} size={14}  />
               </button>
             )}
           </div>
           <button
             type="button"
             onClick={() => setFilterOwing(!filterOwing)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all border shrink-0 ${
+            className={`inline-flex items-center gap-2 rounded-control border px-4 py-2.5 text-sm font-medium transition-all shrink-0 ${
               filterOwing
-                ? 'bg-red-50 border-red-200 text-red-700 shadow-sm'
+                ? 'bg-danger-50 border-danger-100 text-danger-700 shadow-sm'
                 : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
             }`}
           >
-            <Filter size={14} />
+            <HIcon icon={FilterIcon} size={14}  />
             Owing Only
             {filterOwing && customersOwing > 0 && (
-              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{customersOwing}</span>
+              <span className="min-w-[18px] rounded-full bg-danger-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">{customersOwing}</span>
             )}
           </button>
         </div>
 
         {/* Error */}
         {error && !showForm && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-              <AlertTriangle size={16} className="text-red-500" />
+          <div className="flex items-center gap-3 rounded-panel border border-danger-100 bg-danger-50 px-4 py-3 text-sm">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-danger-100">
+              <HIcon icon={Alert02Icon} size={16} className="text-red-500"  />
             </div>
             <p className="text-red-700 flex-1">{error}</p>
             <button onClick={() => setError('')} className="text-red-400 hover:text-red-600 shrink-0">
-              <X size={14} />
+              <HIcon icon={Cancel01Icon} size={14}  />
             </button>
           </div>
         )}
 
         {/* Customer Table */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="app-table-shell">
           {loading ? (
             <div className="py-20 text-center">
               <div className="flex flex-col items-center gap-3">
@@ -334,14 +357,14 @@ const Customers = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80">Customer</th>
-                      <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80">Contact</th>
-                      <th className="text-left py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80 hidden md:table-cell">Address</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80 hidden sm:table-cell">Sales</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80">Spent</th>
-                      <th className="text-right py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80">Owing</th>
-                      <th className="text-center py-3 px-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/80 w-28">Actions</th>
+                    <tr className="app-table-head border-b border-gray-100">
+                      <th className="app-table-head-cell">Customer</th>
+                      <th className="app-table-head-cell">Contact</th>
+                      <th className="app-table-head-cell hidden md:table-cell">Address</th>
+                      <th className="app-table-head-cell hidden text-right sm:table-cell">Sales</th>
+                      <th className="app-table-head-cell text-right">Spent</th>
+                      <th className="app-table-head-cell text-right">Owing</th>
+                      <th className="app-table-head-cell w-28 text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -350,7 +373,7 @@ const Customers = () => {
                       return (
                         <tr
                           key={c.uuid || c.id || idx}
-                          className="border-b border-gray-50 hover:bg-primary-50/30 transition-colors group cursor-pointer"
+                          className="app-table-row group cursor-pointer border-b border-gray-50"
                           onClick={() => handleViewDetails(c)}
                         >
                           <td className="py-3 px-4">
@@ -368,13 +391,13 @@ const Customers = () => {
                             <div className="space-y-1">
                               {c.phone && (
                                 <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                  <Phone size={12} className="text-gray-400 shrink-0" />
+                                  <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                   <span className="truncate">{c.phone}</span>
                                 </div>
                               )}
                               {c.email && (
                                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                  <Mail size={11} className="text-gray-400 shrink-0" />
+                                  <HIcon icon={Mail01Icon} size={11} className="text-gray-400 shrink-0"  />
                                   <span className="truncate max-w-[160px]">{c.email}</span>
                                 </div>
                               )}
@@ -386,7 +409,7 @@ const Customers = () => {
                           <td className="py-3 px-4 hidden md:table-cell">
                             {c.address ? (
                               <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                <MapPin size={12} className="text-gray-400 shrink-0" />
+                                <HIcon icon={MapPinIcon} size={12} className="text-gray-400 shrink-0"  />
                                 <span className="truncate max-w-[180px]">{c.address}</span>
                               </div>
                             ) : (
@@ -395,7 +418,7 @@ const Customers = () => {
                           </td>
                           <td className="py-3 px-4 text-right hidden sm:table-cell">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md text-xs font-semibold text-gray-700">
-                              <Hash size={10} />
+                              <HIcon icon={HashtagIcon} size={10}  />
                               {c.sales_count ?? 0}
                             </span>
                           </td>
@@ -419,7 +442,7 @@ const Customers = () => {
                                   onClick={() => handleViewDetails(c)}
                                   className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                                 >
-                                  <Eye size={15} />
+                                  <HIcon icon={ViewIcon} size={15}  />
                                 </button>
                               </Tooltip>
                               <Tooltip text="Edit customer information">
@@ -428,7 +451,7 @@ const Customers = () => {
                                   onClick={() => openEdit(c)}
                                   className="p-2 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
                                 >
-                                  <Edit size={15} />
+                                  <HIcon icon={PencilEdit01Icon} size={15}  />
                                 </button>
                               </Tooltip>
                               <Tooltip text="Delete this customer">
@@ -437,7 +460,7 @@ const Customers = () => {
                                   onClick={() => handleDelete(c.uuid || c.id)}
                                   className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                                 >
-                                  <Trash2 size={15} />
+                                  <HIcon icon={Delete01Icon} size={15}  />
                                 </button>
                               </Tooltip>
                             </div>
@@ -469,7 +492,7 @@ const Customers = () => {
             <div className="py-20 text-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-1">
-                  <Users size={28} className="text-gray-400" />
+                  <HIcon icon={UserGroupIcon} size={28} className="text-gray-400"  />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-700">
@@ -484,7 +507,7 @@ const Customers = () => {
                     onClick={openAdd}
                     className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-md shadow-primary-500/25"
                   >
-                    <Plus size={16} />
+                    <HIcon icon={Add01Icon} size={16}  />
                     Add Customer
                   </button>
                 ) : (
@@ -512,7 +535,7 @@ const Customers = () => {
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-blue-50' : 'bg-primary-50'}`}>
-                  {editingId ? <Edit size={18} className="text-blue-500" /> : <Plus size={18} className="text-primary-500" />}
+                  {editingId ? <HIcon icon={PencilEdit01Icon} size={18} className="text-blue-500"  /> : <HIcon icon={Add01Icon} size={18} className="text-primary-500"  />}
                 </div>
                 <div>
                   <h2 className="font-bold text-gray-900 text-lg">{editingId ? 'Edit Customer' : 'New Customer'}</h2>
@@ -524,7 +547,7 @@ const Customers = () => {
                 onClick={() => { setShowForm(false); setError('') }}
                 className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <X size={18} />
+                <HIcon icon={Cancel01Icon} size={18}  />
               </button>
             </div>
 
@@ -532,7 +555,7 @@ const Customers = () => {
             <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-5">
               {error && (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm flex items-center gap-3">
-                  <AlertTriangle size={16} className="shrink-0" />
+                  <HIcon icon={Alert02Icon} size={16} className="shrink-0"  />
                   <span className="flex-1">{error}</span>
                 </div>
               )}
@@ -542,7 +565,7 @@ const Customers = () => {
                   Customer Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={UserIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
                   <input
                     type="text"
                     value={form.name}
@@ -559,7 +582,7 @@ const Customers = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <HIcon icon={CallIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
                     <input
                       type="text"
                       value={form.phone}
@@ -572,7 +595,7 @@ const Customers = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <HIcon icon={Mail01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
                     <input
                       type="email"
                       value={form.email}
@@ -587,7 +610,7 @@ const Customers = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={MapPinIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
                   <input
                     type="text"
                     value={form.address}
@@ -601,7 +624,7 @@ const Customers = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Owing Amount (₵)</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <HIcon icon={DollarCircleIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
                   <input
                     type="number"
                     step="0.01"
@@ -665,12 +688,12 @@ const Customers = () => {
                           <div className="flex items-center gap-3 mt-1">
                             {c.phone && (
                               <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <Phone size={11} /> {c.phone}
+                                <HIcon icon={CallIcon} size={11}  /> {c.phone}
                               </span>
                             )}
                             {c.email && (
                               <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <Mail size={11} /> {c.email}
+                                <HIcon icon={Mail01Icon} size={11}  /> {c.email}
                               </span>
                             )}
                           </div>
@@ -681,7 +704,7 @@ const Customers = () => {
                         onClick={() => setShowDetail(null)}
                         className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <X size={18} />
+                        <HIcon icon={Cancel01Icon} size={18}  />
                       </button>
                     </div>
                   </div>
@@ -710,7 +733,7 @@ const Customers = () => {
                       <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                            <MapPin size={14} className="text-gray-400" />
+                            <HIcon icon={MapPinIcon} size={14} className="text-gray-400"  />
                           </div>
                           <div>
                             <p className="text-[11px] text-gray-400 font-medium uppercase">Address</p>
@@ -720,7 +743,7 @@ const Customers = () => {
                         {c.created_at && (
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                              <Calendar size={14} className="text-gray-400" />
+                              <HIcon icon={Calendar01Icon} size={14} className="text-gray-400"  />
                             </div>
                             <div>
                               <p className="text-[11px] text-gray-400 font-medium uppercase">Customer Since</p>
@@ -760,7 +783,7 @@ const Customers = () => {
                       ) : (
                         <div className="text-center py-10 bg-gray-50 rounded-xl">
                           <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                            <ShoppingBag size={20} className="text-gray-400" />
+                            <HIcon icon={ShoppingBag01Icon} size={20} className="text-gray-400"  />
                           </div>
                           <p className="text-sm font-medium text-gray-500">No purchases yet</p>
                           <p className="text-xs text-gray-400 mt-1">Sales will appear here once this customer makes a purchase</p>
@@ -786,7 +809,7 @@ const Customers = () => {
                       }}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white text-sm font-semibold hover:from-primary-600 hover:to-primary-700 transition-all shadow-md shadow-primary-500/25 active:scale-[0.98]"
                     >
-                      <Edit size={15} />
+                      <HIcon icon={PencilEdit01Icon} size={15}  />
                       Edit Customer
                     </button>
                   </div>

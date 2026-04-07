@@ -74,6 +74,10 @@ export async function login(body) {
   return fetchApi('POST', '/auth/login', body)
 }
 
+export async function getProfile() {
+  return fetchApi('GET', '/auth/profile')
+}
+
 // ---- Branches ----
 export async function listBranches() {
   return fetchApi('GET', '/branches')
@@ -239,6 +243,8 @@ export async function listSales(query = {}) {
     params.set('branch_id', query.branch_id)
   }
   if (query.date) params.set('date', query.date)
+  if (query.year) params.set('year', query.year)
+  if (query.month) params.set('month', query.month)
   if (query.user_id) params.set('user_id', query.user_id)
   if (query.cashier_id) params.set('cashier_id', query.cashier_id)
   if (query.start_date) params.set('start_date', query.start_date)

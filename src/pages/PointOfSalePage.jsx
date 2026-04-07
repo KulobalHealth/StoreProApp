@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
+import MarketingHeader from '../components/MarketingHeader'
 import MarketingFooter from '../components/MarketingFooter'
-import logo from '../MainLogo.jpeg'
 import posImage from '../mobile-mockups/pos.png'
 
 const fadeUp = {
@@ -70,24 +70,7 @@ const workflowSteps = [
 const PointOfSalePage = () => {
   return (
     <div className="psp-page">
-      <motion.nav
-        className="psp-nav"
-        initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        <Link to="/" className="psp-logo">
-          <img src={logo} alt="MicroBiz" className="psp-logo-img" />
-        </Link>
-        <ul className="psp-nav-links">
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#how">How It Works</a></li>
-          <li><a href="/#pricing">Pricing</a></li>
-          <li><a href="/#testimonials">Reviews</a></li>
-          <li><Link to="/login" className="psp-nav-signin">Sign In</Link></li>
-          <li><Link to="/register" className="psp-nav-cta">Get Started →</Link></li>
-        </ul>
-      </motion.nav>
+      <MarketingHeader />
 
       <section className="psp-hero">
         <div className="psp-shell">

@@ -1,6 +1,38 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { X, ArrowLeft, ChevronDown, User, Search, Edit, RotateCcw, DollarSign, Plus, Minus, Trash2, Check, Printer, Mail, Save, Download, Clock, RotateCw, CheckCircle, ShoppingBag, Percent, Receipt as ReceiptIcon, CreditCard, Settings, FileText, AlertCircle, Loader2, AlertTriangle, Info, XCircle } from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  Alert02Icon,
+  AlertCircleIcon,
+  ArrowDown01Icon,
+  ArrowLeft01Icon,
+  Cancel01Icon,
+  Cancel02Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  CreditCardIcon,
+  Delete01Icon,
+  DollarCircleIcon,
+  Download01Icon,
+  FileValidationIcon,
+  InformationCircleIcon,
+  Loading03Icon,
+  Mail01Icon,
+  MinusSignIcon,
+  PencilEdit01Icon,
+  PercentIcon,
+  PrinterIcon,
+  ReceiptTextIcon,
+  RotateClockwiseIcon,
+  RotateLeft01Icon,
+  SaveIcon,
+  Search01Icon,
+  Settings02Icon,
+  ShoppingBag01Icon,
+  Tick01Icon,
+  UserIcon,
+} from '@hugeicons/core-free-icons'
 import Tooltip from '../components/Tooltip'
 import Receipt from '../components/Receipt'
 import { printReceiptDirect } from '../utils/printReceipt'
@@ -89,9 +121,9 @@ const POS = () => {
   const [showReceiptModal, setShowReceiptModal] = useState(false)
   const [heldSales, setHeldSales] = useState([])
   const [showHeldSalesModal, setShowHeldSalesModal] = useState(false)
+  const [savingState, setSavingState] = useState(null) // null | 'save' | 'print' | 'email'
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successTransaction, setSuccessTransaction] = useState(null)
-  const [savingState, setSavingState] = useState(null) // null | 'save' | 'print' | 'email'
   const [showIWantToMenu, setShowIWantToMenu] = useState(false)
   const [productsFromApi, setProductsFromApi] = useState([])
   const [allProducts, setAllProducts] = useState([]) // full product list cached in memory
@@ -754,13 +786,12 @@ const POS = () => {
       }
 
       // Show success modal
-      setSuccessTransaction({
+      const successData = {
         ...transaction,
         action: email ? 'saved and emailed' : 'saved'
-      })
-      setShowSuccessModal(true)
-
-      // Reset after save (if not printing)
+      }
+      
+      // Reset cart
       setItems([])
       setSelectedItem(null)
       setAmountPaid(0)
@@ -771,6 +802,9 @@ const POS = () => {
       setCustomer(null)
       setCustomerSearch('')
       setReceiptNumber(`RCP-${Date.now()}`)
+
+      setSuccessTransaction(successData)
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error saving transaction:', error)
       showAlert('error', `Failed to save transaction: ${error.message || 'Unknown error'}. Please try again.`, 'Save Failed')
@@ -823,10 +857,8 @@ const POS = () => {
       // Close receipt modal and show success modal
       setTimeout(() => {
         setShowReceiptModal(false)
-        setSuccessTransaction(txSnapshot)
-        setShowSuccessModal(true)
         
-        // Reset after printing
+        // Reset cart
         setItems([])
         setSelectedItem(null)
         setAmountPaid(0)
@@ -837,6 +869,9 @@ const POS = () => {
         setCustomer(null)
         setCustomerSearch('')
         setReceiptNumber(`RCP-${Date.now()}`)
+
+        setSuccessTransaction(txSnapshot)
+        setShowSuccessModal(true)
       }, 500)
     } catch (error) {
       console.error('Error printing receipt:', error)
@@ -1119,15 +1154,45 @@ const POS = () => {
     change
   }
 
+  const totalLineItems = items.length
+  const totalUnits = items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
+  const customerDisplayName = customer?.name || 'Walk-in customer'
+  const activeBranch = React.useMemo(() => {
+    try {
+      return getActiveBranch() || null
+    } catch {
+      return null
+    }
+  }, [getActiveBranch])
+  const branchDisplayName = activeBranch?.name || storeInfo.branch || 'Main Branch'
+  const branchLocation = activeBranch?.location || storeInfo.address || 'Accra'
+  const paymentOptions = [
+    { value: 'Cash', label: 'Cash', hint: 'Standard till payment' },
+    { value: 'Mobile Money', label: 'Momo', hint: 'Digital wallet transfer' },
+    { value: 'Cheque', label: 'Cheque', hint: 'Bank cheque settlement' },
+  ]
+  const paymentStateClass = amountDue > 0.01
+    ? 'border-danger-100 bg-danger-50 text-danger-700'
+    : change > 0
+      ? 'border-success-100 bg-success-50 text-success-700'
+      : 'border-gray-200 bg-gray-50 text-gray-500'
+  const mobileMoneyProviders = ['MTN', 'Vodafone', 'AirtelTigo']
+  const formatQuantity = (value) => {
+    const normalized = Number(value) || 0
+    return Number.isInteger(normalized) ? String(normalized) : normalized.toFixed(2)
+  }
+
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 z-10 overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-gradient-to-br from-surface-page via-white to-primary-50/35">
       {/* Full-page saving overlay */}
       {savingState && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-[3px] p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <Loader2 size={48} className="animate-spin text-green-600" />
-            <p className="text-lg font-semibold text-gray-800">
-              {savingState === 'print' ? 'Saving & Printing...' : savingState === 'email' ? 'Saving & Emailing...' : 'Saving Transaction...'}
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="app-surface flex flex-col items-center gap-3 p-8 shadow-panel">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-50">
+              <HIcon icon={Loading03Icon} size={28} className="animate-spin text-primary-600"  />
+            </div>
+            <p className="text-base font-bold text-gray-900">
+              {savingState === 'print' ? 'Saving & Printing…' : savingState === 'email' ? 'Saving & Emailing…' : 'Saving Transaction…'}
             </p>
             <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
           </div>
@@ -1139,15 +1204,15 @@ const POS = () => {
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9998] flex flex-col gap-3 w-full max-w-md px-4">
           {alertQueue.map((alert) => {
             const config = {
-              error:   { bg: 'bg-red-50 border-red-300',    text: 'text-red-800',    icon: <XCircle size={20} className="text-red-500 shrink-0" /> },
-              warning: { bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800',  icon: <AlertTriangle size={20} className="text-amber-500 shrink-0" /> },
-              success: { bg: 'bg-green-50 border-green-300', text: 'text-green-800',  icon: <CheckCircle size={20} className="text-green-500 shrink-0" /> },
-              info:    { bg: 'bg-primary-50 border-primary-300',   text: 'text-primary-800',   icon: <Info size={20} className="text-primary-500 shrink-0" /> },
-            }[alert.type] || { bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800', icon: <Info size={20} className="text-gray-500 shrink-0" /> }
+              error:   { bg: 'bg-red-50 border-red-300',    text: 'text-red-800',    icon: <HIcon icon={Cancel02Icon} size={20} className="text-red-500 shrink-0"  /> },
+              warning: { bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800',  icon: <HIcon icon={Alert02Icon} size={20} className="text-amber-500 shrink-0"  /> },
+              success: { bg: 'bg-green-50 border-green-300', text: 'text-green-800',  icon: <HIcon icon={CheckmarkCircle02Icon} size={20} className="text-green-500 shrink-0"  /> },
+              info:    { bg: 'bg-primary-50 border-primary-300',   text: 'text-primary-800',   icon: <HIcon icon={InformationCircleIcon} size={20} className="text-primary-500 shrink-0"  /> },
+            }[alert.type] || { bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800', icon: <HIcon icon={InformationCircleIcon} size={20} className="text-gray-500 shrink-0"  /> }
             return (
               <div
                 key={alert.id}
-                className={`flex items-start gap-3 px-4 py-3 rounded-[3px] border shadow-lg animate-[slideDown_0.3s_ease-out] ${config.bg}`}
+                className={`flex items-start gap-3 rounded-control border px-4 py-3 shadow-panel animate-[slideDown_0.3s_ease-out] ${config.bg}`}
               >
                 {config.icon}
                 <div className="flex-1 min-w-0">
@@ -1155,7 +1220,7 @@ const POS = () => {
                   <p className={`text-sm ${config.text} ${alert.title ? 'mt-0.5' : ''}`}>{alert.message}</p>
                 </div>
                 <button onClick={() => dismissAlert(alert.id)} className={`${config.text} hover:opacity-70 shrink-0 mt-0.5`}>
-                  <X size={16} />
+                  <HIcon icon={Cancel01Icon} size={16}  />
                 </button>
               </div>
             )
@@ -1166,34 +1231,29 @@ const POS = () => {
       {/* Remove Item Confirmation Modal */}
       {removeConfirm && (
         <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-[3px] shadow-2xl max-w-sm w-full mx-4 overflow-hidden animate-[slideDown_0.25s_ease-out]">
-            <div className="bg-red-50 px-6 py-4 flex items-center gap-3 border-b border-red-100">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 size={20} className="text-red-600" />
+          <div className="app-surface mx-4 w-full max-w-sm overflow-hidden shadow-panel animate-[slideDown_0.25s_ease-out]">
+            <div className="flex items-center gap-3 border-b border-danger-100 bg-danger-50 px-5 py-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-danger-100">
+                <HIcon icon={Delete01Icon} size={18} className="text-danger-600"  />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Remove Item</h3>
+              <h3 className="text-base font-bold text-gray-900">Remove Item</h3>
             </div>
-            <div className="px-6 py-5">
-              <p className="text-gray-700">
-                Are you sure you want to remove <span className="font-semibold text-gray-900">"{removeConfirm.name}"</span> from the cart?
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-600">
+                Remove <span className="font-semibold text-gray-900">"{removeConfirm.name}"</span> from cart?
               </p>
             </div>
-            <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3 border-t">
-              <button
-                onClick={() => setRemoveConfirm(null)}
-                className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[3px] hover:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
+            <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-5 py-3">
+              <button onClick={() => setRemoveConfirm(null)} className="app-btn-secondary py-2 text-sm">Cancel</button>
               <button
                 onClick={() => {
                   handleRemoveItem(removeConfirm.id)
                   setRemoveConfirm(null)
                   showAlert('success', `"${removeConfirm.name}" removed from cart`)
                 }}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 rounded-[3px] hover:bg-red-700 transition-colors flex items-center gap-2"
+                className="app-btn-danger flex items-center gap-1.5 py-2 text-sm"
               >
-                <Trash2 size={16} />
+                <HIcon icon={Delete01Icon} size={14}  />
                 Remove
               </button>
             </div>
@@ -1201,723 +1261,579 @@ const POS = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-2 flex items-center justify-between shrink-0 shadow-sm">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-500 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back
-          </button>
-          <div className="w-px h-5 bg-gray-200" />
-          <div className="w-9 h-9 rounded-[3px] bg-primary-500 flex items-center justify-center shadow shadow-primary-300">
-            <ShoppingBag size={18} className="text-white" />
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-gray-900 leading-tight">Point of Sale</h1>
-            <p className="text-xs text-gray-400 leading-tight">
-              {cashierName ? <span className="font-medium text-gray-500">{cashierName}</span> : null}
-              {cashierName ? ' · ' : ''}
-              <span className="font-mono text-primary-500">{receiptNumber}</span>
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={handleCancel}
-          className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-500 hover:text-red-500 transition-colors"
-          title="Cancel transaction"
-        >
-          <X size={18} />
-        </button>
-      </div>
-
-      {/* Top Controls Bar */}
-      <div className="bg-gray-50 border-b border-gray-200 px-5 py-2 flex items-center gap-3 shrink-0">
-        <div className="relative" ref={iWantToMenuRef}>
-          <button 
-            onClick={() => setShowIWantToMenu(!showIWantToMenu)}
-            className="bg-primary-600 text-white pl-4 pr-3 py-2 rounded-[3px] flex items-center gap-2 hover:bg-primary-700 transition-colors shadow-sm text-sm font-semibold"
-          >
-            <span>Actions</span>
-            <ChevronDown size={16} className={`transition-transform ${showIWantToMenu ? 'rotate-180' : ''}`} />
-          </button>
-          
-          {/* Dropdown Menu */}
-          {showIWantToMenu && (
-            <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-[3px] shadow-xl z-50 overflow-hidden">
-              <div className="py-1.5">
-                <button
-                  onClick={() => handleIWantToAction('viewHeldSales')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors"
-                >
-                  <Clock size={18} className="text-gray-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">View Held Sales</div>
-                    <div className="text-xs text-gray-500">Recall or manage held transactions</div>
-                  </div>
-                  {heldSales.length > 0 && (
-                    <span className="ml-auto bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded">
-                      {heldSales.length}
-                    </span>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => handleIWantToAction('applyCartDiscount')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={items.length === 0}
-                >
-                  <Percent size={18} className="text-gray-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Apply Cart Discount</div>
-                    <div className="text-xs text-gray-500">Add discount to entire cart</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => handleIWantToAction('applyItemDiscount')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!selectedItem}
-                >
-                  <DollarSign size={18} className={selectedItem ? "text-gray-600" : "text-gray-400"} />
-                  <div>
-                    <div className={`font-medium ${selectedItem ? "text-gray-900" : "text-gray-400"}`}>Apply Item Discount</div>
-                    <div className="text-xs text-gray-500">Discount selected item</div>
-                  </div>
-                </button>
-                
-                <div className="border-t my-1"></div>
-                
-                <button
-                  onClick={() => handleIWantToAction('lookupCustomer')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors"
-                >
-                  <User size={18} className="text-gray-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Lookup Customer</div>
-                    <div className="text-xs text-gray-500">Search for customer</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => handleIWantToAction('viewReceipt')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={items.length === 0}
-                >
-                  <ReceiptIcon size={18} className={items.length > 0 ? "text-gray-600" : "text-gray-400"} />
-                  <div>
-                    <div className={`font-medium ${items.length > 0 ? "text-gray-900" : "text-gray-400"}`}>View Receipt</div>
-                    <div className="text-xs text-gray-500">Preview current transaction</div>
-                  </div>
-                </button>
-                
-                <div className="border-t my-1"></div>
-                
-                <button
-                  onClick={() => handleIWantToAction('openCashDrawer')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors"
-                >
-                  <CreditCard size={18} className="text-gray-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Open Cash Drawer</div>
-                    <div className="text-xs text-gray-500">Open physical cash drawer</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => handleIWantToAction('clearCart')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={items.length === 0}
-                >
-                  <Trash2 size={18} className={items.length > 0 ? "text-gray-600" : "text-gray-400"} />
-                  <div>
-                    <div className={`font-medium ${items.length > 0 ? "text-gray-900" : "text-gray-400"}`}>Clear Cart</div>
-                    <div className="text-xs text-gray-500">Remove all items</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => handleIWantToAction('voidTransaction')}
-                  className="w-full px-4 py-2 text-left flex items-center gap-3 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={items.length === 0}
-                >
-                  <AlertCircle size={18} className={items.length > 0 ? "text-red-600" : "text-gray-400"} />
-                  <div>
-                    <div className={`font-medium ${items.length > 0 ? "text-red-600" : "text-gray-400"}`}>Void Transaction</div>
-                    <div className="text-xs text-red-500">Cancel current sale</div>
-                  </div>
-                </button>
+      <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => navigate('/branch-dashboard')} className="flex h-8 w-8 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+              <HIcon icon={ArrowLeft01Icon} size={18}  />
+            </button>
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-primary-500 shadow-soft">
+              <HIcon icon={ShoppingBag01Icon} size={16} className="text-white"  />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-sm font-bold text-gray-900">Point of Sale</h1>
+              <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                {cashierName && <span className="font-medium text-gray-500">{cashierName}</span>}
+                {cashierName && <span>·</span>}
+                <span className="font-mono text-primary-500">{receiptNumber}</span>
               </div>
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="flex-1 relative">
-          {productsError && (
-            <div className="absolute -top-8 left-0 right-0 flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded text-red-700 text-sm z-10">
-              <AlertCircle size={16} />
-              {productsError}
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-3 rounded-control border border-gray-100 bg-gray-50/70 px-3 py-1.5 text-xs lg:flex">
+              <span className="text-gray-400">{customerDisplayName}</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-500">{totalLineItems} items · {formatQuantity(totalUnits)} qty</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-500">{selectedPayment || 'Cash'}</span>
             </div>
-          )}
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Scan or search for a product..."
-            value={itemSearch}
-            onChange={(e) => setItemSearch(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && filteredProducts.length > 0) {
-                handleAddItem(filteredProducts[0])
-              }
-            }}
-            className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm shadow-sm"
-            autoFocus
-          />
-          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          {/* Search Results Dropdown */}
-          {itemSearch && itemSearch.trim() && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-[3px] shadow-xl z-50 max-h-64 overflow-auto">
-              {productsLoading ? (
-                <div className="px-4 py-4 text-center text-gray-500 text-sm flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                  Searching products…
-                </div>
-              ) : filteredProducts.length > 0 ? (
-                filteredProducts.slice(0, 8).map(product => (
-                  <div
-                    key={product.id}
-                    onClick={() => handleAddItem(product)}
-                    className="px-4 py-2.5 hover:bg-primary-50 cursor-pointer border-b border-gray-100 last:border-0 flex items-center gap-3 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center shrink-0">
-                      <ShoppingBag size={14} className="text-primary-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-sm text-gray-900 truncate">{product.itemName}</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          (product.stock || 0) <= 0
-                            ? 'bg-red-100 text-red-700'
-                            : (product.stock || 0) <= 5
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-green-100 text-green-700'
-                        }`}>
-                          {product.stock || 0} left
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {product.department}
-                        {product.brand && product.brand !== 'N/A' && product.brand !== '-' && (
-                          <span className="text-gray-500 font-medium"> · {product.brand}</span>
-                        )}
-                        {' · '}<span className="font-semibold text-primary-600">₵{product.price.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-4 text-center text-gray-400 text-sm">No products found</div>
-              )}
+            <div className="flex items-center gap-1.5 rounded-control bg-primary-500 px-3.5 py-1.5 shadow-soft">
+              <span className="text-xs font-semibold text-white/70">Total</span>
+              <span className="text-sm font-extrabold text-white">₵{total.toFixed(2)}</span>
             </div>
-          )}
-        </div>
-
-        <div className="flex-1 flex flex-col gap-1.5">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              placeholder={customer ? 'Selected: ' + customer.name : 'Enter customer name or phone'}
-              value={customer ? `${customer.name}${customer.phone ? ' · ' + customer.phone : ''}` : customerSearch}
-              onChange={(e) => {
-                setCustomer(null)
-                setCustomerSearch(e.target.value)
-                setCustomerDropdownOpen(true)
-              }}
-              onFocus={() => !customer && setCustomerDropdownOpen(true)}
-              onBlur={() => setTimeout(() => setCustomerDropdownOpen(false), 180)}
-              readOnly={!!customer}
-              className="w-full pl-10 pr-16 py-2.5 border border-gray-200 rounded-[3px] bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm shadow-sm"
-            />
-            {customer ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomer(null)
-                  setCustomerSearch('')
-                }}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-600 text-xs font-medium max-w-[120px] truncate"
-                title="Clear customer (Walk-in)"
-              >
-                {customer.name || 'Walk-in'}
-              </button>
-            ) : (
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            )}
-            {customerDropdownOpen && (customerSearch.trim() || filteredCustomersForPOS.length > 0) && !customer && (
-            <div
-              className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-[3px] shadow-xl z-[100] max-h-52 overflow-auto"
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setCustomer(null)
-                  setCustomerSearch('')
-                  setCustomerDropdownOpen(false)
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-100 border-b"
-              >
-                Walk-in (no customer)
-              </button>
-              {filteredCustomersForPOS.map(c => (
-                <button
-                  type="button"
-                  key={c.id}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setCustomer({ id: c.id, uuid: c.uuid || c.id, name: c.name || '', phone: c.phone || '', email: c.email || '' })
-                    setCustomerSearch(c.name || '')
-                    setCustomerDropdownOpen(false)
-                  }}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <div className="font-medium text-gray-900">{c.name}</div>
-                  <div className="text-xs text-gray-600">
-                    {[c.phone, c.email].filter(Boolean).join(' · ') || 'No contact'}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* Left Side - Items Table */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Items Table */}
-          <div className="flex-1 overflow-auto bg-white mx-3 mt-3 mb-1 rounded-[3px] border border-gray-200 shadow-sm">
-            {items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center">
-                  <ShoppingBag size={36} className="text-gray-300" />
-                </div>
-                <div className="text-center">
-                  <p className="text-base font-semibold text-gray-500">Cart is empty</p>
-                  <p className="text-sm text-gray-400 mt-1">Search or scan a product to add it</p>
-                </div>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-white border-b border-gray-200">
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">SKU</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Item Name</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Stock</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Qty</th>
-                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Price</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, index) => (
-                    <tr 
-                      key={`${item.id}-${index}`}
-                      onClick={() => handleRowClick(item)}
-                      className={`border-b border-gray-100 cursor-pointer transition-colors ${
-                        selectedItem?.id === item.id 
-                          ? 'bg-primary-50 ring-1 ring-inset ring-primary-200' 
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <td className="px-4 py-3.5 text-xs text-gray-400 font-mono">{item.itemNumber || '—'}</td>
-                      <td className="px-4 py-3.5">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">{item.department}</span>
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <div className="font-semibold text-sm text-gray-900">{item.itemName}</div>
-                        {item.discount > 0 && (
-                          <div className="text-xs text-orange-500 font-medium mt-0.5">-₵{item.discount.toFixed(2)} discount</div>
-                        )}
-                        <div className="text-xs text-gray-400 mt-0.5">₵{item.unitPrice.toFixed(2)} / {item.unitLabel || 'pc'}</div>
-                      </td>
-                      <td className="px-4 py-3.5 text-center">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          (item.stock || 0) <= 0
-                            ? 'bg-red-100 text-red-700'
-                            : (item.stock || 0) <= 5
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-green-100 text-green-700'
-                        }`}>
-                          {item.stock || 0}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleQtyChange(item.id, -1, item.unit)
-                            }}
-                            className="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-primary-100 hover:text-primary-700 rounded-[3px] transition-colors"
-                          >
-                            <Minus size={13} />
-                          </button>
-                          <input
-                            type="number"
-                            value={item.qty}
-                            onChange={(e) => {
-                              e.stopPropagation()
-                              const newQty = parseFloat(e.target.value) || 0.25
-                              if (newQty > 0) {
-                                const change = newQty - item.qty
-                                handleQtyChange(item.id, change, item.unit)
-                              }
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-14 px-1 py-1 text-center text-sm font-semibold border border-gray-200 rounded-[3px] focus:outline-none focus:ring-2 focus:ring-primary-400"
-                            step="0.25"
-                            min="0.25"
-                          />
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleQtyChange(item.id, 1, item.unit)
-                            }}
-                            className="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-primary-100 hover:text-primary-700 rounded-[3px] transition-colors"
-                          >
-                            <Plus size={13} />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 text-right">
-                        <span className="font-bold text-gray-900">₵{item.extPrice.toFixed(2)}</span>
-                      </td>
-                      <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setRemoveConfirm({ id: item.id, name: item.itemName })
-                          }}
-                          className="w-8 h-8 flex items-center justify-center hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-[3px] transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Item Action Buttons */}
-          <div className="px-4 pb-2 pt-2 flex gap-2 flex-wrap border-t border-gray-100 bg-white">
-            {selectedItem && (
-              <div className="flex items-center gap-1.5 text-xs text-primary-600 bg-primary-50 rounded-lg px-3 py-1.5 border border-primary-100 font-medium">
-                <Check size={12} />
-                {selectedItem.itemName}
-              </div>
-            )}
-            <div className="flex gap-1.5 flex-wrap">
-              <Tooltip text="Edit selected item's quantity, price or discount" position="bottom">
-                <button 
-                  onClick={handleEditItem}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Edit size={15} />
-                  Edit
-                </button>
-              </Tooltip>
-              <Tooltip text="Return / reverse a selected item" position="bottom">
-                <button 
-                  onClick={handleReturnItem}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-amber-100 hover:text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <RotateCcw size={15} />
-                  Return
-                </button>
-              </Tooltip>
-              <Tooltip text="Change quantity, unit price or apply item discount" position="bottom">
-                <button 
-                  onClick={() => {
-                    if (selectedItem) {
-                      const product = productsFromApi.find(p => p.id === selectedItem.id)
-                      if (product?.units && product.units.length > 1) {
-                        setPendingProduct(product)
-                        setShowUnitModal(true)
-                      } else {
-                        handleApplyItemDiscount()
-                      }
+      <div className="flex-1 min-h-0 overflow-hidden px-4 py-3">
+        <div className="grid h-full min-h-0 gap-3 xl:grid-cols-[minmax(0,1.65fr)_340px]">
+          <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
+            {/* Search & Session Bar */}
+            <div className="app-surface relative shrink-0 overflow-visible p-3">
+              {/* Product Search Row */}
+              <div className="relative">
+                <HIcon icon={Search01Icon} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Scan barcode or search product…"
+                  value={itemSearch}
+                  onChange={(e) => setItemSearch(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && filteredProducts.length > 0) {
+                      handleAddItem(filteredProducts[0])
                     }
                   }}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-primary-100 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Percent size={15} />
-                  Discount
-                </button>
-              </Tooltip>
-              <Tooltip text="Increase quantity by 1" position="bottom">
-                <button 
-                  onClick={() => selectedItem && handleQtyChange(selectedItem.id, 1)}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Plus size={15} />
-                  Qty+
-                </button>
-              </Tooltip>
-              <Tooltip text="Decrease quantity by 1" position="bottom">
-                <button 
-                  onClick={() => selectedItem && handleQtyChange(selectedItem.id, -1)}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-amber-100 hover:text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Minus size={15} />
-                  Qty-
-                </button>
-              </Tooltip>
-              <Tooltip text="Remove selected item from cart" position="bottom">
-                <button 
-                  onClick={() => selectedItem && setRemoveConfirm({ id: selectedItem.id, name: selectedItem.itemName })}
-                  disabled={!selectedItem}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-sm font-medium bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Trash2 size={15} />
-                  Remove
-                </button>
-              </Tooltip>
-            </div>
-          </div>
-        </div>
+                  className="app-input h-11 w-full pl-10 pr-24 text-sm"
+                  autoFocus
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{productsFromApi.length} items</span>
+              </div>
 
-        {/* Right Side - Summary and Payment */}
-        <div className="w-88 bg-gray-50 border-l border-gray-200 flex flex-col min-h-0 shrink-0 overflow-hidden" style={{width:'22rem'}}>
-          {/* Transaction Summary */}
-          <div className="px-5 py-4 border-b border-gray-200 bg-white shrink-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Summary</h2>
-            </div>
-            <div className="space-y-2.5 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Products / Qty</span>
-                <span className="font-semibold text-gray-700">{items.length} / {items.reduce((sum, item) => sum + item.qty, 0)}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal</span>
-                <span className="font-semibold text-gray-700">₵{subtotal.toFixed(2)}</span>
-              </div>
-              {cartDiscountAmount > 0 && (
-                <div className="flex justify-between text-orange-500">
-                  <span>Discount</span>
-                  <span className="font-semibold">-₵{cartDiscountAmount.toFixed(2)}</span>
+              {productsError && (
+                <div className="mt-2 flex items-center gap-2 rounded-control border border-danger-100 bg-danger-50 px-3 py-2 text-xs text-danger-700">
+                  <HIcon icon={AlertCircleIcon} size={14}  />
+                  <span className="truncate">{productsError}</span>
                 </div>
               )}
-              {tax > 0 && (
-                <div className="flex justify-between text-gray-500">
-                  <span>Tax ({taxRatePercent}%)</span>
-                  <span className="font-semibold text-gray-700">₵{tax.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center pt-2 mt-1.5 border-t border-gray-200 bg-primary-50 -mx-5 px-5 py-3 rounded-b-lg">
-                <span className="font-bold text-gray-900 text-base">Total</span>
-                <span className="font-extrabold text-primary-600 text-2xl">₵{total.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Payment Options */}
-          <div className="px-4 py-3 border-b border-gray-200 bg-white shrink-0">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment</h3>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              {[{ value: 'Cash', label: 'Cash' }, { value: 'Mobile Money', label: 'Momo' }, { value: 'Cheque', label: 'Cheque' }].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => {
-                    setSelectedPayment(value)
-                    setAmountPaid(total)
-                  }}
-                  className={`px-4 py-2.5 rounded-[3px] text-sm font-bold transition-all relative border-2 ${
-                    selectedPayment === value
-                      ? 'bg-primary-500 text-white border-primary-500 shadow-sm'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:text-primary-600'
-                  }`}
-                >
-                  {selectedPayment === value && (
-                    <Check className="absolute top-1.5 right-1.5" size={11} />
+              {/* Customer + Quick Actions Row */}
+              <div className="mt-2.5 flex items-center gap-2">
+                {/* Customer Input */}
+                <div className="relative min-w-0 flex-1">
+                  <HIcon icon={UserIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14}  />
+                  <input
+                    type="text"
+                    placeholder={customer ? `Selected: ${customer.name}` : 'Customer…'}
+                    value={customer ? `${customer.name}${customer.phone ? ` · ${customer.phone}` : ''}` : customerSearch}
+                    onChange={(e) => {
+                      setCustomer(null)
+                      setCustomerSearch(e.target.value)
+                      setCustomerDropdownOpen(true)
+                    }}
+                    onFocus={() => !customer && setCustomerDropdownOpen(true)}
+                    onBlur={() => setTimeout(() => setCustomerDropdownOpen(false), 180)}
+                    readOnly={!!customer}
+                    className="app-input h-9 w-full pl-8 pr-14 text-xs"
+                  />
+                  {customer ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomer(null)
+                        setCustomerSearch('')
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500 hover:bg-danger-50 hover:text-danger-600"
+                      title="Clear customer"
+                    >
+                      Clear
+                    </button>
+                  ) : (
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400">Walk-in</span>
                   )}
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {/* Amount Paid Input */}
-            <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-[3px] border border-gray-200 focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 transition-all mb-2">
-              <span className="text-gray-400 font-semibold text-xs">₵</span>
-              <input
-                type="number"
-                value={amountPaid === 0 ? '' : amountPaid}
-                onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
-                placeholder="Amount tendered"
-                className="flex-1 min-w-0 text-sm font-bold border-0 bg-transparent focus:outline-none focus:ring-0 text-gray-900"
-                step="0.01"
-                min="0"
-              />
-            </div>
-
-            {/* Amount Due / Change */}
-            <div className={`rounded-[3px] px-3 py-2 ${
-              amountDue > 0.01
-                ? 'bg-red-50 border border-red-200'
-                : change > 0
-                  ? 'bg-green-50 border border-green-200'
-                  : 'bg-gray-50 border border-gray-200'
-            }`}>
-              {amountDue > 0.01 ? (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-red-600">Amount Due</span>
-                  <span className="text-lg font-extrabold text-red-600">₵{amountDue.toFixed(2)}</span>
+                  {customerDropdownOpen && (customerSearch.trim() || filteredCustomersForPOS.length > 0) && !customer && (
+                    <div
+                      className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-52 overflow-auto rounded-control border border-gray-200 bg-white shadow-panel"
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setCustomer(null)
+                          setCustomerSearch('')
+                          setCustomerDropdownOpen(false)
+                        }}
+                        className="w-full border-b px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                      >
+                        Walk-in (no customer)
+                      </button>
+                      {filteredCustomersForPOS.map(c => (
+                        <button
+                          type="button"
+                          key={c.id}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            setCustomer({ id: c.id, uuid: c.uuid || c.id, name: c.name || '', phone: c.phone || '', email: c.email || '' })
+                            setCustomerSearch(c.name || '')
+                            setCustomerDropdownOpen(false)
+                          }}
+                          className="w-full border-b px-4 py-2 text-left transition-colors last:border-b-0 hover:bg-gray-100"
+                        >
+                          <div className="font-medium text-gray-900">{c.name}</div>
+                          <div className="text-xs text-gray-600">{[c.phone, c.email].filter(Boolean).join(' · ') || 'No contact'}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : change > 0 ? (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-green-600">Change</span>
-                  <span className="text-lg font-extrabold text-green-600">₵{change.toFixed(2)}</span>
-                </div>
-              ) : (
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-gray-500">Amount Due</span>
-                  <span className="text-lg font-extrabold text-gray-400">₵0.00</span>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Cart Discount */}
-          <div ref={cartDiscountRef} className="px-4 py-3 border-b border-gray-200 bg-white shrink-0">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cart Discount</h3>
-            <div className="flex gap-2">
-              <select
-                value={cartDiscount.type}
-                onChange={(e) => setCartDiscount({ ...cartDiscount, type: e.target.value })}
-                className="flex-1 px-2 py-2 border border-gray-200 rounded-[3px] text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400"
-              >
-                <option value="percentage">Percentage (%)</option>
-                <option value="amount">Amount (₵)</option>
-              </select>
-              <input
-                type="number"
-                value={cartDiscount.value === 0 ? '' : cartDiscount.value}
-                onChange={(e) => setCartDiscount({ ...cartDiscount, value: parseFloat(e.target.value) || 0 })}
-                placeholder="0"
-                className="w-20 px-2 py-2 border border-gray-200 rounded-[3px] text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-center font-bold"
-                step="0.01"
-                min="0"
-              />
-            </div>
-            {cartDiscountAmount > 0 && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-orange-600 font-medium">
-                <Percent size={11} />
-                -₵{cartDiscountAmount.toFixed(2)} applied
+                {/* Divider */}
+                <div className="h-6 w-px shrink-0 bg-gray-200" />
+
+                {/* Quick Action Buttons – inline row */}
+                <div className="flex shrink-0 items-center gap-1" ref={iWantToMenuRef}>
+                  <Tooltip text="Held Sales" position="bottom">
+                    <button
+                      type="button"
+                      onClick={() => setShowHeldSalesModal(true)}
+                      className="relative flex h-9 w-9 items-center justify-center rounded-control border border-gray-200 bg-white transition-colors hover:border-info-200 hover:bg-info-50"
+                    >
+                      <HIcon icon={Clock01Icon} size={15} className="text-info-600"  />
+                      {heldSales.length > 0 && <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-info-600 text-[9px] font-bold text-white">{heldSales.length}</span>}
+                    </button>
+                  </Tooltip>
+                  <Tooltip text="Preview Receipt" position="bottom">
+                    <button
+                      type="button"
+                      onClick={() => handleIWantToAction('viewReceipt')}
+                      disabled={items.length === 0}
+                      className="flex h-9 w-9 items-center justify-center rounded-control border border-gray-200 bg-white transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <HIcon icon={ReceiptTextIcon} size={15} className="text-gray-500"  />
+                    </button>
+                  </Tooltip>
+                  <Tooltip text="More Actions" position="bottom">
+                    <button
+                      type="button"
+                      onClick={() => setShowIWantToMenu(!showIWantToMenu)}
+                      className="flex h-9 w-9 items-center justify-center rounded-control border border-primary-200 bg-primary-50 transition-colors hover:bg-primary-100"
+                    >
+                      <HIcon icon={ArrowDown01Icon} size={15} className={`text-primary-600 transition-transform ${showIWantToMenu ? 'rotate-180' : ''}`}  />
+                    </button>
+                  </Tooltip>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Bottom Action Buttons */}
-      <div className="bg-white border-t border-gray-200 px-5 py-2.5 flex items-center justify-between gap-2 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] shrink-0 z-20">
-        {/* Left — secondary actions */}
-        <div className="flex items-center gap-2">
-          <Tooltip text="View or recall saved (held) transactions" position="top">
-            <button 
-              onClick={() => setShowHeldSalesModal(true)}
-              className="relative flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-            >
-              <Clock size={16} />
-              Held Sales
-              {heldSales.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-primary-500 text-white text-[10px] font-bold">
-                  {heldSales.length}
-                </span>
+              {/* Search Results Dropdown */}
+              {itemSearch && itemSearch.trim() && (
+                <div className="absolute left-0 right-0 top-full z-50 mx-3 mt-1 max-h-72 overflow-auto rounded-control border border-gray-200 bg-white shadow-panel">
+                  {productsLoading ? (
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 text-xs text-gray-500">
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
+                      Searching…
+                    </div>
+                  ) : filteredProducts.length > 0 ? (
+                    filteredProducts.slice(0, 8).map(product => (
+                      <div
+                        key={product.id}
+                        onClick={() => handleAddItem(product)}
+                        className="flex cursor-pointer items-center gap-2.5 border-b border-gray-50 px-3.5 py-2.5 transition-colors last:border-0 hover:bg-primary-50"
+                      >
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-gray-100">
+                          <HIcon icon={ShoppingBag01Icon} size={14} className="text-gray-500"  />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-semibold text-gray-900">{product.itemName}</span>
+                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+                              (product.stock || 0) <= 0
+                                ? 'bg-red-100 text-red-700'
+                                : (product.stock || 0) <= 5
+                                  ? 'bg-warning-100 text-warning-700'
+                                  : 'bg-success-100 text-success-700'
+                            }`}>
+                              {product.stock || 0} left
+                            </span>
+                          </div>
+                          <div className="mt-0.5 text-xs text-gray-400">
+                            {product.department}
+                            {product.brand && product.brand !== 'N/A' && product.brand !== '-' && (
+                              <span className="font-medium text-gray-500"> · {product.brand}</span>
+                            )}
+                            {' · '}<span className="font-semibold text-primary-600">₵{product.price.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-center text-xs text-gray-400">No products found</div>
+                  )}
+                </div>
               )}
-            </button>
-          </Tooltip>
-          <Tooltip text="Save this cart to resume later without completing the sale" position="top">
-            <button 
-              onClick={handlePutOnHold}
-              disabled={items.length === 0}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-amber-100 hover:text-amber-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              <Save size={16} />
-              Hold
-            </button>
-          </Tooltip>
-          <Tooltip text="Clear cart and cancel this transaction" position="top">
-            <button 
-              onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600 transition-colors"
-            >
-              <X size={16} />
-              Cancel
-            </button>
-          </Tooltip>
-        </div>
 
-        {/* Right — complete sale actions */}
-        <div className="flex items-center gap-2">
-          <Tooltip text="Complete sale and email the receipt to the customer" position="top">
-            <button 
-              onClick={() => handleSaveTransaction(false, true)}
-              disabled={!!savingState}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-[3px] text-sm font-semibold bg-white border-2 border-primary-500 text-primary-600 hover:bg-primary-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Mail size={16} />
-              Email
-            </button>
-          </Tooltip>
-          <Tooltip text="Complete the sale without printing a receipt" position="top">
-            <button 
-              onClick={() => handleSaveTransaction(false, false)}
-              disabled={!!savingState}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-semibold transition-colors border-2 ${
-                savingState === 'save'
-                  ? 'bg-green-400 border-green-400 text-white cursor-wait'
-                  : savingState
-                    ? 'bg-green-300 border-green-300 text-white cursor-not-allowed opacity-60'
-                    : 'bg-white border-green-600 text-green-700 hover:bg-green-50'
-              }`}
-            >
-              {savingState === 'save' ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-              {savingState === 'save' ? 'Saving…' : 'Save'}
-            </button>
-          </Tooltip>
-          <Tooltip text="Complete the sale and print a receipt" position="top">
-            <button 
-              onClick={() => handleSaveTransaction(true, false)}
-              disabled={!!savingState}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-[3px] text-sm font-bold transition-colors shadow-md ${
-                savingState === 'print'
-                  ? 'bg-green-500 text-white cursor-wait shadow-green-200'
-                  : savingState
-                    ? 'bg-green-300 text-white cursor-not-allowed opacity-60'
-                    : 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
-              }`}
-            >
-              {savingState === 'print' ? <Loader2 size={16} className="animate-spin" /> : <Printer size={16} />}
-              {savingState === 'print' ? 'Saving…' : 'Save & Print'}
-            </button>
-          </Tooltip>
+              {/* More Actions Dropdown */}
+              {showIWantToMenu && (
+                <div className="absolute right-3 top-full z-50 mt-1 w-56 overflow-hidden rounded-control border border-gray-200 bg-white shadow-panel">
+                  <div className="py-1">
+                    <button onClick={() => handleIWantToAction('viewHeldSales')} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50">
+                      <HIcon icon={Clock01Icon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Held Sales</span>
+                    </button>
+                    <button onClick={() => handleIWantToAction('applyCartDiscount')} disabled={items.length === 0} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
+                      <HIcon icon={PercentIcon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Cart Discount</span>
+                    </button>
+                    <button onClick={() => handleIWantToAction('applyItemDiscount')} disabled={!selectedItem} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
+                      <HIcon icon={DollarCircleIcon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Item Discount</span>
+                    </button>
+                    <div className="my-0.5 border-t border-gray-100" />
+                    <button onClick={() => handleIWantToAction('lookupCustomer')} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50">
+                      <HIcon icon={UserIcon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Lookup Customer</span>
+                    </button>
+                    <button onClick={() => handleIWantToAction('openCashDrawer')} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50">
+                      <HIcon icon={CreditCardIcon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Open Cash Drawer</span>
+                    </button>
+                    <button onClick={() => handleIWantToAction('clearCart')} disabled={items.length === 0} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40">
+                      <HIcon icon={Delete01Icon} size={15} className="text-gray-400"  />
+                      <span className="font-medium text-gray-700">Clear Cart</span>
+                    </button>
+                    <div className="my-0.5 border-t border-gray-100" />
+                    <button onClick={() => handleIWantToAction('voidTransaction')} disabled={items.length === 0} className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors hover:bg-danger-50 disabled:cursor-not-allowed disabled:opacity-40">
+                      <HIcon icon={AlertCircleIcon} size={15} className="text-danger-500"  />
+                      <span className="font-medium text-danger-600">Void Transaction</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="app-table-shell flex min-h-0 flex-1 flex-col overflow-hidden">
+              <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50/80 px-4 py-2">
+                <div className="flex items-center gap-2">
+                  <HIcon icon={ShoppingBag01Icon} size={14} className="text-gray-400"  />
+                  <span className="text-xs font-semibold text-gray-500">Cart</span>
+                </div>
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-500 shadow-sm">{totalLineItems} lines · {formatQuantity(totalUnits)} qty</span>
+              </div>
+
+              <div className="flex-1 overflow-auto bg-white">
+                {items.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-3 text-gray-400">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-50">
+                      <HIcon icon={ShoppingBag01Icon} size={24} className="text-gray-300"  />
+                    </div>
+                    <p className="text-sm font-medium text-gray-400">Scan or search to add items</p>
+                  </div>
+                ) : (
+                  <table className="w-full">
+                    <thead className="sticky top-0 z-10">
+                      <tr className="app-table-head border-b border-gray-200">
+                        <th className="app-table-head-cell">SKU</th>
+                        <th className="app-table-head-cell">Category</th>
+                        <th className="app-table-head-cell">Item</th>
+                        <th className="app-table-head-cell text-center">Stock</th>
+                        <th className="app-table-head-cell text-center">Qty</th>
+                        <th className="app-table-head-cell text-right">Amount</th>
+                        <th className="app-table-head-cell text-center"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, index) => (
+                        <tr
+                          key={`${item.id}-${index}`}
+                          onClick={() => handleRowClick(item)}
+                          className={`app-table-row cursor-pointer ${selectedItem?.id === item.id ? 'bg-primary-50 ring-1 ring-inset ring-primary-200' : ''}`}
+                        >
+                          <td className="px-4 py-3.5 font-mono text-xs text-gray-400">{item.itemNumber || '—'}</td>
+                          <td className="px-4 py-3.5">
+                            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{item.department}</span>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="text-sm font-semibold text-gray-900">{item.itemName}</div>
+                            {item.discount > 0 && <div className="mt-0.5 text-xs font-medium text-warning-600">-₵{item.discount.toFixed(2)} discount</div>}
+                            <div className="mt-0.5 text-xs text-gray-400">₵{item.unitPrice.toFixed(2)} / {item.unitLabel || 'pc'}</div>
+                          </td>
+                          <td className="px-4 py-3.5 text-center">
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                              (item.stock || 0) <= 0
+                                ? 'bg-red-100 text-red-700'
+                                : (item.stock || 0) <= 5
+                                  ? 'bg-warning-100 text-warning-700'
+                                  : 'bg-success-100 text-success-700'
+                            }`}>
+                              {item.stock || 0}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1">
+                              <button onClick={(e) => { e.stopPropagation(); handleQtyChange(item.id, -1, item.unit) }} className="flex h-7 w-7 items-center justify-center rounded-control bg-gray-100 transition-colors hover:bg-primary-100 hover:text-primary-700">
+                                <HIcon icon={MinusSignIcon} size={13}  />
+                              </button>
+                              <input
+                                type="number"
+                                value={item.qty}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  const newQty = parseFloat(e.target.value) || 0.25
+                                  if (newQty > 0) {
+                                    const changeValue = newQty - item.qty
+                                    handleQtyChange(item.id, changeValue, item.unit)
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-14 rounded-control border border-gray-200 px-1 py-1 text-center text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-400"
+                                step="0.25"
+                                min="0.25"
+                              />
+                              <button onClick={(e) => { e.stopPropagation(); handleQtyChange(item.id, 1, item.unit) }} className="flex h-7 w-7 items-center justify-center rounded-control bg-gray-100 transition-colors hover:bg-primary-100 hover:text-primary-700">
+                                <HIcon icon={Add01Icon} size={13}  />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <span className="text-sm font-bold text-gray-900">₵{item.extPrice.toFixed(2)}</span>
+                          </td>
+                          <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setRemoveConfirm({ id: item.id, name: item.itemName })
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-control text-gray-300 transition-colors hover:bg-danger-50 hover:text-danger-500"
+                            >
+                              <HIcon icon={Delete01Icon} size={16}  />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <div className="border-t border-gray-200 bg-gray-50/80 px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    {selectedItem ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary-600">
+                        <HIcon icon={Tick01Icon} size={10}  />
+                        {selectedItem.itemName}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-gray-400">Select an item for actions</span>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <Tooltip text="Edit item" position="bottom"><button onClick={handleEditItem} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-white hover:text-primary-600 disabled:opacity-30"><HIcon icon={PencilEdit01Icon} size={13}  /></button></Tooltip>
+                    <Tooltip text="Return item" position="bottom"><button onClick={handleReturnItem} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-white hover:text-warning-600 disabled:opacity-30"><HIcon icon={RotateLeft01Icon} size={13}  /></button></Tooltip>
+                    <Tooltip text="Discount" position="bottom"><button onClick={() => {
+                      if (selectedItem) {
+                        const product = productsFromApi.find(p => p.id === selectedItem.id)
+                        if (product?.units && product.units.length > 1) {
+                          setPendingProduct(product)
+                          setShowUnitModal(true)
+                        } else {
+                          handleApplyItemDiscount()
+                        }
+                      }
+                    }} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-white hover:text-primary-600 disabled:opacity-30"><HIcon icon={PercentIcon} size={13}  /></button></Tooltip>
+                    <Tooltip text="Qty +" position="bottom"><button onClick={() => selectedItem && handleQtyChange(selectedItem.id, 1)} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-white hover:text-success-600 disabled:opacity-30"><HIcon icon={Add01Icon} size={13}  /></button></Tooltip>
+                    <Tooltip text="Qty −" position="bottom"><button onClick={() => selectedItem && handleQtyChange(selectedItem.id, -1)} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-white hover:text-warning-600 disabled:opacity-30"><HIcon icon={MinusSignIcon} size={13}  /></button></Tooltip>
+                    <Tooltip text="Remove item" position="bottom"><button onClick={() => selectedItem && setRemoveConfirm({ id: selectedItem.id, name: selectedItem.itemName })} disabled={!selectedItem} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 transition-colors hover:bg-danger-50 hover:text-danger-600 disabled:opacity-30"><HIcon icon={Delete01Icon} size={13}  /></button></Tooltip>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Pane – Checkout */}
+          <div className="flex min-h-0 flex-col gap-3 xl:overflow-auto">
+            {/* Branch & Cashier strip */}
+            <div className="flex items-center gap-2 rounded-control border border-gray-100 bg-gray-50/70 px-3 py-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100">
+                <HIcon icon={ShoppingBag01Icon} size={11} className="text-primary-600"  />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-gray-700">{storeInfo.name} — {branchDisplayName}</p>
+                <p className="truncate text-[10px] text-gray-400">{cashierName || 'Operator'} · {receiptNumber}</p>
+              </div>
+            </div>
+
+            {/* Checkout Summary */}
+            <div className="app-surface flex flex-col overflow-hidden">
+              <div className="border-b border-gray-100 px-4 py-3">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Amount Due</p>
+                    <p className="mt-0.5 text-2xl font-extrabold tracking-tight text-gray-900">₵{total.toFixed(2)}</p>
+                  </div>
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-500">{totalLineItems} items</span>
+                </div>
+              </div>
+
+              <div className="space-y-4 px-4 py-3">
+                {/* Breakdown */}
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between text-gray-400"><span>Subtotal</span><span className="font-semibold text-gray-600">₵{subtotal.toFixed(2)}</span></div>
+                  {cartDiscountAmount > 0 && <div className="flex justify-between text-warning-600"><span>Discount</span><span className="font-semibold">-₵{cartDiscountAmount.toFixed(2)}</span></div>}
+                  {tax > 0 && <div className="flex justify-between text-gray-400"><span>Tax ({taxRatePercent}%)</span><span className="font-semibold text-gray-600">₵{tax.toFixed(2)}</span></div>}
+                </div>
+
+                {/* Payment Method */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Payment</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {paymentOptions.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => {
+                          setSelectedPayment(value)
+                          setAmountPaid(total)
+                        }}
+                        className={`rounded-control border py-2 text-center text-xs font-bold transition-all ${selectedPayment === value ? 'border-primary-500 bg-primary-500 text-white shadow-soft' : 'border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:bg-primary-50'}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {selectedPayment === 'Mobile Money' && (
+                  <div className="rounded-control border border-info-100 bg-info-50 p-2.5">
+                    <div className="grid gap-2 grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-info-600">Provider</label>
+                        <select value={mobileMoneyProvider} onChange={(e) => setMobileMoneyProvider(e.target.value)} className="app-input bg-white py-2 text-xs">
+                          {mobileMoneyProviders.map((p) => (<option key={p} value={p}>{p}</option>))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.14em] text-info-600">Number</label>
+                        <input type="text" value={mobileMoneyNumber} onChange={(e) => setMobileMoneyNumber(e.target.value)} placeholder="024 000 0000" className="app-input bg-white py-2 text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Amount Tendered */}
+                <div>
+                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">Tendered</label>
+                  <div className="flex items-center gap-1.5 rounded-control border border-gray-200 bg-white px-3 py-2 transition-all focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100">
+                    <span className="text-xs font-bold text-gray-300">₵</span>
+                    <input
+                      type="number"
+                      value={amountPaid === 0 ? '' : amountPaid}
+                      onChange={(e) => setAmountPaid(parseFloat(e.target.value) || 0)}
+                      placeholder="0.00"
+                      className="min-w-0 flex-1 border-0 bg-transparent text-sm font-bold text-gray-900 focus:outline-none focus:ring-0"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Due / Change */}
+                <div className={`rounded-control border px-3 py-2.5 ${paymentStateClass}`}>
+                  {amountDue > 0.01 ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em]">Due</span>
+                      <span className="text-lg font-extrabold">₵{amountDue.toFixed(2)}</span>
+                    </div>
+                  ) : change > 0 ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em]">Change</span>
+                      <span className="text-lg font-extrabold">₵{change.toFixed(2)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em]">Ready</span>
+                      <span className="text-lg font-extrabold">₵0.00</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Cart Discount */}
+                <div ref={cartDiscountRef}>
+                  <label className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
+                    <span>Cart Discount</span>
+                    {cartDiscountAmount > 0 && <span className="rounded-full bg-warning-100 px-1.5 py-px text-[9px] font-bold text-warning-700 normal-case">-₵{cartDiscountAmount.toFixed(2)}</span>}
+                  </label>
+                  <div className="flex gap-1.5">
+                    <select value={cartDiscount.type} onChange={(e) => setCartDiscount({ ...cartDiscount, type: e.target.value })} className="app-input-muted flex-1 px-2 py-2 text-xs">
+                      <option value="percentage">%</option>
+                      <option value="amount">₵</option>
+                    </select>
+                    <input
+                      type="number"
+                      value={cartDiscount.value === 0 ? '' : cartDiscount.value}
+                      onChange={(e) => setCartDiscount({ ...cartDiscount, value: parseFloat(e.target.value) || 0 })}
+                      placeholder="0"
+                      className="app-input-muted w-20 px-2 py-2 text-center text-xs font-bold"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Hold / Cancel */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button onClick={() => setShowHeldSalesModal(true)} className="relative flex items-center justify-center gap-1.5 rounded-control border border-info-200 bg-info-50 px-2 py-2 text-xs font-bold text-info-700 transition-colors hover:bg-info-100">
+                    <HIcon icon={Clock01Icon} size={13}  />Held
+                    {heldSales.length > 0 && <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-info-600 text-[9px] font-bold text-white">{heldSales.length}</span>}
+                  </button>
+                  <button onClick={handlePutOnHold} disabled={items.length === 0} className="flex items-center justify-center gap-1.5 rounded-control border border-warning-200 bg-warning-50 px-2 py-2 text-xs font-bold text-warning-700 transition-colors hover:bg-warning-100 disabled:cursor-not-allowed disabled:opacity-40">
+                    <HIcon icon={SaveIcon} size={13}  />Hold
+                  </button>
+                  <button onClick={handleCancel} className="flex items-center justify-center gap-1.5 rounded-control border border-danger-200 bg-danger-50 px-2 py-2 text-xs font-bold text-danger-700 transition-colors hover:bg-danger-100">
+                    <HIcon icon={Cancel01Icon} size={13}  />Cancel
+                  </button>
+                </div>
+
+                {/* Complete Sale Actions */}
+                <div className="space-y-1.5">
+                  <button
+                    onClick={() => handleSaveTransaction(false, true)}
+                    disabled={!!savingState}
+                    className={`flex w-full items-center justify-between rounded-control border px-3 py-2.5 text-left transition-all ${savingState === 'email' ? 'cursor-wait border-info-400 bg-info-100 text-info-700' : savingState ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50' : 'border-gray-200 bg-white text-gray-600 hover:border-info-300 hover:bg-info-50'}`}
+                  >
+                    <span className="text-xs font-bold">Email Receipt</span>
+                    <HIcon icon={Mail01Icon} size={14} className="shrink-0"  />
+                  </button>
+                  <button
+                    onClick={() => handleSaveTransaction(false, false)}
+                    disabled={!!savingState}
+                    className={`flex w-full items-center justify-between rounded-control border px-3 py-2.5 text-left transition-all ${savingState === 'save' ? 'cursor-wait border-success-500 bg-success-500 text-white' : savingState ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 opacity-50' : 'border-success-200 bg-success-50 text-success-700 hover:bg-success-100'}`}
+                  >
+                    <span className="text-xs font-bold">{savingState === 'save' ? 'Saving…' : 'Save Only'}</span>
+                    {savingState === 'save' ? <HIcon icon={Loading03Icon} size={14} className="animate-spin shrink-0"  /> : <HIcon icon={Tick01Icon} size={14} className="shrink-0"  />}
+                  </button>
+                  <button
+                    onClick={() => handleSaveTransaction(true, false)}
+                    disabled={!!savingState}
+                    className={`flex w-full items-center justify-between rounded-control px-4 py-3 text-left transition-all shadow-soft ${savingState === 'print' ? 'cursor-wait bg-primary-500 text-white' : savingState ? 'cursor-not-allowed bg-primary-300 text-white opacity-50' : 'bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600'}`}
+                  >
+                    <span className="text-sm font-bold">{savingState === 'print' ? 'Saving…' : 'Save & Print'}</span>
+                    {savingState === 'print' ? <HIcon icon={Loading03Icon} size={16} className="animate-spin shrink-0"  /> : <HIcon icon={PrinterIcon} size={16} className="shrink-0"  />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1976,13 +1892,45 @@ const POS = () => {
 
       {/* Success Modal */}
       {showSuccessModal && successTransaction && (
-        <SuccessModal
-          transaction={successTransaction}
-          onClose={() => {
-            setShowSuccessModal(false)
-            setSuccessTransaction(null)
-          }}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-white p-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: '#ecfdf3' }}>
+              <HIcon icon={CheckmarkCircle02Icon} size={36} style={{ color: '#059669' }}  />
+            </div>
+
+            <h2 className="text-xl font-extrabold text-gray-900">Sale Complete!</h2>
+            <p className="mt-1 text-sm text-gray-500">Transaction {successTransaction.action || 'completed'} successfully</p>
+
+            <p className="mt-5 text-3xl font-extrabold" style={{ color: '#059669' }}>
+              ₵{(successTransaction.total || 0).toFixed(2)}
+            </p>
+            {(successTransaction.change || 0) > 0 && (
+              <p className="mt-1 text-sm text-gray-500">
+                Change: <span className="font-bold" style={{ color: '#FF7521' }}>₵{(successTransaction.change || 0).toFixed(2)}</span>
+              </p>
+            )}
+
+            <div className="mx-auto mt-5 max-w-xs space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Receipt</span>
+                <span className="font-mono text-xs font-bold text-gray-900">{successTransaction.receiptNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Payment</span>
+                <span className="font-semibold capitalize text-gray-700">{successTransaction.paymentMethod}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => { setShowSuccessModal(false); setSuccessTransaction(null) }}
+              className="mt-6 flex w-full items-center justify-center gap-2 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#FF7521' }}
+            >
+              <HIcon icon={ShoppingBag01Icon} size={16}  />
+              New Sale
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Hidden Receipt for Printing */}
@@ -2014,38 +1962,38 @@ const EditItemModal = ({ item, onSave, onClose, products = [] }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[3px] bg-primary-100 flex items-center justify-center">
-              <Edit size={18} className="text-primary-600" />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="app-surface w-full max-w-md overflow-hidden shadow-panel">
+        <div className="border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-primary-100">
+              <HIcon icon={PencilEdit01Icon} size={15} className="text-primary-600"  />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Edit Item</h2>
+            <h2 className="text-sm font-bold text-gray-900">Edit Item</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-5 space-y-3.5">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Item Name</label>
+            <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">Item Name</label>
             <input
               type="text"
               value={editedItem.itemName}
               onChange={(e) => setEditedItem({ ...editedItem, itemName: e.target.value })}
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400"
+              className="app-input py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Quantity &amp; Unit</label>
+            <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">Quantity &amp; Unit</label>
             <div className="flex gap-2">
               <input
                 type="number"
                 value={editedItem.qty}
                 onChange={(e) => setEditedItem({ ...editedItem, qty: parseFloat(e.target.value) || 1 })}
-                className="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400"
+                className="app-input flex-1 py-2 text-sm"
                 min="0.25"
                 step="0.25"
               />
@@ -2063,7 +2011,7 @@ const EditItemModal = ({ item, onSave, onClose, products = [] }) => {
                     baseUnitPrice: editedItem.baseUnitPrice || editedItem.unitPrice
                   })
                 }}
-                className="px-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                className="app-input w-24 py-2 text-sm"
               >
                 {availableUnits.map(unitOption => {
                   const unitInfo = UNITS_OF_MEASURE.find(u => u.value === unitOption.unit)
@@ -2077,28 +2025,28 @@ const EditItemModal = ({ item, onSave, onClose, products = [] }) => {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Unit Price</label>
+            <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">Unit Price</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₵</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-300">₵</span>
               <input
                 type="number"
                 value={editedItem.unitPrice === 0 ? '' : editedItem.unitPrice}
                 onChange={(e) => setEditedItem({ ...editedItem, unitPrice: parseFloat(e.target.value) || 0 })}
-                className="w-full pl-8 pr-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400"
+                className="app-input py-2 pl-7 text-sm"
                 step="0.01"
                 min="0"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Item Discount</label>
+            <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">Item Discount</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₵</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-300">₵</span>
               <input
                 type="number"
                 value={(editedItem.discount || 0) === 0 ? '' : (editedItem.discount || 0)}
                 onChange={(e) => setEditedItem({ ...editedItem, discount: parseFloat(e.target.value) || 0 })}
-                className="w-full pl-8 pr-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400"
+                className="app-input py-2 pl-7 text-sm"
                 step="0.01"
                 min="0"
               />
@@ -2106,13 +2054,9 @@ const EditItemModal = ({ item, onSave, onClose, products = [] }) => {
           </div>
         </div>
 
-        <div className="px-6 pb-6 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-[3px] border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSave} className="flex-1 py-2.5 rounded-[3px] bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-colors shadow-md shadow-primary-200">
-            Save Changes
-          </button>
+        <div className="px-5 pb-5 flex gap-2">
+          <button onClick={onClose} className="app-btn-secondary flex-1 justify-center py-2 text-sm">Cancel</button>
+          <button onClick={handleSave} className="app-btn-primary flex-1 justify-center py-2 text-sm shadow-soft">Save Changes</button>
         </div>
       </div>
     </div>
@@ -2158,51 +2102,34 @@ const ReceiptModal = ({ transaction, storeInfo, onPrint, onClose, receiptRef }) 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-        {/* Modal Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[3px] bg-primary-100 flex items-center justify-center">
-              <ReceiptIcon size={18} className="text-primary-600" />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="app-surface max-w-2xl w-full max-h-[90vh] overflow-auto shadow-panel">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3.5 flex items-center justify-between" style={{ borderRadius: 'var(--radius-panel) var(--radius-panel) 0 0' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-primary-100">
+              <HIcon icon={ReceiptTextIcon} size={15} className="text-primary-600"  />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Receipt Preview</h2>
+            <h2 className="text-sm font-bold text-gray-900">Receipt Preview</h2>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={20} />
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
 
-        {/* Receipt Preview */}
-        <div className="p-6 bg-gray-100 flex justify-center">
-          <div className="bg-white shadow-lg" style={{ width: '55mm', minWidth: '55mm' }}>
+        <div className="p-5 bg-gray-100 flex justify-center">
+          <div className="bg-white shadow-soft" style={{ width: '55mm', minWidth: '55mm' }}>
             <Receipt transaction={transaction} storeInfo={storeInfo} />
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-2 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-[3px] border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Close
+        <div className="sticky bottom-0 border-t border-gray-200 bg-white px-5 py-3 flex items-center justify-end gap-2" style={{ borderRadius: '0 0 var(--radius-panel) var(--radius-panel)' }}>
+          <button onClick={onClose} className="app-btn-secondary py-2 text-sm">Close</button>
+          <button onClick={handleDownload} className="app-btn-secondary flex items-center gap-1.5 border-primary-200 py-2 text-sm text-primary-600 hover:bg-primary-50">
+            <HIcon icon={Download01Icon} size={14}  />
+            Download
           </button>
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[3px] border-2 border-primary-500 text-primary-600 text-sm font-semibold hover:bg-primary-50 transition-colors"
-          >
-            <Download size={16} />
-            Download PDF
-          </button>
-          <button
-            onClick={onPrint}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-[3px] bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors shadow-md shadow-green-200"
-          >
-            <Printer size={16} />
+          <button onClick={onPrint} className="app-btn-primary flex items-center gap-1.5 py-2 text-sm shadow-soft">
+            <HIcon icon={PrinterIcon} size={14}  />
             Print Receipt
           </button>
         </div>
@@ -2216,24 +2143,24 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
   const availableUnits = product?.units || [{ unit: 'piece', conversion: 1, price: product.price }]
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[3px] bg-primary-100 flex items-center justify-center">
-              <ShoppingBag size={17} className="text-primary-600" />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="app-surface w-full max-w-md overflow-hidden shadow-panel">
+        <div className="border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-primary-100">
+              <HIcon icon={ShoppingBag01Icon} size={14} className="text-primary-600"  />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Select Unit</h2>
-              <p className="text-xs text-gray-500 truncate max-w-[220px]">{product.itemName}</p>
+              <h2 className="text-sm font-bold text-gray-900">Select Unit</h2>
+              <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{product.itemName}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
 
-        <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+        <div className="p-4 space-y-1.5 max-h-[60vh] overflow-y-auto">
           {availableUnits.map((unitOption, index) => {
             const unitInfo = UNITS_OF_MEASURE.find(u => u.value === unitOption.unit)
             const unitLabel = unitInfo?.label || unitOption.unit
@@ -2244,16 +2171,16 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
               <button
                 key={index}
                 onClick={() => onSelect(unitOption)}
-                className={`w-full p-4 border-2 rounded-[3px] text-left transition-all ${
+                className={`w-full p-3 border rounded-control text-left transition-all ${
                   isSelected
-                    ? 'border-primary-500 bg-primary-50 shadow-md shadow-primary-100'
+                    ? 'border-primary-500 bg-primary-50 shadow-soft'
                     : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-bold text-gray-900">{unitLabel}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">
+                    <div className="text-sm font-bold text-gray-900">{unitLabel}</div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">
                       {unitOption.conversion !== 1 && (
                         <span>
                           {unitOption.conversion > 1 
@@ -2265,8 +2192,8 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-extrabold text-primary-600 text-lg">₵{unitOption.price.toFixed(2)}</div>
-                    <div className="text-xs text-gray-400">per {unitAbbr}</div>
+                    <div className="font-extrabold text-primary-600 text-base">₵{unitOption.price.toFixed(2)}</div>
+                    <div className="text-[10px] text-gray-400">per {unitAbbr}</div>
                   </div>
                 </div>
               </button>
@@ -2275,7 +2202,7 @@ const UnitSelectionModal = ({ product, currentItem, onSelect, onClose }) => {
         </div>
 
         <div className="px-4 pb-4">
-          <button onClick={onClose} className="w-full py-2.5 rounded-[3px] border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+          <button onClick={onClose} className="app-btn-secondary w-full justify-center py-2 text-sm">
             Cancel
           </button>
         </div>
@@ -2298,40 +2225,36 @@ const DiscountModal = ({ item, onApply, onClose }) => {
     : item.unitPrice * item.qty
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[3px] bg-orange-100 flex items-center justify-center">
-              <Percent size={17} className="text-orange-600" />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="app-surface w-full max-w-sm overflow-hidden shadow-panel">
+        <div className="border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-warning-100">
+              <HIcon icon={PercentIcon} size={15} className="text-warning-600"  />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Apply Discount</h2>
+            <h2 className="text-sm font-bold text-gray-900">Apply Discount</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-400 hover:text-gray-600 transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
 
-        <div className="p-6">
-          <div className="mb-4 p-3.5 bg-gray-50 rounded-[3px] border border-gray-200">
-            <p className="text-xs text-gray-500 font-medium">{item.itemName}</p>
-            <p className="text-sm font-bold text-gray-900 mt-0.5">Current Total: ₵{(item.unitPrice * item.qty).toFixed(2)}</p>
+        <div className="p-5">
+          <div className="mb-3.5 rounded-control border border-gray-200 bg-gray-50 p-3">
+            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-[0.14em]">{item.itemName}</p>
+            <p className="text-sm font-bold text-gray-900 mt-0.5">₵{(item.unitPrice * item.qty).toFixed(2)}</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Discount Type</label>
-              <select
-                value={discountType}
-                onChange={(e) => setDiscountType(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-              >
+              <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">Type</label>
+              <select value={discountType} onChange={(e) => setDiscountType(e.target.value)} className="app-input py-2 text-sm">
                 <option value="percentage">Percentage (%)</option>
                 <option value="amount">Fixed Amount (₵)</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-[0.14em] mb-1">
                 Value (max {maxDiscount.toFixed(2)}{discountType === 'percentage' ? '%' : '₵'})
               </label>
               <input
@@ -2341,7 +2264,7 @@ const DiscountModal = ({ item, onApply, onClose }) => {
                   const val = parseFloat(e.target.value) || 0
                   setDiscountValue(Math.min(val, maxDiscount))
                 }}
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-[3px] text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+                className="app-input py-2 text-sm"
                 step="0.01"
                 min="0"
                 max={maxDiscount}
@@ -2349,14 +2272,14 @@ const DiscountModal = ({ item, onApply, onClose }) => {
               />
             </div>
             {discountValue > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-[3px] p-3.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Discount</span>
-                  <span className="font-semibold text-orange-600">-₵{discountType === 'percentage' 
+              <div className="rounded-control border border-warning-200 bg-warning-50 p-3">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Discount</span>
+                  <span className="font-bold text-warning-600">-₵{discountType === 'percentage' 
                     ? ((item.unitPrice * item.qty * discountValue) / 100).toFixed(2)
                     : discountValue.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-sm mt-1.5 pt-1.5 border-t border-orange-200">
+                <div className="flex justify-between text-xs mt-1.5 pt-1.5 border-t border-warning-200">
                   <span className="font-bold text-gray-900">New Total</span>
                   <span className="font-extrabold text-gray-900">₵{discountType === 'percentage'
                     ? ((item.unitPrice * item.qty) - ((item.unitPrice * item.qty * discountValue) / 100)).toFixed(2)
@@ -2367,13 +2290,9 @@ const DiscountModal = ({ item, onApply, onClose }) => {
           </div>
         </div>
 
-        <div className="px-6 pb-6 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-[3px] border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleApply} className="flex-1 py-2.5 rounded-[3px] bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 transition-colors shadow-md shadow-orange-200">
-            Apply Discount
-          </button>
+        <div className="px-5 pb-5 flex gap-2">
+          <button onClick={onClose} className="app-btn-secondary flex-1 justify-center py-2 text-sm">Cancel</button>
+          <button onClick={handleApply} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-control bg-warning-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-warning-600 shadow-soft">Apply</button>
         </div>
       </div>
     </div>
@@ -2395,70 +2314,59 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[3px] bg-amber-100 flex items-center justify-center">
-              <Clock size={18} className="text-amber-600" />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="app-surface w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden shadow-panel">
+        <div className="px-5 py-3.5 border-b border-gray-200 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-control bg-warning-100">
+              <HIcon icon={Clock01Icon} size={15} className="text-warning-600"  />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Held Sales</h2>
-              <p className="text-xs text-gray-500">
-                {heldSales.length === 0 
-                  ? 'No held sales' 
-                  : `${heldSales.length} sale${heldSales.length > 1 ? 's' : ''} on hold`}
+              <h2 className="text-sm font-bold text-gray-900">Held Sales</h2>
+              <p className="text-[10px] text-gray-400">
+                {heldSales.length === 0 ? 'None' : `${heldSales.length} on hold`}
               </p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-[3px] text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={20} />
+          <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-control text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+            <HIcon icon={Cancel01Icon} size={16}  />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4">
           {heldSales.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <Clock size={28} className="text-gray-300" />
+            <div className="text-center py-12">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mx-auto mb-3">
+                <HIcon icon={Clock01Icon} size={20} className="text-gray-300"  />
               </div>
-              <p className="text-base font-semibold text-gray-500 mb-1">No held sales</p>
-              <p className="text-sm text-gray-400">Sales placed on hold will appear here</p>
+              <p className="text-sm font-semibold text-gray-500">No held sales</p>
+              <p className="text-xs text-gray-400 mt-0.5">Sales placed on hold will appear here</p>
             </div>
           ) : (
-            <div className="space-y-3 p-5">
+            <div className="space-y-2">
               {heldSales.map((sale) => (
-                <div 
-                  key={sale.id}
-                  className="bg-white border border-gray-200 rounded-[3px] p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-gray-900 text-sm font-mono">#{sale.id}</span>
-                        <span className="text-xs text-gray-400">{formatDate(sale.timestamp)}</span>
+                <div key={sale.id} className="rounded-control border border-gray-200 bg-white p-3 hover:shadow-soft transition-shadow">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-gray-900 text-xs font-mono">#{sale.id}</span>
+                        <span className="text-[10px] text-gray-400">{formatDate(sale.timestamp)}</span>
                       </div>
                       {sale.customer && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-1">
-                          <User size={13} className="text-gray-400" />
-                          {sale.customer.name || sale.customer.phone || 'N/A'}
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                          <HIcon icon={UserIcon} size={11} className="text-gray-400"  />
+                          <span className="truncate">{sale.customer.name || sale.customer.phone || 'N/A'}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span className="bg-gray-100 rounded-lg px-2 py-0.5">{sale.itemCount} items</span>
-                        <span className="bg-gray-100 rounded-lg px-2 py-0.5">{sale.totalQty} units</span>
-                        <span className="bg-gray-100 rounded-lg px-2 py-0.5">{sale.selectedPayment || 'N/A'}</span>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
+                        <span className="rounded-full bg-gray-100 px-1.5 py-px">{sale.itemCount} items</span>
+                        <span className="rounded-full bg-gray-100 px-1.5 py-px">{sale.totalQty} qty</span>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-xl font-extrabold text-primary-600">₵{(sale.total || 0).toFixed(2)}</div>
+                      <div className="text-base font-extrabold text-primary-600">₵{(sale.total || 0).toFixed(2)}</div>
                       {sale.cartDiscount && sale.cartDiscount.value > 0 && (
-                        <div className="text-xs text-orange-500 font-medium">
+                        <div className="text-[10px] text-warning-600 font-medium">
                           -₵{sale.cartDiscount.type === 'percentage' 
                             ? ((sale.subtotal * sale.cartDiscount.value) / 100).toFixed(2)
                             : sale.cartDiscount.value.toFixed(2)} disc.
@@ -2467,35 +2375,25 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
                     </div>
                   </div>
 
-                  {/* Items Preview */}
-                  <div className="mb-3 pt-3 border-t border-gray-100">
-                    <div className="space-y-1 max-h-24 overflow-auto">
-                      {sale.items.slice(0, 4).map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-xs text-gray-500">
+                  <div className="mb-2 pt-2 border-t border-gray-50">
+                    <div className="space-y-0.5 max-h-16 overflow-auto">
+                      {sale.items.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-[10px] text-gray-400">
                           <span className="truncate">{item.qty} {item.unitLabel || 'pc'} × {item.itemName}</span>
-                          <span className="font-semibold shrink-0 ml-2">₵{(item.extPrice || 0).toFixed(2)}</span>
+                          <span className="font-semibold shrink-0 ml-2 text-gray-500">₵{(item.extPrice || 0).toFixed(2)}</span>
                         </div>
                       ))}
-                      {sale.items.length > 4 && (
-                        <div className="text-xs text-gray-400 italic">+{sale.items.length - 4} more</div>
-                      )}
+                      {sale.items.length > 3 && <div className="text-[10px] text-gray-300">+{sale.items.length - 3} more</div>}
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => onRecall(sale)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-[3px] bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors shadow-sm"
-                    >
-                      <RotateCw size={15} />
+                  <div className="flex gap-1.5 pt-2 border-t border-gray-50">
+                    <button onClick={() => onRecall(sale)} className="app-btn-primary flex-1 justify-center gap-1.5 py-2 text-xs">
+                      <HIcon icon={RotateClockwiseIcon} size={13}  />
                       Recall
                     </button>
-                    <button
-                      onClick={() => onDelete(sale.id)}
-                      className="flex items-center gap-1.5 py-2.5 px-3.5 rounded-[3px] bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold transition-colors border border-red-200"
-                    >
-                      <Trash2 size={15} />
+                    <button onClick={() => onDelete(sale.id)} className="flex h-8 w-8 items-center justify-center rounded-control border border-danger-200 bg-danger-50 text-danger-600 hover:bg-danger-100 transition-colors">
+                      <HIcon icon={Delete01Icon} size={13}  />
                     </button>
                   </div>
                 </div>
@@ -2504,128 +2402,8 @@ const HeldSalesModal = ({ heldSales, onRecall, onDelete, onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end shrink-0">
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 rounded-[3px] border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Success Modal Component
-const SuccessModal = ({ transaction, onClose }) => {
-  const formatDate = (date) => {
-    if (!date) return 'Unknown'
-    const d = new Date(date)
-    return d.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        {/* Header with Success Icon */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 px-6 pt-8 pb-7">
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 shadow-lg">
-              <CheckCircle size={36} className="text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-white mb-1">Transaction Complete!</h2>
-            <p className="text-green-100 text-sm">
-              Sale has been {transaction.action || 'completed'} successfully
-            </p>
-          </div>
-        </div>
-
-        {/* Transaction Details */}
-        <div className="px-6 py-5">
-          <div className="space-y-2.5 text-sm">
-            {/* Receipt Number */}
-            <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
-              <span className="text-gray-500">Receipt #</span>
-              <span className="font-mono font-bold text-gray-900">{transaction.receiptNumber}</span>
-            </div>
-
-            {/* Date & Time */}
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Date &amp; Time</span>
-              <span className="text-gray-700 font-medium">{formatDate(transaction.date)}</span>
-            </div>
-
-            {/* Customer */}
-            {transaction.customer && (
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">Customer</span>
-                <span className="text-gray-700 font-semibold">{transaction.customer}</span>
-              </div>
-            )}
-
-            {/* Payment Method */}
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Payment</span>
-              <span className="font-semibold text-gray-700 capitalize">{transaction.paymentMethod}</span>
-            </div>
-
-            {/* Items Summary */}
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Items / Units</span>
-              <span className="font-semibold text-gray-700">
-                {(transaction.items || []).length} items &middot; {(transaction.items || []).reduce((sum, item) => sum + item.qty, 0)} units
-              </span>
-            </div>
-
-            {/* Amounts */}
-            <div className="pt-2.5 mt-1 border-t border-gray-100 space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="text-gray-700">₵{(transaction.subtotal || 0).toFixed(2)}</span>
-              </div>
-              {(transaction.discount || 0) > 0 && (
-                <div className="flex justify-between text-orange-500">
-                  <span>Discount</span>
-                  <span className="font-semibold">-₵{(transaction.discount || 0).toFixed(2)}</span>
-                </div>
-              )}
-              {(transaction.tax || 0) > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tax</span>
-                  <span className="text-gray-700">₵{(transaction.tax || 0).toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                <span className="font-bold text-gray-900">Total</span>
-                <span className="text-2xl font-extrabold text-green-600">₵{(transaction.total || 0).toFixed(2)}</span>
-              </div>
-              {(transaction.change || 0) > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Change</span>
-                  <span className="font-bold text-primary-600">₵{(transaction.change || 0).toFixed(2)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 pb-6 flex justify-end">
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-8 py-2.5 rounded-[3px] bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition-colors shadow-md shadow-green-200"
-          >
-            <Check size={16} />
-            New Sale
-          </button>
+        <div className="px-5 py-3 border-t border-gray-200 flex justify-end shrink-0">
+          <button onClick={onClose} className="app-btn-secondary py-2 text-sm">Close</button>
         </div>
       </div>
     </div>

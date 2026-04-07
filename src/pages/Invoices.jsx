@@ -1,24 +1,25 @@
 import React, { useState } from 'react'
-import { 
-  FileText, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
-  Filter,
-  Send,
-  Eye,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  Printer,
-  Copy,
-  CreditCard,
-  Wallet,
-  X,
-  DollarSign,
-  Receipt
-} from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  AlertCircleIcon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Copy01Icon,
+  CreditCardIcon,
+  Delete01Icon,
+  DollarCircleIcon,
+  FileValidationIcon,
+  FilterIcon,
+  PencilEdit01Icon,
+  PrinterIcon,
+  ReceiptTextIcon,
+  Search01Icon,
+  MailSend01Icon,
+  ViewIcon,
+  Wallet02Icon,
+} from '@hugeicons/core-free-icons'
 import CreateInvoice from '../components/CreateInvoice'
 import InvoiceReceipt from '../components/InvoiceReceipt'
 
@@ -185,12 +186,12 @@ const Invoices = () => {
 
   const getStatusIcon = (status) => {
     switch(status) {
-      case 'paid': return <CheckCircle size={14} />
-      case 'sent': return <Send size={14} />
-      case 'overdue': return <AlertCircle size={14} />
-      case 'partial': return <Clock size={14} />
-      case 'draft': return <FileText size={14} />
-      default: return <FileText size={14} />
+      case 'paid': return <HIcon icon={CheckmarkCircle02Icon} size={14}  />
+      case 'sent': return <HIcon icon={MailSend01Icon} size={14}  />
+      case 'overdue': return <HIcon icon={AlertCircleIcon} size={14}  />
+      case 'partial': return <HIcon icon={Clock01Icon} size={14}  />
+      case 'draft': return <HIcon icon={FileValidationIcon} size={14}  />
+      default: return <HIcon icon={FileValidationIcon} size={14}  />
     }
   }
 
@@ -273,14 +274,14 @@ const Invoices = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <FileText size={18} strokeWidth={2} />
+                <HIcon icon={FileValidationIcon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Invoices & Payments</h1>
@@ -294,7 +295,7 @@ const Invoices = () => {
               }}
               className="btn-primary flex items-center"
             >
-              <Plus size={18} className="mr-2" />
+              <HIcon icon={Add01Icon} size={18} className="mr-2"  />
               Create Invoice
             </button>
           </div>
@@ -312,7 +313,7 @@ const Invoices = () => {
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-              <FileText size={20} className="text-primary-600" />
+              <HIcon icon={FileValidationIcon} size={20} className="text-primary-600"  />
             </div>
           </div>
         </div>
@@ -323,7 +324,7 @@ const Invoices = () => {
               <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-              <CheckCircle size={20} className="text-green-600" />
+              <HIcon icon={CheckmarkCircle02Icon} size={20} className="text-green-600"  />
             </div>
           </div>
         </div>
@@ -334,7 +335,7 @@ const Invoices = () => {
               <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
-              <AlertCircle size={20} className="text-red-600" />
+              <HIcon icon={AlertCircleIcon} size={20} className="text-red-600"  />
             </div>
           </div>
         </div>
@@ -345,7 +346,7 @@ const Invoices = () => {
               <p className="text-2xl font-bold text-primary-600">₵{(stats.totalAmount / 1000).toFixed(0)}K</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-              <DollarSign size={20} className="text-primary-600" />
+              <HIcon icon={DollarCircleIcon} size={20} className="text-primary-600"  />
             </div>
           </div>
         </div>
@@ -356,7 +357,7 @@ const Invoices = () => {
               <p className="text-2xl font-bold text-orange-600">₵{(stats.outstanding / 1000).toFixed(0)}K</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-              <CreditCard size={20} className="text-orange-600" />
+              <HIcon icon={CreditCardIcon} size={20} className="text-orange-600"  />
             </div>
           </div>
         </div>
@@ -365,12 +366,12 @@ const Invoices = () => {
       {/* Search and Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-center mb-4">
-          <Search size={20} className="text-primary-600 mr-2" />
+          <HIcon icon={Search01Icon} size={20} className="text-primary-600 mr-2"  />
           <h3 className="text-lg font-semibold text-gray-900">Search & Filter</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20}  />
             <input
               type="text"
               placeholder="Search by invoice number, customer name, email..."
@@ -381,7 +382,7 @@ const Invoices = () => {
           </div>
           <div className="relative">
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Filter size={18} className="text-gray-400" />
+              <HIcon icon={FilterIcon} size={18} className="text-gray-400"  />
             </div>
             <select
               value={statusFilter}
@@ -403,7 +404,7 @@ const Invoices = () => {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b bg-gray-50">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <FileText size={20} className="text-primary-600 mr-2" />
+            <HIcon icon={FileValidationIcon} size={20} className="text-primary-600 mr-2"  />
             Invoices List
           </h3>
         </div>
@@ -427,7 +428,7 @@ const Invoices = () => {
                   <tr key={invoice.id || `invoice-${index}`} className="border-b hover:bg-primary-50 transition-colors group">
                     <td className="py-5 px-6">
                       <div className="flex items-center">
-                        <FileText size={18} className="text-primary-600 mr-2" />
+                        <HIcon icon={FileValidationIcon} size={18} className="text-primary-600 mr-2"  />
                         <span className="font-bold text-gray-900">{invoice.invoiceNumber || 'N/A'}</span>
                       </div>
                     </td>
@@ -468,7 +469,7 @@ const Invoices = () => {
                           className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="View Details"
                         >
-                          <Eye size={18} />
+                          <HIcon icon={ViewIcon} size={18}  />
                         </button>
                         <button
                           onClick={() => {
@@ -478,28 +479,28 @@ const Invoices = () => {
                           className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="Generate Receipt"
                         >
-                          <Receipt size={18} />
+                          <HIcon icon={ReceiptTextIcon} size={18}  />
                         </button>
                         <button
                           onClick={() => handleSendInvoice(invoice)}
                           className="p-2 rounded-lg hover:bg-green-100 text-green-600 transition-all hover:scale-110"
                           title="Send Invoice"
                         >
-                          <Send size={18} />
+                          <HIcon icon={MailSend01Icon} size={18}  />
                         </button>
                         <button
                           onClick={() => handleEditInvoice(invoice)}
                           className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-all hover:scale-110"
                           title="Edit"
                         >
-                          <Edit size={18} />
+                          <HIcon icon={PencilEdit01Icon} size={18}  />
                         </button>
                         <button
                           onClick={() => handleDeleteInvoice(invoice)}
                           className="p-2 rounded-lg hover:bg-red-100 text-red-600 transition-all hover:scale-110"
                           title="Delete"
                         >
-                          <Trash2 size={18} />
+                          <HIcon icon={Delete01Icon} size={18}  />
                         </button>
                       </div>
                     </td>
@@ -510,7 +511,7 @@ const Invoices = () => {
                   <td colSpan="8" className="py-16 text-center">
                     <div className="flex flex-col items-center">
                       <div className="bg-gray-100 p-4 rounded-full mb-4">
-                        <FileText size={48} className="text-gray-400" />
+                        <HIcon icon={FileValidationIcon} size={48} className="text-gray-400"  />
                       </div>
                       <p className="text-xl font-semibold text-gray-500 mb-2">No invoices found</p>
                       <p className="text-sm text-gray-500">
@@ -594,7 +595,7 @@ const Invoices = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="bg-primary-500 p-2 rounded-lg mr-3">
-                    <FileText size={24} className="text-white" />
+                    <HIcon icon={FileValidationIcon} size={24} className="text-white"  />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">Invoice {selectedInvoice.invoiceNumber}</h3>
@@ -607,7 +608,7 @@ const Invoices = () => {
                     className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                     title="Print"
                   >
-                    <Printer size={20} />
+                    <HIcon icon={PrinterIcon} size={20}  />
                   </button>
                   <button
                     onClick={() => {
@@ -617,13 +618,13 @@ const Invoices = () => {
                     className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                     title="Copy Invoice Number"
                   >
-                    <Copy size={20} />
+                    <HIcon icon={Copy01Icon} size={20}  />
                   </button>
                   <button 
                     onClick={() => setShowDetailModal(false)} 
                     className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                   >
-                    <X size={24} />
+                    <HIcon icon={Cancel01Icon} size={24}  />
                   </button>
                 </div>
               </div>
@@ -752,21 +753,21 @@ const Invoices = () => {
                   }}
                   className="btn-primary flex-1 flex items-center justify-center"
                 >
-                  <Receipt size={18} className="mr-2" />
+                  <HIcon icon={ReceiptTextIcon} size={18} className="mr-2"  />
                   Generate Receipt
                 </button>
                 <button
                   onClick={() => handleRecordPayment(selectedInvoice)}
                   className="btn-primary flex-1 flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
-                  <Wallet size={18} className="mr-2" />
+                  <HIcon icon={Wallet02Icon} size={18} className="mr-2"  />
                   Record Payment
                 </button>
                 <button
                   onClick={() => handleSendInvoice(selectedInvoice)}
                   className="btn-primary flex-1 flex items-center justify-center"
                 >
-                  <Send size={18} className="mr-2" />
+                  <HIcon icon={MailSend01Icon} size={18} className="mr-2"  />
                   Send Invoice
                 </button>
                 <button
@@ -776,7 +777,7 @@ const Invoices = () => {
                   }}
                   className="btn-secondary flex-1 flex items-center justify-center"
                 >
-                  <Edit size={18} className="mr-2" />
+                  <HIcon icon={PencilEdit01Icon} size={18} className="mr-2"  />
                   Edit
                 </button>
               </div>

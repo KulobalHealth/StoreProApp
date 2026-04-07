@@ -1,29 +1,30 @@
 import React, { useState } from 'react'
-import { 
-  Store, 
-  TrendingUp, 
-  Package, 
-  ArrowRightLeft, 
-  Download, 
-  Filter, 
-  Search,
-  MapPin,
-  DollarSign,
-  ShoppingCart,
-  BarChart3,
-  FileText,
-  CheckCircle,
-  Clock,
-  X,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  User,
-  Calendar,
-  Phone,
-  AlertCircle
-} from 'lucide-react'
+import { HIcon } from '../components/HIcon'
+import {
+  Add01Icon,
+  AlertCircleIcon,
+  Analytics02Icon,
+  ArrowMoveUpRightIcon,
+  ArrowDataTransferHorizontalIcon,
+  Calendar01Icon,
+  CallIcon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Delete01Icon,
+  DollarCircleIcon,
+  Download01Icon,
+  FileValidationIcon,
+  FilterIcon,
+  MapPinIcon,
+  Package01Icon,
+  PencilEdit01Icon,
+  Search01Icon,
+  ShoppingCart01Icon,
+  Store01Icon,
+  UserIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 
 const MultiStore = () => {
@@ -278,14 +279,14 @@ const MultiStore = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <Store size={18} strokeWidth={2} />
+                <HIcon icon={Store01Icon} size={18} strokeWidth={2}  />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900 tracking-tight">Multi-Store Management</h1>
@@ -297,14 +298,14 @@ const MultiStore = () => {
                 onClick={handleExportData}
                 className="btn-secondary flex items-center"
               >
-                <Download size={18} className="mr-2" />
+                <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                 Export Data
               </button>
               <button
                 onClick={() => setShowAddStoreModal(true)}
                 className="btn-primary flex items-center"
               >
-                <Plus size={18} className="mr-2" />
+                <HIcon icon={Add01Icon} size={18} className="mr-2"  />
                 Add Store
               </button>
             </div>
@@ -317,7 +318,7 @@ const MultiStore = () => {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <label className="text-sm font-semibold text-gray-700 flex items-center">
-            <Filter size={18} className="mr-2" />
+            <HIcon icon={FilterIcon} size={18} className="mr-2"  />
             Select Store:
           </label>
         </div>
@@ -342,7 +343,7 @@ const MultiStore = () => {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <MapPin size={16} className="mr-2" />
+              <HIcon icon={MapPinIcon} size={16} className="mr-2"  />
               {store.name}
             </button>
           ))}
@@ -388,7 +389,7 @@ const MultiStore = () => {
                   <p className="text-sm opacity-90 mb-1">Total Stores</p>
                   <p className="text-3xl font-bold">{consolidatedStats.totalStores}</p>
                 </div>
-                <Store size={32} className="opacity-80" />
+                <HIcon icon={Store01Icon} size={32} className="opacity-80"  />
               </div>
             </div>
             <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
@@ -397,7 +398,7 @@ const MultiStore = () => {
                   <p className="text-sm opacity-90 mb-1">Total Sales</p>
                   <p className="text-3xl font-bold">₵{(consolidatedStats.totalSales / 1000).toFixed(0)}K</p>
                 </div>
-                <DollarSign size={32} className="opacity-80" />
+                <HIcon icon={DollarCircleIcon} size={32} className="opacity-80"  />
               </div>
             </div>
             <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
@@ -406,7 +407,7 @@ const MultiStore = () => {
                   <p className="text-sm opacity-90 mb-1">Total Inventory</p>
                   <p className="text-3xl font-bold">₵{(consolidatedStats.totalInventory / 1000).toFixed(0)}K</p>
                 </div>
-                <Package size={32} className="opacity-80" />
+                <HIcon icon={Package01Icon} size={32} className="opacity-80"  />
               </div>
             </div>
             <div className="card bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
@@ -415,7 +416,7 @@ const MultiStore = () => {
                   <p className="text-sm opacity-90 mb-1">Monthly Sales</p>
                   <p className="text-3xl font-bold">₵{(consolidatedStats.monthlySales / 1000).toFixed(0)}K</p>
                 </div>
-                <TrendingUp size={32} className="opacity-80" />
+                <HIcon icon={ArrowMoveUpRightIcon} size={32} className="opacity-80"  />
               </div>
             </div>
             <div className="card bg-gradient-to-br from-primary-600 to-primary-700 text-white">
@@ -424,7 +425,7 @@ const MultiStore = () => {
                   <p className="text-sm opacity-90 mb-1">Active Stores</p>
                   <p className="text-3xl font-bold">{consolidatedStats.activeStores}</p>
                 </div>
-                <CheckCircle size={32} className="opacity-80" />
+                <HIcon icon={CheckmarkCircle02Icon} size={32} className="opacity-80"  />
               </div>
             </div>
           </div>
@@ -449,7 +450,7 @@ const MultiStore = () => {
                     <tr key={store.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="flex items-center">
-                          <Store size={18} className="text-primary-600 mr-2" />
+                          <HIcon icon={Store01Icon} size={18} className="text-primary-600 mr-2"  />
                           <span className="font-medium text-gray-900">{store.name}</span>
                         </div>
                       </td>
@@ -468,13 +469,13 @@ const MultiStore = () => {
                             className="p-2 rounded-lg hover:bg-primary-100 text-primary-600 transition-colors"
                             title="View Details"
                           >
-                            <Eye size={16} />
+                            <HIcon icon={ViewIcon} size={16}  />
                           </button>
                           <button
                             className="p-2 rounded-lg hover:bg-green-100 text-green-600 transition-colors"
                             title="Edit"
                           >
-                            <Edit size={16} />
+                            <HIcon icon={PencilEdit01Icon} size={16}  />
                           </button>
                         </div>
                       </td>
@@ -531,7 +532,7 @@ const MultiStore = () => {
                 {stores.map((store) => (
                   <div key={store.id} className="bg-gray-50 p-4 rounded-lg border">
                     <div className="flex items-center mb-2">
-                      <MapPin size={16} className="text-primary-600 mr-2" />
+                      <HIcon icon={MapPinIcon} size={16} className="text-primary-600 mr-2"  />
                       <span className="font-semibold text-gray-900">{store.name}</span>
                     </div>
                     <p className="text-2xl font-bold text-primary-600 mb-1">
@@ -595,7 +596,7 @@ const MultiStore = () => {
                         <span className="text-primary-600 font-bold">₵{item.value.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <Package size={14} className="mr-1" />
+                        <HIcon icon={Package01Icon} size={14} className="mr-1"  />
                         Quantity: {item.quantity.toLocaleString()} units
                       </div>
                     </div>
@@ -660,7 +661,7 @@ const MultiStore = () => {
               onClick={() => setShowTransferModal(true)}
               className="btn-primary flex items-center"
             >
-              <Plus size={18} className="mr-2" />
+              <HIcon icon={Add01Icon} size={18} className="mr-2"  />
               Create Transfer
             </button>
           </div>
@@ -697,8 +698,8 @@ const MultiStore = () => {
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-gray-100 text-gray-700'
                         }`}>
-                          {transfer.status === 'completed' && <CheckCircle size={12} className="inline mr-1" />}
-                          {transfer.status === 'in-transit' && <Clock size={12} className="inline mr-1" />}
+                          {transfer.status === 'completed' && <HIcon icon={CheckmarkCircle02Icon} size={12} className="inline mr-1"  />}
+                          {transfer.status === 'in-transit' && <HIcon icon={Clock01Icon} size={12} className="inline mr-1"  />}
                           {transfer.status.charAt(0).toUpperCase() + transfer.status.slice(1)}
                         </span>
                       </td>
@@ -722,7 +723,7 @@ const MultiStore = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="bg-primary-500 p-2 rounded-lg mr-3">
-                    <Store size={24} className="text-white" />
+                    <HIcon icon={Store01Icon} size={24} className="text-white"  />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">Add New Store</h3>
@@ -733,7 +734,7 @@ const MultiStore = () => {
                   onClick={() => setShowAddStoreModal(false)} 
                   className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                 >
-                  <X size={24} />
+                  <HIcon icon={Cancel01Icon} size={24}  />
                 </button>
               </div>
             </div>
@@ -744,7 +745,7 @@ const MultiStore = () => {
                 {/* Store Name */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Store size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={Store01Icon} size={16} className="text-primary-600 mr-2"  />
                     Store Name <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -755,14 +756,14 @@ const MultiStore = () => {
                       className="input-field pl-10 w-full"
                       placeholder="e.g., New Branch - Location"
                     />
-                    <Store size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={Store01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                 </div>
 
                 {/* Address */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <MapPin size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={MapPinIcon} size={16} className="text-primary-600 mr-2"  />
                     Address <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -773,14 +774,14 @@ const MultiStore = () => {
                       className="input-field pl-10 w-full"
                       placeholder="Full street address"
                     />
-                    <MapPin size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={MapPinIcon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                 </div>
 
                 {/* Phone */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Phone size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={CallIcon} size={16} className="text-primary-600 mr-2"  />
                     Phone Number <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -791,14 +792,14 @@ const MultiStore = () => {
                       className="input-field pl-10 w-full"
                       placeholder="+233 XX XXX XXXX"
                     />
-                    <Phone size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={CallIcon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                 </div>
 
                 {/* Manager */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <User size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={UserIcon} size={16} className="text-primary-600 mr-2"  />
                     Manager Name
                   </label>
                   <div className="relative">
@@ -809,14 +810,14 @@ const MultiStore = () => {
                       className="input-field pl-10 w-full"
                       placeholder="Manager full name"
                     />
-                    <User size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={UserIcon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                 </div>
 
                 {/* Opening Date */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Calendar size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={Calendar01Icon} size={16} className="text-primary-600 mr-2"  />
                     Opening Date
                   </label>
                   <div className="relative">
@@ -826,7 +827,7 @@ const MultiStore = () => {
                       onChange={(e) => setNewStore({ ...newStore, openingDate: e.target.value })}
                       className="input-field pl-10 w-full"
                     />
-                    <Calendar size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <HIcon icon={Calendar01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"  />
                   </div>
                 </div>
               </div>
@@ -834,7 +835,7 @@ const MultiStore = () => {
               {/* Info Box */}
               <div className="mt-6 p-4 bg-primary-50 border-l-4 border-primary-500 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle size={20} className="text-primary-600 mr-3 mt-0.5" />
+                  <HIcon icon={AlertCircleIcon} size={20} className="text-primary-600 mr-3 mt-0.5"  />
                   <div>
                     <p className="text-sm font-medium text-primary-900">Store Information</p>
                     <p className="text-xs text-primary-700 mt-1">
@@ -851,14 +852,14 @@ const MultiStore = () => {
                   onClick={() => setShowAddStoreModal(false)} 
                   className="btn-secondary flex-1 flex items-center justify-center"
                 >
-                  <X size={18} className="mr-2" />
+                  <HIcon icon={Cancel01Icon} size={18} className="mr-2"  />
                   Cancel
                 </button>
                 <button 
                   onClick={handleAddStore} 
                   className="btn-primary flex-1 flex items-center justify-center"
                 >
-                  <Plus size={18} className="mr-2" />
+                  <HIcon icon={Add01Icon} size={18} className="mr-2"  />
                   Add Store
                 </button>
               </div>
@@ -876,7 +877,7 @@ const MultiStore = () => {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
-                    <ArrowRightLeft size={24} className="text-white" />
+                    <HIcon icon={ArrowDataTransferHorizontalIcon} size={24} className="text-white"  />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">Create Inventory Transfer</h3>
@@ -887,7 +888,7 @@ const MultiStore = () => {
                   onClick={() => setShowTransferModal(false)} 
                   className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
                 >
-                  <X size={24} />
+                  <HIcon icon={Cancel01Icon} size={24}  />
                 </button>
               </div>
             </div>
@@ -898,7 +899,7 @@ const MultiStore = () => {
                 {/* From Store */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Store size={16} className="text-red-500 mr-2" />
+                    <HIcon icon={Store01Icon} size={16} className="text-red-500 mr-2"  />
                     From Store <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -912,11 +913,11 @@ const MultiStore = () => {
                         <option key={store.id} value={store.name}>{store.name}</option>
                       ))}
                     </select>
-                    <Store size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <HIcon icon={Store01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"  />
                   </div>
                   {newTransfer.fromStore && (
                     <p className="text-xs text-gray-500 mt-1 flex items-center">
-                      <MapPin size={12} className="mr-1" />
+                      <HIcon icon={MapPinIcon} size={12} className="mr-1"  />
                       {stores.find(s => s.name === newTransfer.fromStore)?.address}
                     </p>
                   )}
@@ -925,7 +926,7 @@ const MultiStore = () => {
                 {/* To Store */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Store size={16} className="text-green-500 mr-2" />
+                    <HIcon icon={Store01Icon} size={16} className="text-green-500 mr-2"  />
                     To Store <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -942,11 +943,11 @@ const MultiStore = () => {
                           <option key={store.id} value={store.name}>{store.name}</option>
                         ))}
                     </select>
-                    <Store size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <HIcon icon={Store01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"  />
                   </div>
                   {newTransfer.toStore && (
                     <p className="text-xs text-gray-500 mt-1 flex items-center">
-                      <MapPin size={12} className="mr-1" />
+                      <HIcon icon={MapPinIcon} size={12} className="mr-1"  />
                       {stores.find(s => s.name === newTransfer.toStore)?.address}
                     </p>
                   )}
@@ -960,7 +961,7 @@ const MultiStore = () => {
                         <p className="text-xs font-medium text-gray-600 mb-1">From</p>
                         <p className="text-sm font-semibold text-red-600">{newTransfer.fromStore}</p>
                       </div>
-                      <ArrowRightLeft size={24} className="mx-4 text-primary-600" />
+                      <HIcon icon={ArrowDataTransferHorizontalIcon} size={24} className="mx-4 text-primary-600"  />
                       <div className="text-center">
                         <p className="text-xs font-medium text-gray-600 mb-1">To</p>
                         <p className="text-sm font-semibold text-green-600">{newTransfer.toStore}</p>
@@ -972,7 +973,7 @@ const MultiStore = () => {
                 {/* Product */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Package size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={Package01Icon} size={16} className="text-primary-600 mr-2"  />
                     Product Name <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -983,7 +984,7 @@ const MultiStore = () => {
                       className="input-field pl-10 w-full"
                       placeholder="Enter product name or scan barcode"
                     />
-                    <Package size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={Package01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">You can search by product name or scan barcode</p>
                 </div>
@@ -991,7 +992,7 @@ const MultiStore = () => {
                 {/* Quantity */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <ShoppingCart size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={ShoppingCart01Icon} size={16} className="text-primary-600 mr-2"  />
                     Quantity <span className="text-red-500 ml-1">*</span>
                   </label>
                   <div className="relative">
@@ -1003,14 +1004,14 @@ const MultiStore = () => {
                       placeholder="0"
                       min="1"
                     />
-                    <ShoppingCart size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HIcon icon={ShoppingCart01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"  />
                   </div>
                 </div>
 
                 {/* Transfer Date */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <Calendar size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={Calendar01Icon} size={16} className="text-primary-600 mr-2"  />
                     Transfer Date
                   </label>
                   <div className="relative">
@@ -1019,14 +1020,14 @@ const MultiStore = () => {
                       defaultValue={new Date().toISOString().split('T')[0]}
                       className="input-field pl-10 w-full"
                     />
-                    <Calendar size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <HIcon icon={Calendar01Icon} size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"  />
                   </div>
                 </div>
 
                 {/* Notes */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                    <FileText size={16} className="text-primary-600 mr-2" />
+                    <HIcon icon={FileValidationIcon} size={16} className="text-primary-600 mr-2"  />
                     Notes (Optional)
                   </label>
                   <textarea
@@ -1043,7 +1044,7 @@ const MultiStore = () => {
               {/* Info Box */}
               <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle size={20} className="text-green-600 mr-3 mt-0.5" />
+                  <HIcon icon={AlertCircleIcon} size={20} className="text-green-600 mr-3 mt-0.5"  />
                   <div>
                     <p className="text-sm font-medium text-green-900">Transfer Information</p>
                     <p className="text-xs text-green-700 mt-1">
@@ -1060,7 +1061,7 @@ const MultiStore = () => {
                   onClick={() => setShowTransferModal(false)} 
                   className="btn-secondary flex-1 flex items-center justify-center"
                 >
-                  <X size={18} className="mr-2" />
+                  <HIcon icon={Cancel01Icon} size={18} className="mr-2"  />
                   Cancel
                 </button>
                 <button 
@@ -1072,7 +1073,7 @@ const MultiStore = () => {
                   }`}
                   disabled={!newTransfer.fromStore || !newTransfer.toStore || !newTransfer.product || !newTransfer.quantity}
                 >
-                  <ArrowRightLeft size={18} className="mr-2" />
+                  <HIcon icon={ArrowDataTransferHorizontalIcon} size={18} className="mr-2"  />
                   Create Transfer
                 </button>
               </div>
@@ -1088,7 +1089,7 @@ const MultiStore = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-gray-900">Store Details</h3>
               <button onClick={() => setShowStoreDetailsModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
+                <HIcon icon={Cancel01Icon} size={24}  />
               </button>
             </div>
             <div className="space-y-4">
