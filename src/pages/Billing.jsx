@@ -23,6 +23,8 @@ import {
   Rocket01Icon,
   Building01Icon,
 } from '@hugeicons/core-free-icons'
+import { initiatePayment } from '../api/awoselDb'
+import { getSessionOrgId } from '../utils/branch'
 
 /* ─── Current Plan Banner ─── */
 const CurrentPlanBanner = ({ planName = 'Starter', renewalDate = 'Apr 30, 2026' }) => (
@@ -236,12 +238,14 @@ const BillingPlanTab = ({ onSubscribe }) => {
 
 /* ─── Wallet Tab ─── */
 const WalletTab = ({ onLoadSuccess }) => {
-  const [walletCreated, setWalletCreated] = useState(false)
-  const [walletType, setWalletType] = useState('momo')
-  const [momoNumber, setMomoNumber] = useState('')
-  const [momoProvider, setMomoProvider] = useState('MTN')
-  const [bankName, setBankName] = useState('')
-  const [bankAccount, setBankAccount] = useState('')
+  const [walletCreated, setWalletCreated] = useState(() => localStorage.getItem('awosel_wallet_created') === 'true')
+  const [walletType, setWalletType] = useState('paystack')
+  const [network, setNetwork] = useState('MTN')
+  const [offlinePaymentType, setOfflinePaymentType] = useState('OFFLINE_MOBILE_PAYMENT')
+  const [setupAmount, setSetupAmount] = useState('')
+  const [offlineProofFile, setOfflineProofFile] = useState(null)
+  const [setupError, setSetupError] = useState('')
+  const [setupSubmitting, setSetupSubmitting] = useState(false)
   const [balance, setBalance] = useState(2400)
   const [loadAmount, setLoadAmount] = useState('')
   const [showLoadForm, setShowLoadForm] = useState(false)
@@ -254,15 +258,84 @@ const WalletTab = ({ onLoadSuccess }) => {
 
   const quickAmounts = [100, 500, 1000, 2000]
 
-  const handleCreateWallet = (e) => {
+  const handleCreateWallet = async (e) => {
     e.preventDefault()
-    setWalletCreated(true)
+    setSetupError('')
+    const amount = parseFloat(setupAmount)
+    const organizationId = getSessionOrgId()
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setSetupError('Please enter a valid amount greater than 0.')
+      return
+    }
+
+    if (!organizationId) {
+      setSetupError('Organization ID is missing. Please log in again and retry.')
+      return
+    }
+
+    if (walletType === 'offline' && !offlineProofFile) {
+      setSetupError('Please upload proof of payment for offline payment.')
+      return
+    }
+
+    try {
+      setSetupSubmitting(true)
+      const paymentType = walletType === 'paystack' ? 'PAYSTACK' : offlinePaymentType
+      const apiAmount = Number(amount.toFixed(2))
+      const payload = {
+        amount: apiAmount,
+        organizationId: String(organizationId),
+        payment_type: paymentType,
+        network,
+        currency: 'GHS',
+        proof_file_name: offlineProofFile?.name || null,
+      }
+
+      const res = await initiatePayment(payload)
+      const paymentData = res?.data || {}
+      const paymentReference = paymentData?.reference
+        || paymentData?.paystack_reference
+        || paymentData?.publicId
+        || paymentData?.public_id
+        || ''
+      const paymentUrl = paymentData?.authorization_url
+        || paymentData?.paystack_authorization_url
+        || res?.authorization_url
+        || res?.paystack_authorization_url
+        || ''
+
+      if (walletType === 'paystack') {
+        if (!paymentUrl) {
+          setSetupError('Payment initialized, but no Paystack URL was returned.')
+          return
+        }
+        if (paymentReference) {
+          localStorage.setItem('awosel_last_payment_reference', paymentReference)
+        }
+        window.location.assign(paymentUrl)
+        return
+      }
+
+      setWalletCreated(true)
+      localStorage.setItem('awosel_wallet_created', 'true')
+      setBalance((prev) => prev + amount)
+      onLoadSuccess?.(amount)
+    } catch (err) {
+      setSetupError(err.message || 'Failed to initiate payment.')
+    } finally {
+      setSetupSubmitting(false)
+    }
   }
 
   const handleLoadWallet = (e) => {
     e.preventDefault()
     const amount = parseFloat(loadAmount)
     if (amount > 0) {
+      if (!walletCreated) {
+        setWalletCreated(true)
+        localStorage.setItem('awosel_wallet_created', 'true')
+      }
       setBalance((prev) => prev + amount)
       setLoadAmount('')
       setShowLoadForm(false)
@@ -280,9 +353,9 @@ const WalletTab = ({ onLoadSuccess }) => {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: '#FFF3EB' }}>
               <HIcon icon={Wallet02Icon} size={28} style={{ color: '#FF7521' }} />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Create Your Wallet</h2>
+            <h2 className="text-xl font-bold text-gray-900">Top Up Your Wallet</h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-gray-500">
-              Link a payment method to fund your wallet. Your wallet balance is used to pay for your subscription automatically.
+              Initiate wallet funding with Paystack or submit an offline payment with proof.
             </p>
           </div>
 
@@ -291,8 +364,8 @@ const WalletTab = ({ onLoadSuccess }) => {
             {/* Type selector */}
             <div className="mb-6 grid grid-cols-2 gap-3">
               {[
-                { key: 'momo', icon: SmartPhone01Icon, label: 'Mobile Money', desc: 'MTN, Vodafone, AirtelTigo' },
-                { key: 'bank', icon: Building03Icon, label: 'Bank Account', desc: 'Direct debit' },
+                { key: 'paystack', icon: SmartPhone01Icon, label: 'Paystack', desc: 'Card, bank transfer, mobile money' },
+                { key: 'offline', icon: Building03Icon, label: 'Offline Payment', desc: 'Manual transfer + proof upload' },
               ].map((option) => (
                 <button
                   key={option.key}
@@ -328,27 +401,29 @@ const WalletTab = ({ onLoadSuccess }) => {
             </div>
 
             <form onSubmit={handleCreateWallet} className="space-y-4">
-              {walletType === 'momo' ? (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">Network</label>
+                <select
+                  value={network}
+                  onChange={(e) => setNetwork(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                >
+                  <option value="MTN">MTN</option>
+                  <option value="Vodafone">Vodafone</option>
+                  <option value="AirtelTogo">AirtelTogo</option>
+                </select>
+              </div>
+
+              {walletType === 'paystack' ? (
                 <>
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Provider</label>
-                    <select
-                      value={momoProvider}
-                      onChange={(e) => setMomoProvider(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                    >
-                      <option value="MTN">MTN Mobile Money</option>
-                      <option value="Vodafone">Vodafone Cash</option>
-                      <option value="AirtelTigo">AirtelTigo Money</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Phone Number</label>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Amount</label>
                     <input
-                      type="tel"
-                      value={momoNumber}
-                      onChange={(e) => setMomoNumber(e.target.value)}
-                      placeholder="0241234567"
+                      type="number"
+                      value={setupAmount}
+                      onChange={(e) => setSetupAmount(e.target.value)}
+                      placeholder="e.g. 500"
+                      min="1"
                       required
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
                     />
@@ -357,42 +432,74 @@ const WalletTab = ({ onLoadSuccess }) => {
               ) : (
                 <>
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Bank Name</label>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Offline Payment Type</label>
+                    <select
+                      value={offlinePaymentType}
+                      onChange={(e) => setOfflinePaymentType(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                    >
+                      <option value="OFFLINE_MOBILE_PAYMENT">Offline Mobile Payment</option>
+                      <option value="BANK_PAYMENT">Bank Payment</option>
+                    </select>
+                  </div>
+
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-gray-700">
+                    <p className="font-semibold text-gray-900">Offline Payment Instructions</p>
+                    <ul className="mt-2 space-y-1 text-xs sm:text-sm">
+                      <li><span className="font-semibold">Mobile Money Number:</span> 0535614493</li>
+                      <li><span className="font-semibold">Bank Account:</span> 9040013722409</li>
+                      <li><span className="font-semibold">Account Name:</span> Data Leap Technologies Ltd</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Amount</label>
                     <input
-                      type="text"
-                      value={bankName}
-                      onChange={(e) => setBankName(e.target.value)}
-                      placeholder="e.g. GCB Bank"
+                      type="number"
+                      value={setupAmount}
+                      onChange={(e) => setSetupAmount(e.target.value)}
+                      placeholder="e.g. 500"
+                      min="1"
                       required
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
                     />
                   </div>
+
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Account Number</label>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700">Upload Proof of Payment</label>
                     <input
-                      type="text"
-                      value={bankAccount}
-                      onChange={(e) => setBankAccount(e.target.value)}
-                      placeholder="Account number"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => setOfflineProofFile(e.target.files?.[0] || null)}
                       required
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 file:mr-3 file:rounded-md file:border-0 file:bg-orange-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-orange-700"
                     />
+                    {offlineProofFile && (
+                      <p className="mt-1 text-xs text-gray-500">Selected file: {offlineProofFile.name}</p>
+                    )}
                   </div>
                 </>
+              )}
+
+              {setupError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {setupError}
+                </div>
               )}
 
               <div className="pt-2">
                 <button
                   type="submit"
+                  disabled={setupSubmitting}
                   className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg"
                   style={{ backgroundColor: '#FF7521' }}
                 >
                   <HIcon icon={Shield01Icon} size={14} />
-                  Create Secure Wallet
+                  {setupSubmitting ? 'Processing...' : walletType === 'paystack' ? 'Proceed to Paystack' : 'Submit Offline Payment'}
                 </button>
                 <p className="mt-3 text-center text-[11px] text-gray-400">
                   <HIcon icon={LockIcon} size={10} className="mr-1 inline" />
-                  Your payment details are encrypted and secure
+                  Transactions are initiated via /payments/initiate
                 </p>
               </div>
             </form>
@@ -419,8 +526,8 @@ const WalletTab = ({ onLoadSuccess }) => {
                 GHS {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </p>
               <p className="mt-2 flex items-center gap-2 text-sm text-gray-400">
-                <HIcon icon={walletType === 'momo' ? SmartPhone01Icon : Building03Icon} size={14} />
-                {walletType === 'momo' ? `${momoProvider} · ${momoNumber}` : `${bankName} · ${bankAccount}`}
+                <HIcon icon={walletType === 'paystack' ? SmartPhone01Icon : Building03Icon} size={14} />
+                {walletType === 'paystack' ? 'Paystack enabled' : 'Offline payment enabled'}
               </p>
             </div>
             <button

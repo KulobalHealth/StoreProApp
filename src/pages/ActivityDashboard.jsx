@@ -15,6 +15,7 @@ const STORE_TYPE_OPTIONS = [
   { value: 'warehouse', label: 'Warehouse' },
 ]
 
+const STORE_LOGO_DRAFT_KEY = 'awosel_store_logo_draft'
 const BRANCH_CACHE_KEY = 'awosel_branches_cache'
 const BRANCHES_UPDATED_EVENT = 'awosel:branches-updated'
 
@@ -25,6 +26,7 @@ const normalizeBranch = (branch) => ({
   name: branch.name || branch.branchName || branch.branch_name || 'Unnamed Store',
   location: branch.location || branch.address || branch.branch_location || '',
   store_type: branch.store_type || branch.storeType || branch.type || '',
+  logo: branch.logo || branch.logo_url || branch.image || branch.image_url || '',
 })
 
 const publishBranchUpdates = (branchList) => {
@@ -278,36 +280,49 @@ const ActivityDashboard = () => {
             ) : (
               <div className="flex justify-center px-3 py-4">
                 <div className="grid w-full max-w-5xl justify-center gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredBranches.map((branch) => (
-                  <button
-                    key={branch.id || branch.uuid}
-                    onClick={() => selectBranch(branch)}
-                    className="group aspect-square w-full max-w-[280px] rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-primary-200 hover:bg-primary-50 hover:shadow-md"
-                  >
-                    <div className="flex h-full flex-col items-center justify-center">
-                    <div className="w-16 h-16 rounded-2xl bg-orange-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors shrink-0 mx-auto">
-                      <HIcon icon={Store01Icon} size={18} className="text-orange-600 group-hover:text-primary-600 transition-colors" />
-                    </div>
-                    <div className="mt-5 flex flex-col items-center">
-                      <p className="text-base font-semibold text-gray-900 text-center line-clamp-2">{branch.name}</p>
-                      {branch.location && (
-                        <p className="text-sm text-gray-500 flex items-center justify-center gap-1 mt-2 text-center line-clamp-2 max-w-[200px]">
-                          <HIcon icon={MapPinIcon} size={12} className="shrink-0" /> {branch.location}
-                        </p>
-                      )}
-                      {(branch.store_type || branch.storeType) && (
-                        <span className="inline-flex mt-3 px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-[10px] font-semibold uppercase tracking-wide">
-                          {branch.store_type || branch.storeType}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-5 flex items-center justify-center text-sm font-medium text-gray-400 group-hover:text-primary-600 transition-colors">
-                      <span>Open branch</span>
-                      <HIcon icon={ArrowRight01Icon} size={16} className="ml-2" />
-                    </div>
-                    </div>
-                  </button>
-                ))}
+                {filteredBranches.map((branch) => {
+                  const branchLogo = branch.logo || localStorage.getItem(STORE_LOGO_DRAFT_KEY) || ''
+                  return (
+                    <button
+                      key={branch.id || branch.uuid}
+                      onClick={() => selectBranch(branch)}
+                      className="group aspect-square w-full max-w-[240px] rounded-[3px] border border-gray-200 bg-white p-5 text-center shadow-sm transition-all hover:border-primary-300 hover:bg-primary-50/50 hover:shadow-md"
+                    >
+                      <div className="flex h-full flex-col items-center justify-center">
+                        {/* Logo / Icon */}
+                        <div className="w-14 h-14 rounded-[3px] shrink-0 flex items-center justify-center overflow-hidden bg-primary-50 group-hover:bg-primary-100 transition-colors">
+                          {branchLogo ? (
+                            <img src={branchLogo} alt={branch.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <HIcon icon={Store01Icon} size={22} className="text-primary-500" />
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="mt-4 flex flex-col items-center">
+                          <p className="text-sm font-semibold text-gray-900 text-center line-clamp-2">{branch.name}</p>
+                          {branch.location && (
+                            <p className="text-xs text-gray-400 flex items-center justify-center gap-0.5 mt-1.5 text-center line-clamp-1">
+                              <HIcon icon={MapPinIcon} size={11} className="shrink-0" />
+                              {branch.location}
+                            </p>
+                          )}
+                          {(branch.store_type || branch.storeType) && (
+                            <span className="mt-2.5 text-[10px] font-semibold uppercase tracking-wide text-primary-600 bg-primary-50 px-2 py-0.5 rounded-[2px]">
+                              {branch.store_type || branch.storeType}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Arrow */}
+                        <div className="mt-auto pt-4 flex items-center justify-center text-xs font-medium text-gray-300 group-hover:text-primary-500 transition-colors">
+                          <span>Open</span>
+                          <HIcon icon={ArrowRight01Icon} size={14} className="ml-1" />
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
                 </div>
               </div>
             )}
@@ -325,95 +340,97 @@ const ActivityDashboard = () => {
 
       {/* Create Branch Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { setShowForm(false); setError('') }}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-            {/* Modal header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <HIcon icon={Building01Icon} className="text-primary-600" size={18} />
-                </div>
-                <h2 className="text-lg font-bold text-gray-900">New Branch</h2>
-              </div>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center z-50 p-4" onClick={() => { setShowForm(false); setError('') }}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-[fadeUp_0.2s_ease-out]" onClick={e => e.stopPropagation()}>
+            {/* Accent top strip */}
+            <div className="h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600" />
+
+            {/* Header — compact */}
+            <div className="px-6 pt-5 pb-1 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">New Branch</h2>
               <button
                 onClick={() => { setShowForm(false); setError('') }}
-                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
               >
                 <HIcon icon={Cancel01Icon} size={18} />
               </button>
             </div>
+            <p className="px-6 text-xs text-gray-400 mb-4">Add a store location to your organisation.</p>
 
-            {/* Modal body */}
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            {/* Form */}
+            <form onSubmit={handleCreate} className="px-6 pb-6 space-y-3.5">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
+                <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
               )}
 
+              {/* Branch Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Branch Name</label>
-                <div className="relative">
-                  <HIcon icon={Store01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-sm"
-                    placeholder="e.g. Main Branch"
-                    autoFocus
-                  />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Branch Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-shadow"
+                  placeholder="e.g. Main Branch"
+                  autoFocus
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Location</label>
+                <input
+                  type="text"
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-shadow"
+                  placeholder="e.g. Accra, Ghana"
+                />
+              </div>
+
+              {/* Store Type — pill selector */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Store Type</label>
+                <div className="flex gap-2">
+                  {STORE_TYPE_OPTIONS.map((opt) => (
+                    <button
+                      type="button"
+                      key={opt.value}
+                      onClick={() => setForm({ ...form, storeType: opt.value })}
+                      className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                        form.storeType === opt.value
+                          ? 'bg-primary-500 text-white border-primary-500 shadow-sm'
+                          : 'bg-white text-gray-500 border-gray-200 hover:border-primary-300 hover:text-primary-600'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
-                <div className="relative">
-                  <HIcon icon={MapPinIcon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-sm"
-                    placeholder="e.g. Accra, Ghana"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Store Type</label>
-                <div className="relative">
-                  <HIcon icon={Building01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <select
-                    value={form.storeType}
-                    onChange={(e) => setForm({ ...form, storeType: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-sm bg-white appearance-none"
-                  >
-                    <option value="">Select store type</option>
-                    {STORE_TYPE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
+              {/* Actions */}
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => { setShowForm(false); setError('') }}
-                  className="flex-1 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 border border-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className={`flex-1 py-2.5 ${submitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-500 hover:bg-primary-600'} text-white font-semibold rounded-lg shadow-sm transition-colors text-sm flex items-center justify-center gap-2`}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 ${
+                    submitting
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-primary-500 hover:bg-primary-600 text-white active:scale-[0.98]'
+                  }`}
                 >
                   {submitting ? (
-                    <><HIcon icon={Loading03Icon} size={16} className="animate-spin" /> Creating...</>
+                    <><HIcon icon={Loading03Icon} size={15} className="animate-spin" /> Creating…</>
                   ) : (
-                    <><HIcon icon={Add01Icon} size={16} /> Create</>
+                    'Create Branch'
                   )}
                 </button>
               </div>

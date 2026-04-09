@@ -24,6 +24,7 @@ const BranchDashboard = lazy(() => import('./pages/BranchDashboard'))
 const POS = lazy(() => import('./pages/POS'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Inventory = lazy(() => import('./pages/Inventory'))
+const ReturnItems = lazy(() => import('./pages/ReturnItems'))
 const ReceiveItems = lazy(() => import('./pages/ReceiveItems'))
 const ReceiveHistory = lazy(() => import('./pages/ReceiveHistory'))
 const Users = lazy(() => import('./pages/Users'))
@@ -118,6 +119,7 @@ function App() {
                   <Route path="/cheque-management" element={<RoleGuard blockedRoles={['sales']}><ChequeManagement /></RoleGuard>} />
                   <Route path="/warehouse" element={<RoleGuard blockedRoles={['sales']}><Warehouse /></RoleGuard>} />
                   <Route path="/inventory" element={<RoleGuard blockedRoles={['sales']}><Inventory /></RoleGuard>} />
+                  <Route path="/return-items" element={<RoleGuard blockedRoles={['sales']}><ReturnItems /></RoleGuard>} />
                   <Route path="/receive-items" element={<RoleGuard blockedRoles={['sales']}><ReceiveItems /></RoleGuard>} />
                   <Route path="/receive-history" element={<RoleGuard blockedRoles={['sales']}><ReceiveHistory /></RoleGuard>} />
                   <Route path="/settings" element={<RoleGuard blockedRoles={['sales']}><Settings /></RoleGuard>} />

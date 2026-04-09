@@ -403,19 +403,17 @@ const Settings = () => {
 
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                               {[
-                                { label: 'Store name', value: settings.store.name || storeProfile.storeName, icon: Building2 },
-                                { label: 'Branch', value: storeProfile.branchName, icon: Store },
-                                { label: 'Email', value: settings.store.email || '—', icon: Mail },
-                                { label: 'Phone', value: settings.store.phone || '—', icon: Phone },
-                                { label: 'Address', value: settings.store.address || 'No address added yet', icon: MapPin },
-                                { label: 'Tax ID', value: settings.store.taxId || 'Not set', icon: FileText },
+                                { label: 'Store name', value: settings.store.name || storeProfile.storeName, icon: Building01Icon },
+                                { label: 'Branch', value: storeProfile.branchName, icon: Store01Icon },
+                                { label: 'Email', value: settings.store.email || '—', icon: Mail01Icon },
+                                { label: 'Phone', value: settings.store.phone || '—', icon: CallIcon },
+                                { label: 'Address', value: settings.store.address || 'No address added yet', icon: MapPinIcon },
+                                { label: 'Tax ID', value: settings.store.taxId || 'Not set', icon: FileValidationIcon },
                               ].map((item) => {
-                                const Icon = item.icon
-
                                 return (
                                   <div key={item.label} className={`${panelClass} px-4 py-3`}>
                                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                      <Icon size={14} className="text-gray-400" />
+                                      <HIcon icon={item.icon} size={14} className="text-gray-400" />
                                       {item.label}
                                     </div>
                                     <p className="mt-2 break-words text-sm font-medium text-gray-900">{item.value}</p>

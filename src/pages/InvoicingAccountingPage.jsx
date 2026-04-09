@@ -42,6 +42,7 @@ const accountingSections = [
     description:
       'Create price levels for wholesalers, retailers, or customer groups with quantity-based rates and discounts to speed up accurate billing.',
   },
+  
   {
     title: 'Share invoices and orders via WhatsApp',
     description:

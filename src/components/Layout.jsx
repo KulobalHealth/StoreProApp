@@ -30,6 +30,8 @@ import {
   Logout01Icon,
   MagicWand01Icon,
   SparklesIcon,
+  RotateLeft01Icon,
+  ClipboardIcon,
 } from '@hugeicons/core-free-icons'
 import { useNavigationHistory } from '../contexts/NavigationHistory'
 import { useAuth } from '../contexts/AuthContext'
@@ -110,8 +112,10 @@ const Layout = () => {
 
   const inventoryMenuItems = [
     { path: '/inventory', icon: Package01Icon, label: 'Inventory' },
+    { path: '/return-items', icon: RotateLeft01Icon, label: 'Return Item' },
     { path: '/receive-items', icon: CheckListIcon, label: 'Receive Items' },
     { path: '/receive-history', icon: Clock02Icon, label: 'Receive History' },
+    { path: '/stock-taking', icon: ClipboardIcon, label: 'Stock Taking', disabled: true },
   ]
 
   const accountingMenuItems = [
@@ -316,21 +320,42 @@ const Layout = () => {
                   {visibleInventoryItems.map((item) => {
                     const [itemPath] = item.path.split('?')
                     const itemIsActive = location.pathname === itemPath || location.pathname.startsWith(`${itemPath}/`)
+                    const itemTooltip = !sidebarOpen
+                      ? `${item.label}${item.badge ? ` • ${item.badge}` : ''}`
+                      : ''
+                    const sharedClasses = `flex items-center rounded-lg ${
+                      sidebarOpen ? 'ml-4 px-4 py-2.5' : 'px-4 py-3'
+                    }`
                     return (
-                      <Tooltip key={item.path} text={!sidebarOpen ? item.label : ''} position="right">
-                        <Link
-                          to={item.path}
-                          className={`flex items-center rounded-lg transition-colors ${
-                            sidebarOpen ? 'ml-4 px-4 py-2.5' : 'px-4 py-3'
-                          } ${
-                            itemIsActive
-                              ? 'bg-primary-50 text-primary-700'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-700'
-                          }`}
-                        >
-                          <HIcon icon={item.icon} size={16} className="mr-3 w-5 text-center shrink-0" />
-                          {sidebarOpen && <span className="text-sm">{item.label}</span>}
-                        </Link>
+                      <Tooltip key={item.path} text={itemTooltip} position="right">
+                        {item.disabled ? (
+                          <div
+                            className={`${sharedClasses} cursor-not-allowed text-gray-400 bg-gray-50/80 border border-dashed border-gray-200`}
+                            aria-disabled="true"
+                          >
+                            <HIcon icon={item.icon} size={16} className="mr-3 w-5 text-center shrink-0" />
+                            {sidebarOpen && (
+                              <>
+                                <span className="text-sm flex-1">{item.label}</span>
+                                <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                                  {item.badge}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <Link
+                            to={item.path}
+                            className={`${sharedClasses} transition-colors ${
+                              itemIsActive
+                                ? 'bg-primary-50 text-primary-700'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-700'
+                            }`}
+                          >
+                            <HIcon icon={item.icon} size={16} className="mr-3 w-5 text-center shrink-0" />
+                            {sidebarOpen && <span className="text-sm">{item.label}</span>}
+                          </Link>
+                        )}
                       </Tooltip>
                     )
                   })}
@@ -623,7 +648,7 @@ const Layout = () => {
           </div>
         )}
 
-        <div className="relative z-0 flex-1 overflow-auto min-h-0">
+        <div className="relative flex-1 overflow-auto min-h-0">
           <Outlet />
         </div>
         <Footer />

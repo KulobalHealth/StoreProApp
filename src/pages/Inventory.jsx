@@ -46,7 +46,6 @@ import {
   updateProduct,
   deleteProduct as apiDeleteProduct,
   bulkImportProducts,
-  listSales,
 } from '../api/awoselDb.js'
 
 function mapApiProductToDisplay(p) {
@@ -105,7 +104,9 @@ const Inventory = () => {
   const TABLE_PAGE_SIZE = 10
   const [tablePage, setTablePage] = useState(1)
   const [showExportModal, setShowExportModal] = useState(false)
-  const [showReturnModal, setShowReturnModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [productToDelete, setProductToDelete] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const [alertQueue, setAlertQueue] = useState([])
   const [exportDepartmentFilter, setExportDepartmentFilter] = useState('all')
   const [exportSaleFilter, setExportSaleFilter] = useState('all') // 'all' | 'high' | 'low'
@@ -293,13 +294,30 @@ const Inventory = () => {
     setTablePage(1)
   }, [stockFilter, debouncedSearchTerm, selectedDepartmentFilter, products.length])
 
-  const deleteProduct = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return
+  const openDeleteModal = (product) => {
+    setProductToDelete(product)
+    setShowDeleteModal(true)
+  }
+
+  const closeDeleteModal = () => {
+    if (deleteLoading) return
+    setShowDeleteModal(false)
+    setProductToDelete(null)
+  }
+
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return
     try {
-      await apiDeleteProduct(id)
+      setDeleteLoading(true)
+      await apiDeleteProduct(productToDelete.uuid || productToDelete.id)
       await fetchProducts()
+      showAlert('Product deleted successfully', 'success')
+      setShowDeleteModal(false)
+      setProductToDelete(null)
     } catch (err) {
       showAlert(err.message || 'Could not delete product', 'error')
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -944,8 +962,8 @@ const Inventory = () => {
 
       {/* Header */}
       <div className="app-page-header">
-        <div className="app-page-header-inner py-3">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
             <div className="app-page-title-wrap">
               <div className="app-page-icon h-9 w-9 rounded-control">
                 <HIcon icon={Package01Icon} size={18} strokeWidth={2}  />
@@ -953,7 +971,6 @@ const Inventory = () => {
               <div>
                 <p className="app-page-kicker">Operations</p>
                 <h1 className="app-page-title">Inventory</h1>
-                <p className="app-page-subtitle">Manage your products and stock levels</p>
               </div>
             </div>
             <input
@@ -963,49 +980,49 @@ const Inventory = () => {
               onChange={handleFileSelect}
               style={{ display: 'none' }}
             />
-            <div className="app-page-actions">
+            <div className="flex items-center gap-1.5">
               <Tooltip text="Upload a CSV or Excel file to add products in bulk">
                 <button
                   onClick={handleImportClick}
-                  className="app-btn-secondary"
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
                 >
-                  <HIcon icon={Upload01Icon} size={16} className="text-primary-500"  />
+                  <HIcon icon={Upload01Icon} size={13} className="text-primary-500"  />
                   Import
                 </button>
               </Tooltip>
               <Tooltip text="Download a blank CSV template for bulk product import">
                 <button
                   onClick={handleDownloadTemplate}
-                  className="app-btn-muted border-dashed"
+                  className="inline-flex items-center gap-1 rounded-md border border-dashed border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
                 >
-                  <HIcon icon={Download01Icon} size={16} className="text-gray-400"  />
+                  <HIcon icon={Download01Icon} size={13} className="text-gray-400"  />
                   Template
                 </button>
               </Tooltip>
               <Tooltip text="Export your product list to CSV or Excel">
                 <button
                   onClick={() => setShowExportModal(true)}
-                  className="app-btn-secondary"
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
                 >
-                  <HIcon icon={Download01Icon} size={16} className="text-primary-500"  />
+                  <HIcon icon={Download01Icon} size={13} className="text-primary-500"  />
                   Export
                 </button>
               </Tooltip>
               <Tooltip text="Return items from a sale back to inventory stock">
                 <button
-                  onClick={() => setShowReturnModal(true)}
-                  className="inline-flex items-center gap-2 rounded-control border border-warning-100 bg-warning-50 px-4 py-2.5 text-sm font-medium text-warning-700 transition-colors hover:bg-warning-100"
+                  onClick={() => navigate('/return-items')}
+                  className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-xs font-medium text-orange-600 transition-colors hover:bg-orange-100"
                 >
-                  <HIcon icon={RotateLeft01Icon} size={16} className="text-orange-500"  />
-                  Return Item
+                  <HIcon icon={RotateLeft01Icon} size={13}  />
+                  Return
                 </button>
               </Tooltip>
               <Tooltip text="Add a single new product to inventory">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="app-btn-primary px-5"
+                  className="inline-flex items-center gap-1 rounded-md bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-600"
                 >
-                  <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
+                  <HIcon icon={Add01Icon} size={13} strokeWidth={2.5}  />
                   Add Product
                 </button>
               </Tooltip>
@@ -1202,21 +1219,21 @@ const Inventory = () => {
               {productsError}
             </div>
           )}
-          <div className="overflow-x-auto">
+          <div className="max-h-[62vh] overflow-auto">
             <table className="w-full">
               <thead>
                 <tr className="app-table-head-dark">
-                  <th className="app-table-head-cell">Product</th>
-                  <th className="app-table-head-cell">SKU</th>
-                  <th className="app-table-head-cell">Department</th>
-                  <th className="app-table-head-cell text-right">Stock</th>
-                  <th className="app-table-head-cell text-right">Min Stock</th>
-                  <th className="app-table-head-cell text-right">Reorder</th>
-                  <th className="app-table-head-cell text-right">Price</th>
-                  <th className="app-table-head-cell text-right">Cost</th>
-                  <th className="app-table-head-cell text-right">Profit</th>
-                  <th className="app-table-head-cell text-right">Value</th>
-                  <th className="app-table-head-cell text-center">Actions</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 rounded-tl-[2px]">Product</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900">SKU</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900">Department</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Stock</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Min Stock</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Reorder</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Price</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Cost</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Profit</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-right">Value</th>
+                  <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 text-center rounded-tr-[2px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1296,7 +1313,7 @@ const Inventory = () => {
                             </Tooltip>
                             <Tooltip text="Delete this product">
                               <button
-                                onClick={(e) => { e.stopPropagation(); deleteProduct(product.uuid || product.id) }}
+                                onClick={(e) => { e.stopPropagation(); openDeleteModal(product) }}
                                 className="p-1.5 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                               >
                                 <HIcon icon={Delete01Icon} size={15}  />
@@ -1378,7 +1395,7 @@ const Inventory = () => {
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-xl w-full max-w-lg shadow-2xl">
             {/* Header */}
             <div className="bg-gray-900 rounded-t-xl px-6 py-4 flex items-center justify-between">
@@ -1516,7 +1533,7 @@ const Inventory = () => {
 
       {/* Import CSV / Excel Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div>
@@ -1678,24 +1695,52 @@ const Inventory = () => {
         />
       )}
 
-      {/* Return Item Modal */}
-      {showReturnModal && (
-        <ReturnItemModal
-          onReturn={async (returnItems, reason, receiptNumber, returnDate) => {
-            // Update stock for each returned item
-            for (const item of returnItems) {
-              if (item.productId && item.returnQty > 0) {
-                const product = products.find(p => (p.uuid || p.id) === item.productId || String(p.id) === String(item.productId))
-                if (product) {
-                  const newStock = (Number(product.stock) || 0) + Number(item.returnQty)
-                  await updateProduct(product.uuid || product.id, { quantity: newStock })
-                }
-              }
-            }
-            await fetchProducts()
-          }}
-          onClose={() => setShowReturnModal(false)}
-        />
+      {showDeleteModal && productToDelete && (
+        <div className="fixed inset-0 z-[120] bg-black/50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl bg-white shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                <HIcon icon={Delete02Icon} size={18} className="text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Delete Product</h3>
+                <p className="text-xs text-gray-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="px-6 py-5 space-y-2">
+              <p className="text-sm text-gray-700">Are you sure you want to delete this product?</p>
+              <p className="text-sm font-semibold text-gray-900 break-words">{productToDelete.name || 'Unnamed Product'}</p>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={closeDeleteModal}
+                disabled={deleteLoading}
+                className="px-5 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteProduct}
+                disabled={deleteLoading}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {deleteLoading ? (
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Deleting…
+                  </>
+                ) : (
+                  <>
+                    <HIcon icon={Delete01Icon} size={15} />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
@@ -2088,7 +2133,7 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
       <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -2538,7 +2583,7 @@ const ProductSuccessModal = ({ product, onClose }) => {
   const minStock = Number(product.minStock) || 0
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
       <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gray-900 px-6 py-6">
@@ -2639,377 +2684,6 @@ const ProductSuccessModal = ({ product, onClose }) => {
           >
             <HIcon icon={Tick01Icon} size={16}  />
             Continue
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Return Item Modal Component
-const ReturnItemModal = ({ onReturn, onClose }) => {
-  const [receiptNumber, setReceiptNumber] = useState('')
-  const [returnDate, setReturnDate] = useState(new Date().toISOString().split('T')[0])
-  const [reason, setReason] = useState('')
-  const [returning, setReturning] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
-  const [fetching, setFetching] = useState(false)
-  const [sale, setSale] = useState(null) // fetched sale object
-  const [saleItems, setSaleItems] = useState([]) // items with returnQty & checked
-
-  const reasons = ['Customer Return', 'Damaged Goods', 'Wrong Item Sold', 'Expired Product Swap', 'Supplier Return', 'Stock Adjustment', 'Other']
-
-  // Fetch sale by receipt number + date
-  const handleFetchSale = async () => {
-    setError('')
-    if (!receiptNumber.trim()) { setError('Please enter a receipt number'); return }
-    try {
-      setFetching(true)
-      const branchId = getSessionBranchId()
-      const query = { branch_id: branchId }
-      if (returnDate) query.date = returnDate
-      const res = await listSales(query)
-      const sales = Array.isArray(res) ? res : (res?.data || res?.sales || [])
-      // Find matching sale by receipt number
-      const match = sales.find(s =>
-        (s.receipt_number || '').toLowerCase() === receiptNumber.trim().toLowerCase()
-      )
-      if (!match) {
-        setError(`No sale found with receipt number "${receiptNumber.trim()}". Try a different date.`)
-        setSale(null)
-        setSaleItems([])
-        return
-      }
-      setSale(match)
-      const items = (match.items || match.sale_items || []).map((item, i) => ({
-        index: i,
-        productId: item.product_id || item.productId || '',
-        productName: item.product_name || item.name || 'Unknown Item',
-        quantitySold: Number(item.quantity_sold || item.quantity || 0),
-        unitPrice: Number(item.unit_price || item.price || 0),
-        unit: item.unit_name || item.unit || '—',
-        returnQty: 0,
-        checked: false,
-      }))
-      setSaleItems(items)
-    } catch (err) {
-      setError(err.message || 'Failed to fetch sale')
-      setSale(null)
-      setSaleItems([])
-    } finally {
-      setFetching(false)
-    }
-  }
-
-  const toggleItem = (index) => {
-    setSaleItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, checked: !item.checked, returnQty: !item.checked ? (item.returnQty || item.quantitySold) : 0 } : item
-    ))
-  }
-
-  const updateReturnQty = (index, qty) => {
-    setSaleItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, returnQty: Math.min(Math.max(0, qty), item.quantitySold) } : item
-    ))
-  }
-
-  const selectedItems = saleItems.filter(it => it.checked && it.returnQty > 0)
-  const totalReturnItems = selectedItems.reduce((s, it) => s + it.returnQty, 0)
-
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault()
-    setError('')
-    if (selectedItems.length === 0) { setError('Please select at least one item to return'); return }
-    if (!reason) { setError('Please select a reason for the return'); return }
-    try {
-      setReturning(true)
-      await onReturn(
-        selectedItems.map(it => ({ productId: it.productId, returnQty: it.returnQty, productName: it.productName })),
-        reason, receiptNumber, returnDate
-      )
-      setSuccess(true)
-    } catch (err) {
-      setError(err.message || 'Failed to process return')
-    } finally {
-      setReturning(false)
-    }
-  }
-
-  // Success screen
-  if (success) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
-          <div className="bg-green-50 px-6 py-8 flex flex-col items-center">
-            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <HIcon icon={CheckmarkCircle02Icon} size={28} className="text-green-600"  />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Return Processed</h2>
-            <p className="text-sm text-gray-600 mt-2 text-center">
-              <span className="font-semibold">{totalReturnItems}</span> item{totalReturnItems !== 1 ? 's' : ''} returned to inventory.
-            </p>
-            <div className="mt-3 w-full max-w-xs space-y-1">
-              {selectedItems.map((it, i) => (
-                <div key={i} className="flex justify-between text-xs text-gray-600">
-                  <span className="truncate">{it.productName}</span>
-                  <span className="font-semibold text-gray-800 ml-2 shrink-0">×{it.returnQty}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
-              <span>Receipt: <span className="font-semibold text-gray-700">{receiptNumber}</span></span>
-              <span>·</span>
-              <span>Reason: <span className="font-semibold text-gray-700">{reason}</span></span>
-            </div>
-          </div>
-          <div className="px-6 py-4 flex justify-end bg-gray-50 border-t">
-            <button onClick={onClose} className="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors text-sm flex items-center gap-2">
-              <HIcon icon={Tick01Icon} size={16}  /> Done
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      {returning && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <HIcon icon={Loading03Icon} size={48} className="animate-spin text-orange-500"  />
-            <p className="text-lg font-semibold text-gray-800">Processing Return...</p>
-            <p className="text-sm text-gray-500">Please wait, do not close this page.</p>
-          </div>
-        </div>
-      )}
-      <div className="bg-white rounded-xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl mx-4">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
-              <HIcon icon={RotateLeft01Icon} size={18} className="text-orange-600"  />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Return Item</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Look up a sale and select items to return</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600">
-            <HIcon icon={Cancel01Icon} size={20}  />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-auto p-6 space-y-5">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <HIcon icon={Cancel02Icon} size={16} className="text-red-500 shrink-0"  />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          {/* Step 1: Receipt Lookup */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-5">
-            <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <HIcon icon={Search01Icon} size={15} className="text-gray-500"  />
-              Look Up Sale
-            </h3>
-            <div className="flex flex-col sm:flex-row items-end gap-3">
-              <div className="flex-1 w-full">
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Receipt Number <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={receiptNumber}
-                  onChange={e => { setReceiptNumber(e.target.value); if (sale) { setSale(null); setSaleItems([]) } }}
-                  placeholder="Enter receipt number..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <div className="w-full sm:w-44">
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Sale Date</label>
-                <input
-                  type="date"
-                  value={returnDate}
-                  onChange={e => { setReturnDate(e.target.value); if (sale) { setSale(null); setSaleItems([]) } }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleFetchSale}
-                disabled={fetching || !receiptNumber.trim()}
-                className="w-full sm:w-auto px-5 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shrink-0"
-              >
-                {fetching ? <HIcon icon={Loading03Icon} size={16} className="animate-spin"  /> : <HIcon icon={Search01Icon} size={16}  />}
-                {fetching ? 'Searching...' : 'Fetch Sale'}
-              </button>
-            </div>
-          </div>
-
-          {/* Step 2: Sale Items Table */}
-          {sale && (
-            <>
-              {/* Sale Summary */}
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-                  <div>
-                    <span className="text-gray-500">Receipt:</span>{' '}
-                    <span className="font-semibold text-gray-900">{sale.receipt_number || '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Date:</span>{' '}
-                    <span className="font-semibold text-gray-900">{sale.created_at ? new Date(sale.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Total:</span>{' '}
-                    <span className="font-semibold text-gray-900">₵{(Number(sale.total) || 0).toFixed(2)}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Payment:</span>{' '}
-                    <span className="font-semibold text-gray-900">{sale.payment_method || '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Items Table */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-3">Select items to return</h3>
-                {saleItems.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400 text-sm">
-                    <HIcon icon={Package01Icon} size={36} className="mx-auto mb-2 text-gray-300"  />
-                    No line items found in this sale.
-                  </div>
-                ) : (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          <th className="w-10 px-3 py-2.5 text-center">
-                            <input
-                              type="checkbox"
-                              checked={saleItems.length > 0 && saleItems.every(it => it.checked)}
-                              onChange={() => {
-                                const allChecked = saleItems.every(it => it.checked)
-                                setSaleItems(prev => prev.map(it => ({ ...it, checked: !allChecked, returnQty: !allChecked ? it.quantitySold : 0 })))
-                              }}
-                              className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
-                            />
-                          </th>
-                          <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Product</th>
-                          <th className="px-3 py-2.5 text-right font-semibold text-gray-600">Sold</th>
-                          <th className="px-3 py-2.5 text-right font-semibold text-gray-600">Unit Price</th>
-                          <th className="px-3 py-2.5 text-center font-semibold text-gray-600 w-28">Return Qty</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {saleItems.map((item, i) => (
-                          <tr
-                            key={i}
-                            className={`border-b border-gray-100 last:border-b-0 transition-colors ${
-                              item.checked ? 'bg-orange-50/60' : 'hover:bg-gray-50'
-                            }`}
-                          >
-                            <td className="px-3 py-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={item.checked}
-                                onChange={() => toggleItem(i)}
-                                className="rounded border-gray-300 text-orange-500 focus:ring-orange-400"
-                              />
-                            </td>
-                            <td className="px-3 py-3">
-                              <p className="font-medium text-gray-900">{item.productName}</p>
-                              {item.unit !== '—' && <p className="text-xs text-gray-500">{item.unit}</p>}
-                            </td>
-                            <td className="px-3 py-3 text-right text-gray-700 font-medium">{item.quantitySold}</td>
-                            <td className="px-3 py-3 text-right text-gray-600">₵{item.unitPrice.toFixed(2)}</td>
-                            <td className="px-3 py-3">
-                              <div className="flex items-center justify-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => updateReturnQty(i, item.returnQty - 1)}
-                                  disabled={!item.checked || item.returnQty <= 0}
-                                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                                >
-                                  <HIcon icon={MinusSignIcon} size={14}  />
-                                </button>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={item.quantitySold}
-                                  value={item.checked ? item.returnQty : 0}
-                                  onChange={e => updateReturnQty(i, parseInt(e.target.value) || 0)}
-                                  disabled={!item.checked}
-                                  className="w-14 text-center px-1 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:bg-gray-100 disabled:text-gray-400"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => updateReturnQty(i, item.returnQty + 1)}
-                                  disabled={!item.checked || item.returnQty >= item.quantitySold}
-                                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                                >
-                                  <HIcon icon={Add01Icon} size={14}  />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* Reason */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Return Reason <span className="text-red-500">*</span></label>
-                <select
-                  value={reason}
-                  onChange={e => setReason(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
-                >
-                  <option value="">Select a reason...</option>
-                  {reasons.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-
-              {/* Return Summary */}
-              {selectedItems.length > 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-semibold text-gray-900">{selectedItems.length}</span> item{selectedItems.length !== 1 ? 's' : ''} selected · <span className="font-semibold text-gray-900">{totalReturnItems}</span> total units
-                  </div>
-                  <div className="text-sm font-bold text-orange-600">
-                    Refund: ₵{selectedItems.reduce((s, it) => s + it.returnQty * it.unitPrice, 0).toFixed(2)}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Empty state when no sale fetched */}
-          {!sale && !fetching && (
-            <div className="text-center py-10 text-gray-400">
-              <HIcon icon={FileValidationIcon} size={40} className="mx-auto mb-3 text-gray-300"  />
-              <p className="text-sm">Enter a receipt number above and click <span className="font-semibold text-gray-600">"Fetch Sale"</span> to look up the transaction.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-          <button type="button" onClick={onClose} className="bg-white border border-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-50 text-sm">
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={returning || selectedItems.length === 0}
-            className="bg-orange-500 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm flex items-center gap-2"
-          >
-            <HIcon icon={RotateLeft01Icon} size={16}  />
-            Process Return ({totalReturnItems})
           </button>
         </div>
       </div>

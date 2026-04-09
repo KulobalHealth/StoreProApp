@@ -194,6 +194,15 @@ export async function listDebtPayments(supplierId) {
   return fetchApi('GET', '/suppliers/' + sanitizePath(supplierId) + '/debt-payments')
 }
 
+// ---- Payments ----
+export async function initiatePayment(body) {
+  return fetchApi('POST', '/payments/initiate', body)
+}
+
+export async function verifyPayment(body) {
+  return fetchApi('POST', '/payments/verify', body)
+}
+
 // ---- Stock receipts ----
 export async function listReceipts(branchId, query = {}) {
   const params = new URLSearchParams({ ...query, ...(branchId ? { branchId } : {}) })
