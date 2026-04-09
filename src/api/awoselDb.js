@@ -203,6 +203,14 @@ export async function verifyPayment(body) {
   return fetchApi('POST', '/payments/verify', body)
 }
 
+export async function getWallet() {
+  return fetchApi('GET', '/wallet')
+}
+
+export async function listPayments() {
+  return fetchApi('GET', '/payments')
+}
+
 // ---- Stock receipts ----
 export async function listReceipts(branchId, query = {}) {
   const params = new URLSearchParams({ ...query, ...(branchId ? { branchId } : {}) })

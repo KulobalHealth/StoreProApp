@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HIcon } from '../components/HIcon'
 import {
@@ -23,7 +23,7 @@ import {
   Rocket01Icon,
   Building01Icon,
 } from '@hugeicons/core-free-icons'
-import { initiatePayment } from '../api/awoselDb'
+import { getWallet, initiatePayment, listPayments } from '../api/awoselDb'
 import { getSessionOrgId } from '../utils/branch'
 
 /* ─── Current Plan Banner ─── */
@@ -238,6 +238,8 @@ const BillingPlanTab = ({ onSubscribe }) => {
 
 /* ─── Wallet Tab ─── */
 const WalletTab = ({ onLoadSuccess }) => {
+  const [walletLoading, setWalletLoading] = useState(true)
+  const [walletError, setWalletError] = useState('')
   const [walletCreated, setWalletCreated] = useState(() => localStorage.getItem('awosel_wallet_created') === 'true')
   const [walletType, setWalletType] = useState('paystack')
   const [network, setNetwork] = useState('MTN')
@@ -250,13 +252,136 @@ const WalletTab = ({ onLoadSuccess }) => {
   const [loadAmount, setLoadAmount] = useState('')
   const [showLoadForm, setShowLoadForm] = useState(false)
 
-  const [subscriptions] = useState([
-    { id: 1, date: '2026-03-01', plan: 'Business', amount: 1200, stores: 1, method: 'Wallet', status: 'Paid', invoice: 'INV-2026-003' },
-    { id: 2, date: '2026-02-01', plan: 'Business', amount: 1200, stores: 1, method: 'Wallet', status: 'Paid', invoice: 'INV-2026-002' },
-    { id: 3, date: '2026-01-01', plan: 'Starter', amount: 300, stores: 1, method: 'Mobile Money', status: 'Paid', invoice: 'INV-2026-001' },
-  ])
+  const [payments, setPayments] = useState([])
+
+  const extractList = (response, keys = []) => {
+    if (Array.isArray(response)) return response
+    if (Array.isArray(response?.data)) return response.data
+    for (const key of keys) {
+      if (Array.isArray(response?.[key])) return response[key]
+      if (Array.isArray(response?.data?.[key])) return response.data[key]
+    }
+    return []
+  }
+
+  const pickWalletData = (response) => {
+    if (!response) return null
+    if (response?.data && !Array.isArray(response.data)) return response.data
+    if (response?.wallet && !Array.isArray(response.wallet)) return response.wallet
+    if (!Array.isArray(response)) return response
+    return null
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadWalletData = async () => {
+      try {
+        setWalletLoading(true)
+        setWalletError('')
+        const [walletResponse, paymentsResponse] = await Promise.all([
+          getWallet(),
+          listPayments(),
+        ])
+
+        const walletData = pickWalletData(walletResponse)
+        const paymentsData = extractList(paymentsResponse, ['payments', 'items'])
+
+        if (cancelled) return
+
+        setPayments(paymentsData)
+
+        const walletBalance = Number(
+          walletData?.balance
+          ?? walletData?.wallet_balance
+          ?? walletData?.available_balance
+          ?? 0
+        )
+        if (Number.isFinite(walletBalance)) {
+          setBalance(walletBalance)
+        }
+
+        const walletPaymentType = String(walletData?.payment_type || walletData?.default_payment_type || '').toUpperCase()
+        if (walletPaymentType === 'PAYSTACK') {
+          setWalletType('paystack')
+        } else if (walletPaymentType === 'OFFLINE_MOBILE_PAYMENT' || walletPaymentType === 'BANK_PAYMENT') {
+          setWalletType('offline')
+          setOfflinePaymentType(walletPaymentType)
+        }
+
+        if (walletData?.network) {
+          setNetwork(walletData.network)
+        }
+
+        const walletExists = Boolean(
+          walletData && (
+            walletData?.id
+            || walletData?.publicId
+            || walletData?.public_id
+            || walletData?.wallet_id
+            || walletData?.balance != null
+            || walletData?.wallet_balance != null
+            || walletData?.available_balance != null
+          )
+        )
+
+        if (walletExists) {
+          setWalletCreated(true)
+          localStorage.setItem('awosel_wallet_created', 'true')
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setWalletError(err.message || 'Could not load wallet information.')
+        }
+      } finally {
+        if (!cancelled) {
+          setWalletLoading(false)
+        }
+      }
+    }
+
+    loadWalletData()
+    return () => { cancelled = true }
+  }, [])
+
+  const totals = useMemo(() => {
+    const normalizeStatus = (status) => String(status || '').toUpperCase()
+    const normalizeType = (type) => String(type || '').toUpperCase()
+
+    const successfulPayments = payments.filter((payment) => {
+      const status = normalizeStatus(payment.status)
+      return status === 'PAID' || status === 'SUCCESS' || status === 'COMPLETED'
+    })
+
+    const totalLoaded = successfulPayments
+      .filter((payment) => normalizeType(payment.transaction_type || payment.type) === 'CREDIT')
+      .reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
+
+    const totalSpent = successfulPayments
+      .filter((payment) => normalizeType(payment.transaction_type || payment.type) === 'DEBIT')
+      .reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
+
+    const nextPending = payments.find((payment) => normalizeStatus(payment.status).includes('AWAITING'))
+
+    return {
+      totalLoaded,
+      totalSpent,
+      nextPendingDate: nextPending?.created_at || nextPending?.date || null,
+    }
+  }, [payments])
 
   const quickAmounts = [100, 500, 1000, 2000]
+
+  if (walletLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-16">
+        <div className="rounded-2xl border border-gray-100 bg-white px-8 py-6 text-center shadow-sm">
+          <p className="text-sm font-medium text-gray-700">Loading wallet...</p>
+          <p className="mt-1 text-xs text-gray-500">Fetching wallet info and payment history.</p>
+        </div>
+      </div>
+    )
+  }
 
   const handleCreateWallet = async (e) => {
     e.preventDefault()
@@ -512,6 +637,12 @@ const WalletTab = ({ onLoadSuccess }) => {
   /* ── Wallet dashboard ── */
   return (
     <div className="space-y-6">
+      {walletError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {walletError}
+        </div>
+      )}
+
       {/* Balance + Quick stats row */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main balance card */}
@@ -598,7 +729,7 @@ const WalletTab = ({ onLoadSuccess }) => {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-400">Total Loaded</p>
-                <p className="text-lg font-bold text-gray-900">GHS 5,100.00</p>
+                <p className="text-lg font-bold text-gray-900">GHS {totals.totalLoaded.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
           </div>
@@ -609,7 +740,7 @@ const WalletTab = ({ onLoadSuccess }) => {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-400">Total Spent</p>
-                <p className="text-lg font-bold text-gray-900">GHS 2,700.00</p>
+                <p className="text-lg font-bold text-gray-900">GHS {totals.totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
           </div>
@@ -620,7 +751,11 @@ const WalletTab = ({ onLoadSuccess }) => {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-400">Next Payment</p>
-                <p className="text-lg font-bold text-gray-900">Apr 30</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {totals.nextPendingDate
+                    ? new Date(totals.nextPendingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : '—'}
+                </p>
               </div>
             </div>
           </div>
@@ -653,7 +788,7 @@ const WalletTab = ({ onLoadSuccess }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {subscriptions.length === 0 ? (
+              {payments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center sm:px-8">
                     <div className="flex flex-col items-center gap-2">
@@ -666,32 +801,41 @@ const WalletTab = ({ onLoadSuccess }) => {
                   </td>
                 </tr>
               ) : (
-                subscriptions.map((sub) => (
-                  <tr key={sub.id} className="transition-colors hover:bg-gray-50/60">
+                payments.map((payment, index) => {
+                  const paymentDate = payment?.created_at || payment?.updated_at || payment?.date
+                  const paymentReference = payment?.invoice || payment?.reference || payment?.paystack_reference || payment?.public_id || payment?.publicId || `PMT-${index + 1}`
+                  const paymentType = payment?.payment_type || payment?.type || payment?.method || 'Wallet'
+                  const paymentStatus = payment?.status || 'Pending'
+                  const paymentAmount = Number(payment?.amount) || 0
+
+                  return (
+                  <tr key={payment?.id || paymentReference || index} className="transition-colors hover:bg-gray-50/60">
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 sm:px-8">
-                      {new Date(sub.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {paymentDate
+                        ? new Date(paymentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : '—'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 sm:px-8">
-                      <span className="text-xs font-mono font-medium text-gray-500">{sub.invoice}</span>
+                      <span className="text-xs font-mono font-medium text-gray-500">{paymentReference}</span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-4">
                       <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
                         <HIcon icon={Tag01Icon} size={10} className="text-gray-400" />
-                        {sub.plan}
+                        {payment?.plan || 'Wallet Top-up'}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500">{sub.method}</td>
+                    <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-500">{paymentType}</td>
                     <td className="whitespace-nowrap px-6 py-4 text-right font-semibold text-gray-900 sm:px-8">
-                      GHS {sub.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      GHS {paymentAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-center sm:px-8">
                       <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: '#ecfdf3', color: '#047857' }}>
                         <HIcon icon={CheckmarkCircle02Icon} size={10} />
-                        {sub.status}
+                        {paymentStatus}
                       </span>
                     </td>
                   </tr>
-                ))
+                )})
               )}
             </tbody>
           </table>
