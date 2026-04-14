@@ -235,10 +235,10 @@ const BillingPlanTab = ({ onSubscribe }) => {
           <button
             type="button"
             onClick={handleContactSales}
-            className="inline-flex shrink-0 items-center rounded-xl border-2 border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
+            className="shrink-0 rounded-xl border-2 border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
           >
-            <HIcon icon={Mail01Icon} size={14} className="text-gray-400" />
-            <span className="ml-2">Contact Sales</span>
+            <HIcon icon={Mail01Icon} size={14} className="mr-2 text-gray-400" />
+            Contact Sales
           </button>
         </div>
       </div>

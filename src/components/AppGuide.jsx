@@ -307,7 +307,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
   const step = steps[currentStep]
   if (!step) return null
 
-  const StepIcon = step.icon
+  const stepIcon = step.icon
   const progress = ((currentStep + 1) / steps.length) * 100
   const isLast = currentStep === steps.length - 1
   const isFirst = currentStep === 0
@@ -334,7 +334,7 @@ const AppGuide = ({ userRole = 'admin' }) => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                    <StepIcon size={20} />
+                    <HIcon icon={stepIcon} size={20} />
                   </div>
                   <div>
                     <p className="text-white/70 text-xs font-medium uppercase tracking-wider">
