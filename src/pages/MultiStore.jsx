@@ -354,12 +354,11 @@ const MultiStore = () => {
       <div className="card mb-6">
         <div className="flex flex-wrap border-b">
           {[
-            { id: 'overview', label: 'Overview', icon: BarChart3 },
-            { id: 'sales', label: 'Sales Drill-Down', icon: TrendingUp },
-            { id: 'inventory', label: 'Inventory Drill-Down', icon: Package },
-            { id: 'transfers', label: 'Inventory Transfers', icon: ArrowRightLeft },
+            { id: 'overview', label: 'Overview', icon: Analytics02Icon },
+            { id: 'sales', label: 'Sales Drill-Down', icon: ArrowMoveUpRightIcon },
+            { id: 'inventory', label: 'Inventory Drill-Down', icon: Package01Icon },
+            { id: 'transfers', label: 'Inventory Transfers', icon: ArrowDataTransferHorizontalIcon },
           ].map((tab) => {
-            const Icon = tab.icon
             return (
               <button
                 key={tab.id}
@@ -370,7 +369,7 @@ const MultiStore = () => {
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Icon size={18} className="mr-2" />
+                <HIcon icon={tab.icon} size={18} className="mr-2" />
                 {tab.label}
               </button>
             )

@@ -45,11 +45,11 @@ const AVATAR_COLORS = [
 ]
 
 const PERIODS = [
-  { key: 'today',  label: 'Today',      icon: Clock },
-  { key: 'range',  label: 'Range',      icon: CalendarDays },
-  { key: 'month',  label: 'This Month', icon: CalendarRange },
-  { key: 'year',   label: 'This Year',  icon: Calendar },
-  { key: 'custom', label: 'Date',       icon: Filter },
+  { key: 'today',  label: 'Today',      icon: Clock01Icon },
+  { key: 'range',  label: 'Range',      icon: Calendar02Icon },
+  { key: 'month',  label: 'This Month', icon: Calendar03Icon },
+  { key: 'year',   label: 'This Year',  icon: Calendar01Icon },
+  { key: 'custom', label: 'Date',       icon: FilterIcon },
 ]
 
 // ─── Cashier Detail Modal ─────────────────────────────────────────────────────
@@ -563,7 +563,6 @@ const Cashiers = () => {
         {/* Period tabs */}
         <div className="flex items-center gap-1 bg-white border border-gray-200 p-1" style={{ borderRadius: '5px' }}>
           {PERIODS.map(p => {
-            const Icon = p.icon
             const isActive = period === p.key
             return (
               <button key={p.key} onClick={() => setPeriod(p.key)}
@@ -571,7 +570,7 @@ const Cashiers = () => {
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold transition-all ${
                   isActive ? 'bg-primary-500 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
                 }`}>
-                <Icon size={14} />
+                <HIcon icon={p.icon} size={14} />
                 <span className="hidden sm:inline">{p.label}</span>
               </button>
             )
