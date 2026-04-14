@@ -55,6 +55,12 @@ const CurrentPlanBanner = ({ planName = 'Starter', renewalDate = 'Apr 30, 2026' 
 const BillingPlanTab = ({ onSubscribe }) => {
   const [billingCycle, setBillingCycle] = useState('monthly')
 
+  const handleContactSales = () => {
+    const subject = encodeURIComponent('StorePro Billing Inquiry')
+    const body = encodeURIComponent('Hi Sales Team,\n\nI need help choosing the right plan for my business.\n\nThanks.')
+    window.location.href = `mailto:support@dataleaptech.com?subject=${subject}&body=${body}`
+  }
+
   const plans = [
     {
       name: 'Starter',
@@ -132,7 +138,7 @@ const BillingPlanTab = ({ onSubscribe }) => {
       </div>
 
       {/* Plan cards */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {plans.map((plan) => {
           const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice
           const period = billingCycle === 'monthly' ? 'month' : 'year'
@@ -156,11 +162,11 @@ const BillingPlanTab = ({ onSubscribe }) => {
                 </div>
               )}
 
-              <div className="flex flex-1 flex-col p-6 sm:p-8">
+              <div className="flex flex-1 flex-col p-5 sm:p-6">
                 {/* Plan header */}
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ backgroundColor: plan.iconBg }}>
-                    <HIcon icon={plan.icon} size={20} style={{ color: plan.iconColor }} />
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: plan.iconBg }}>
+                    <HIcon icon={plan.icon} size={18} style={{ color: plan.iconColor }} />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
@@ -169,8 +175,8 @@ const BillingPlanTab = ({ onSubscribe }) => {
                 </div>
 
                 {/* Price */}
-                <div className="mt-6 flex items-baseline gap-1.5">
-                  <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+                <div className="mt-4 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-extrabold tracking-tight text-gray-900">
                     GHS {price.toLocaleString()}
                   </span>
                   <span className="text-sm font-medium text-gray-400">/ {period}</span>
@@ -178,12 +184,12 @@ const BillingPlanTab = ({ onSubscribe }) => {
                 <p className="mt-1 text-xs text-gray-400">per store · billed {billingCycle}</p>
 
                 {/* Divider */}
-                <div className="my-6 h-px bg-gray-100" />
+                <div className="my-4 h-px bg-gray-100" />
 
                 {/* Features */}
-                <div className="mb-8 flex-1">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">What's included</p>
-                  <ul className="space-y-3">
+                <div className="mb-5 flex-1">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">What's included</p>
+                  <ul className="space-y-2">
                     {plan.features.map((f) => (
                       <li key={f.text} className={`flex items-start gap-2.5 text-sm ${f.included ? 'text-gray-700' : 'text-gray-300'}`}>
                         <HIcon
@@ -201,7 +207,7 @@ const BillingPlanTab = ({ onSubscribe }) => {
                 {/* CTA */}
                 <button
                   onClick={() => plan.popular && onSubscribe?.(plan.name, price)}
-                  className={`w-full rounded-xl py-3 text-sm font-bold transition-all ${
+                  className={`w-full rounded-lg py-2.5 text-sm font-bold transition-all ${
                     plan.popular
                       ? 'text-white shadow-md hover:shadow-lg cursor-pointer'
                       : 'border-2 border-gray-200 bg-white text-gray-700 cursor-default'
@@ -226,9 +232,13 @@ const BillingPlanTab = ({ onSubscribe }) => {
             <h3 className="font-bold text-gray-900">Need help choosing a plan?</h3>
             <p className="mt-0.5 text-sm text-gray-500">Our team is here to help you find the right plan for your business. Chat with us or send an email.</p>
           </div>
-          <button className="shrink-0 rounded-xl border-2 border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50">
-            <HIcon icon={Mail01Icon} size={14} className="mr-2 text-gray-400" />
-            Contact Sales
+          <button
+            type="button"
+            onClick={handleContactSales}
+            className="inline-flex shrink-0 items-center rounded-xl border-2 border-gray-200 bg-white px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50"
+          >
+            <HIcon icon={Mail01Icon} size={14} className="text-gray-400" />
+            <span className="ml-2">Contact Sales</span>
           </button>
         </div>
       </div>
@@ -251,6 +261,8 @@ const WalletTab = ({ onLoadSuccess }) => {
   const [balance, setBalance] = useState(2400)
   const [loadAmount, setLoadAmount] = useState('')
   const [showLoadForm, setShowLoadForm] = useState(false)
+  const [topUpSubmitting, setTopUpSubmitting] = useState(false)
+  const [topUpError, setTopUpError] = useState('')
 
   const [payments, setPayments] = useState([])
 
@@ -453,18 +465,59 @@ const WalletTab = ({ onLoadSuccess }) => {
     }
   }
 
-  const handleLoadWallet = (e) => {
+  const handleLoadWallet = async (e) => {
     e.preventDefault()
+    setTopUpError('')
     const amount = parseFloat(loadAmount)
-    if (amount > 0) {
-      if (!walletCreated) {
-        setWalletCreated(true)
-        localStorage.setItem('awosel_wallet_created', 'true')
+    const organizationId = getSessionOrgId()
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setTopUpError('Please enter a valid amount greater than 0.')
+      return
+    }
+
+    if (!organizationId) {
+      setTopUpError('Organization ID is missing. Please log in again and retry.')
+      return
+    }
+
+    try {
+      setTopUpSubmitting(true)
+      const payload = {
+        amount: Number(amount.toFixed(2)),
+        organizationId: String(organizationId),
+        payment_type: 'PAYSTACK',
+        network,
+        currency: 'GHS',
       }
-      setBalance((prev) => prev + amount)
-      setLoadAmount('')
-      setShowLoadForm(false)
-      onLoadSuccess?.(amount)
+
+      const res = await initiatePayment(payload)
+      const paymentData = res?.data || {}
+      const paymentReference = paymentData?.reference
+        || paymentData?.paystack_reference
+        || paymentData?.publicId
+        || paymentData?.public_id
+        || ''
+      const paymentUrl = paymentData?.authorization_url
+        || paymentData?.paystack_authorization_url
+        || res?.authorization_url
+        || res?.paystack_authorization_url
+        || ''
+
+      if (!paymentUrl) {
+        setTopUpError('Payment initialized, but no Paystack URL was returned.')
+        return
+      }
+
+      if (paymentReference) {
+        localStorage.setItem('awosel_last_payment_reference', paymentReference)
+      }
+
+      window.location.assign(paymentUrl)
+    } catch (err) {
+      setTopUpError(err.message || 'Failed to initiate top-up payment.')
+    } finally {
+      setTopUpSubmitting(false)
     }
   }
 
@@ -646,7 +699,7 @@ const WalletTab = ({ onLoadSuccess }) => {
       {/* Balance + Quick stats row */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main balance card */}
-        <div className="lg:col-span-2 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-8 text-white">
+        <div className="lg:col-span-2 rounded-[2px] bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-8 text-white">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -663,11 +716,11 @@ const WalletTab = ({ onLoadSuccess }) => {
             </div>
             <button
               onClick={() => setShowLoadForm(!showLoadForm)}
-              className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-gray-900 transition-all hover:opacity-90 shadow-sm"
+              className="flex items-center gap-2 rounded-[2px] px-5 py-3 text-sm font-bold text-gray-900 transition-all hover:opacity-90 shadow-sm"
               style={{ backgroundColor: '#FF7521', color: '#fff' }}
             >
               <HIcon icon={Add01Icon} size={14} />
-              Load Wallet
+              Top Up Wallet
             </button>
           </div>
 
@@ -681,7 +734,7 @@ const WalletTab = ({ onLoadSuccess }) => {
                     key={amt}
                     type="button"
                     onClick={() => setLoadAmount(String(amt))}
-                    className={`rounded-lg py-2 text-xs font-bold transition-all ${
+                    className={`rounded-[2px] py-2 text-xs font-bold transition-all ${
                       loadAmount === String(amt)
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'bg-white/10 text-white hover:bg-white/20'
@@ -691,6 +744,11 @@ const WalletTab = ({ onLoadSuccess }) => {
                   </button>
                 ))}
               </div>
+              {topUpError && (
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  {topUpError}
+                </div>
+              )}
               <form onSubmit={handleLoadWallet} className="flex gap-3">
                 <input
                   type="number"
@@ -699,19 +757,20 @@ const WalletTab = ({ onLoadSuccess }) => {
                   placeholder="Or enter custom amount"
                   min="1"
                   required
-                  className="flex-1 rounded-xl border-0 bg-white/10 px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  className="flex-1 rounded-[2px] border-0 bg-white/10 px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
                 />
                 <button
                   type="submit"
-                  className="rounded-xl px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
+                  disabled={topUpSubmitting}
+                  className="rounded-[2px] px-6 py-3 text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: '#059669' }}
                 >
-                  Confirm
+                  {topUpSubmitting ? 'Processing...' : 'Proceed'}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setShowLoadForm(false); setLoadAmount('') }}
-                  className="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/20"
+                  className="rounded-[2px] bg-white/10 px-4 py-3 text-sm font-semibold text-white hover:bg-white/20"
                 >
                   Cancel
                 </button>
@@ -729,7 +788,7 @@ const WalletTab = ({ onLoadSuccess }) => {
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-400">Total Loaded</p>
-                <p className="text-lg font-bold text-gray-900">GHS {totals.totalLoaded.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <p className="text-lg font-bold text-gray-900">GHS {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
           </div>
@@ -769,7 +828,7 @@ const WalletTab = ({ onLoadSuccess }) => {
             <h3 className="font-bold text-gray-900">Payment History</h3>
             <p className="mt-0.5 text-xs text-gray-400">All subscription payments and wallet transactions</p>
           </div>
-          <button className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50">
+          <button className="flex items-center gap-2 rounded-[2px] border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50">
             <HIcon icon={Download01Icon} size={14} className="text-gray-400" />
             Export
           </button>
@@ -866,26 +925,25 @@ const Billing = () => {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-gray-50/50">
       {/* Page header */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-5 sm:px-8 lg:px-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-2.5 sm:px-8 lg:px-10">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Billing & Subscription</h1>
-            <p className="mt-1 text-sm text-gray-500">Manage your plan, wallet, and payment history</p>
+            <h1 className="text-lg font-bold tracking-tight text-gray-900">Billing & Subscription</h1>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 rounded-xl bg-gray-100 p-1">
+          <div className="flex gap-1 rounded-md bg-gray-100 p-0.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all ${
+                className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-semibold transition-all ${
                   activeTab === tab.id
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <HIcon icon={tab.icon} size={14} />
+                <HIcon icon={tab.icon} size={11} />
                 {tab.label}
               </button>
             ))}
