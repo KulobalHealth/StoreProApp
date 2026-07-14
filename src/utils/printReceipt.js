@@ -15,6 +15,14 @@ export const printReceiptDirect = (receiptElement, storeName = 'Awosel OS') => {
 
   // Use cloneNode (deep) instead of innerHTML to prevent XSS from unsanitized content
   const clonedContent = receiptElement.cloneNode(true)
+  // The source element is usually rendered off-screen (e.g. position:absolute; left:-9999px)
+  // so it stays hidden in the normal UI. Clear that positioning on the clone, otherwise the
+  // receipt prints off the edge of the page and the print preview shows a blank sheet.
+  clonedContent.style.position = 'static'
+  clonedContent.style.left = 'auto'
+  clonedContent.style.top = 'auto'
+  clonedContent.style.right = 'auto'
+  clonedContent.style.bottom = 'auto'
   if (!clonedContent.textContent || clonedContent.textContent.trim() === '') {
     console.error('Receipt content is empty')
     alert('Receipt content is empty. Cannot print.')
@@ -26,7 +34,8 @@ export const printReceiptDirect = (receiptElement, storeName = 'Awosel OS') => {
     @media print {
       html, body { margin: 0 !important; padding: 0 !important; width: 55mm !important; height: auto !important; }
       body > *:not(#${printContainerId}) { display: none !important; visibility: hidden !important; }
-      #${printContainerId} { display: block !important; visibility: visible !important; width: 55mm !important; margin: 0 !important; padding: 2mm !important; position: relative !important; }
+      #${printContainerId} { display: block !important; visibility: visible !important; width: 55mm !important; margin: 0 !important; padding: 2mm !important; position: relative !important; left: auto !important; top: auto !important; }
+      #${printContainerId} > * { position: static !important; left: auto !important; top: auto !important; right: auto !important; bottom: auto !important; }
     }
     @media screen {
       #${printContainerId} { position: absolute; left: -9999px; top: 0; }
