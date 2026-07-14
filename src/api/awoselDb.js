@@ -2,7 +2,12 @@
  * Awosel API: uses fetch to backend. VITE_API_URL should include /api (e.g. https://host.com/api).
  * Paths are relative to that base: /auth/register, /login, /settings, /products, etc.
  */
-const API_BASE = typeof import.meta !== 'undefined' && import.meta.env ? (import.meta.env.VITE_API_URL || '') : ''
+// Fall back to the known production backend when VITE_API_URL isn't provided at
+// build time (e.g. the env var wasn't set in the Vercel project). Without this,
+// an empty base makes requests hit the frontend host itself and fail with a
+// generic "Request failed".
+const DEFAULT_API_BASE = 'https://pos-backend-api-11gm.onrender.com/api'
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || DEFAULT_API_BASE
 const REQUEST_TIMEOUT = 30000 // 30 second timeout
 
 /** Sanitize a path segment to prevent path traversal / injection */
@@ -46,7 +51,7 @@ async function fetchApi(method, path, body = undefined) {
 
     if (!res.ok) {
       // Extract the most detailed error message available
-      let msg = data.error || data.message || res.statusText || 'Request failed'
+      let msg = data.error || data.message || res.statusText || `Request failed (${res.status})`
       // Some backends return an array of validation errors
       if (Array.isArray(data.errors) && data.errors.length) {
         msg = data.errors.map(e => (typeof e === 'string' ? e : e.message || e.msg || JSON.stringify(e))).join('. ')
