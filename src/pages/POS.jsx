@@ -38,6 +38,7 @@ import Receipt from '../components/Receipt'
 import { printReceiptDirect } from '../utils/printReceipt'
 import { listCustomers, listProducts, listProductsByBranch, listHeldSales, createSale, createHeldSale, deleteHeldSale } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
+import { onProductsUpdated } from '../utils/productsSync'
 
 // Common units of measure
 const UNITS_OF_MEASURE = [
@@ -195,7 +196,8 @@ const POS = () => {
 
   // Reusable product fetch function
   const fetchProducts = useCallback(() => {
-    const branchId = getSessionBranchId()
+    const activeBranch = getActiveBranchUtil()
+    const branchId = activeBranch?.uuid || activeBranch?.id || getSessionBranchId()
     if (!branchId) return
     setProductsLoading(true)
     setProductsError('')
@@ -225,17 +227,20 @@ const POS = () => {
     fetchProducts()
   }, [fetchProducts])
 
+  // Refetch when inventory (or another page) mutates products — same tab or other tabs
+  useEffect(() => onProductsUpdated(fetchProducts), [fetchProducts])
+
   // Refetch products when the tab/page becomes visible (e.g. after editing inventory)
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') fetchProducts()
     }
+    const handleFocus = () => fetchProducts()
     document.addEventListener('visibilitychange', handleVisibility)
-    // Also refetch when the window regains focus (covers same-tab navigation)
-    window.addEventListener('focus', handleVisibility)
+    window.addEventListener('focus', handleFocus)
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility)
-      window.removeEventListener('focus', handleVisibility)
+      window.removeEventListener('focus', handleFocus)
     }
   }, [fetchProducts])
 

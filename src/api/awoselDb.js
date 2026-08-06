@@ -23,10 +23,14 @@ async function fetchApi(method, path, body = undefined) {
 
   const opts = {
     method,
+    // Prevent browsers / CDNs from serving a stale product list after inventory edits
+    cache: 'no-store',
     signal: controller.signal,
     headers: {
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {})
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
     }
   }
   if (body !== undefined) {
@@ -125,7 +129,8 @@ export async function listProducts(query = {}) {
 }
 
 export async function listProductsByBranch(branchId) {
-  return fetchApi('GET', `/products/branch/${sanitizePath(branchId)}`)
+  // Cache-bust query so Cloudflare / browser cannot reuse a previous branch product list
+  return fetchApi('GET', `/products/branch/${sanitizePath(branchId)}?_=${Date.now()}`)
 }
 
 export async function getProduct(id) {

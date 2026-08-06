@@ -9,8 +9,9 @@ export function getSessionBranchId() {
     const saved = localStorage.getItem('awosel_active_branch')
     if (saved) {
       const branch = JSON.parse(saved)
-      // Always return uuid (not the numeric id)
+      // Prefer uuid; fall back to id so POS and Inventory resolve the same branch
       if (branch?.uuid) return branch.uuid
+      if (branch?.id) return branch.id
     }
   } catch {}
 

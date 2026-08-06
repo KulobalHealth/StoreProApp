@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
+import { notifyProductsUpdated } from '../utils/productsSync'
 import * as XLSX from 'xlsx'
 import { HIcon } from '../components/HIcon'
 import {
@@ -311,6 +312,7 @@ const Inventory = () => {
       setDeleteLoading(true)
       await apiDeleteProduct(productToDelete.uuid || productToDelete.id)
       await fetchProducts()
+      notifyProductsUpdated()
       showAlert('Product deleted successfully', 'success')
       setShowDeleteModal(false)
       setProductToDelete(null)
@@ -815,6 +817,7 @@ const Inventory = () => {
     try {
       const data = await bulkImportProducts({ branchId, organizationId, products })
       await fetchProducts()
+      notifyProductsUpdated()
       setShowImportModal(false)
       setImportPreview([])
       setImportErrors([])
@@ -893,6 +896,7 @@ const Inventory = () => {
         setSuccessProduct({ ...created, action: 'added' })
       }
       await fetchProducts()
+      notifyProductsUpdated()
       setShowAddModal(false)
       setEditingProduct(null)
       setShowSuccessModal(true)

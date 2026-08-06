@@ -16,6 +16,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { listProductsByBranch, listSales, updateProduct } from '../api/awoselDb.js'
 import { getSessionBranchId } from '../utils/branch'
+import { notifyProductsUpdated } from '../utils/productsSync'
 
 const extractList = (response, keys = []) => {
   if (Array.isArray(response)) return response
@@ -136,6 +137,7 @@ const ReturnItems = () => {
         await updateProduct(product.uuid || product.id, { quantity: newStock })
       }
 
+      notifyProductsUpdated()
       setSuccess(true)
     } catch (err) {
       setError(err.message || 'Failed to process return')

@@ -20,6 +20,7 @@ import {
   receiveReceipt,
 } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId } from '../utils/branch.js'
+import { notifyProductsUpdated } from '../utils/productsSync'
 
 const extractList = (response, keys = []) => {
   if (Array.isArray(response)) return response
@@ -250,6 +251,7 @@ const ReceiveItems = () => {
       setSelectedSupplierId('')
       setPaymentType('credit')
       setSuccessMessage(`Items received successfully${receipt?.id ? ` under receipt #${receipt.id}` : '.'}`)
+      notifyProductsUpdated()
     } catch (err) {
       setError(err.message || 'Failed to receive items.')
     } finally {
