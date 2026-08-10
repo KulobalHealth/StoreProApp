@@ -13,6 +13,23 @@
  */
 
 import { listProductsByBranch } from '../api/awoselDb'
+import { resolveProductPrice, resolveProductCost } from './productPrice'
+
+/** Align top-level selling_price with base-unit price so POS/Inventory never diverge */
+function normalizeProductRecord(product) {
+  if (!product || typeof product !== 'object') return product
+  const price = resolveProductPrice(product)
+  const cost = resolveProductCost(product)
+  return {
+    ...product,
+    selling_price: price,
+    cost_price: cost,
+  }
+}
+
+function normalizeProductList(products) {
+  return (Array.isArray(products) ? products : []).map(normalizeProductRecord)
+}
 
 export const PRODUCTS_UPDATED_EVENT = 'awosel:products-updated'
 const PRODUCTS_UPDATED_KEY = 'awosel_products_updated_at'
@@ -89,7 +106,7 @@ export function setProductsForBranch(branchId, products, { broadcast = true, fro
   bumpSeq(id)
   cache = {
     branchId: id,
-    products: Array.isArray(products) ? products : [],
+    products: normalizeProductList(products),
     version: cache.version + 1,
     updatedAt: Date.now(),
   }
@@ -146,7 +163,7 @@ export async function loadProductsForBranch(branchId, { force = false } = {}) {
         return cache.products
       }
       const data = res?.data || res
-      const list = Array.isArray(data) ? data : (data?.products || [])
+      const list = normalizeProductList(Array.isArray(data) ? data : (data?.products || []))
       cache = {
         branchId: id,
         products: list,

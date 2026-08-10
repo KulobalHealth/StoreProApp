@@ -8,6 +8,7 @@ import {
   getCachedProducts,
   subscribeProducts,
 } from '../utils/productsStore'
+import { resolveProductPrice, resolveProductCost } from '../utils/productPrice'
 import * as XLSX from 'xlsx'
 import { HIcon } from '../components/HIcon'
 import {
@@ -55,21 +56,31 @@ import {
 
 function mapApiProductToDisplay(p) {
   const baseUnit = (p.base_unit || p.baseUnit || 'piece').toLowerCase()
-  const defaultPrice = p.selling_price ?? p.price ?? 0
-  const defaultCost = p.cost_price ?? p.cost ?? 0
-  const safeNum = (v, fallback) => { const n = Number(v); return Number.isFinite(n) ? n : fallback }
-  const units = (p.units && p.units.length > 0)
-    ? p.units.map(u => ({
+  const defaultPrice = resolveProductPrice(p)
+  const defaultCost = resolveProductCost(p)
+  const safeNum = (v, fallback) => {
+    if (v == null || v === '') return fallback
+    const n = Number(v)
+    return Number.isFinite(n) ? n : fallback
+  }
+  const unitSource = (p.units && p.units.length > 0)
+    ? p.units
+    : (Array.isArray(p.product_units) ? p.product_units : [])
+  const units = unitSource.length > 0
+    ? unitSource.map(u => ({
         unit: (u.unit_name || u.unit || baseUnit).toLowerCase(),
-        conversion: safeNum(u.conversion_quantity ?? u.base_quantity, 1),
+        conversion: safeNum(u.conversion_quantity ?? u.base_quantity ?? u.conversion, 1),
         price: safeNum(u.unit_price ?? u.price, defaultPrice),
         cost: safeNum(u.cost_price ?? u.cost, defaultCost)
       }))
     : [{ unit: baseUnit, conversion: 1, price: defaultPrice, cost: defaultCost }]
   return {
     ...p,
-    price: p.selling_price ?? p.price ?? 0,
-    cost: p.cost_price ?? p.cost ?? 0,
+    // Keep top-level selling_price aligned with the canonical price POS uses
+    selling_price: defaultPrice,
+    cost_price: defaultCost,
+    price: defaultPrice,
+    cost: defaultCost,
     stock: p.quantity ?? p.stock ?? 0,
     minStock: p.min_stock_quantity ?? p.minStock ?? 0,
     reorderPoint: p.reorder_quantity ?? p.reorderPoint ?? p.min_stock_quantity ?? 0,
@@ -915,28 +926,43 @@ const Inventory = () => {
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
         await updateProduct(productId, payload)
+        // API-shaped object so POS/Inventory mappers read the same selling_price + unit prices
         savedRaw = {
           ...editingProduct,
           ...payload,
           id: editingProduct.id || productId,
           uuid: editingProduct.uuid || productId,
+          name: payload.name,
+          selling_price: payload.selling_price,
+          cost_price: payload.cost_price,
+          quantity: payload.quantity,
+          base_unit: payload.base_unit,
           units: payload.product_units,
+          product_units: payload.product_units,
         }
         setSuccessProduct({ ...payload, id: productId, action: 'updated' })
       } else {
         const res = await createProduct(payload)
         const created = res?.data || res
-        savedRaw = { ...payload, ...created, units: created?.units || payload.product_units }
+        savedRaw = {
+          ...payload,
+          ...created,
+          selling_price: created?.selling_price ?? payload.selling_price,
+          cost_price: created?.cost_price ?? payload.cost_price,
+          units: created?.units || payload.product_units,
+          product_units: created?.units || payload.product_units,
+        }
         setSuccessProduct({ ...created, action: 'added' })
       }
 
-      // Write optimistically into the shared store FIRST so POS cannot snap back to old data
+      // Write optimistically into the shared store FIRST so POS shows the new price immediately
       if (branchId && savedRaw) {
         const prev = getCachedProducts(branchId) || []
         const key = savedRaw.uuid || savedRaw.id
-        const exists = prev.some((p) => (p.uuid || p.id) === key || String(p.id) === String(key))
+        const sameId = (p) => (p.uuid || p.id) === key || String(p.id) === String(key) || String(p.uuid || '') === String(key)
+        const exists = prev.some(sameId)
         const next = exists
-          ? prev.map((p) => ((p.uuid || p.id) === key || String(p.id) === String(key) ? { ...p, ...savedRaw } : p))
+          ? prev.map((p) => (sameId(p) ? { ...p, ...savedRaw } : p))
           : [...prev, savedRaw]
         setProductsForBranch(branchId, next, { fromMutation: true })
         const mapped = next.map(mapApiProductToDisplay)
@@ -944,12 +970,30 @@ const Inventory = () => {
         applyFilters(mapped)
       }
 
-      // Background reconcile with server (store guards against stale overwrite)
-      if (branchId) {
+      // Soft reconcile: refresh from API but MERGE into the optimistic row so a lagging
+      // selling_price (e.g. still 110 while unit_price is 115) cannot wipe the edit.
+      if (branchId && savedRaw) {
+        const editedKey = savedRaw.uuid || savedRaw.id
         loadProductsForBranch(branchId, { force: true }).then((list) => {
-          if (Array.isArray(list) && list.length) {
-            setProductsForBranch(branchId, list, { fromMutation: true })
-          }
+          if (!Array.isArray(list) || !list.length) return
+          const merged = list.map((p) => {
+            const id = p.uuid || p.id
+            if (id !== editedKey && String(p.id) !== String(editedKey) && String(p.uuid || '') !== String(editedKey)) {
+              return p
+            }
+            // Keep the price/units we just saved when the API still returns the old selling_price
+            return {
+              ...p,
+              ...savedRaw,
+              id: p.id || savedRaw.id,
+              uuid: p.uuid || savedRaw.uuid,
+              selling_price: savedRaw.selling_price,
+              cost_price: savedRaw.cost_price,
+              units: savedRaw.units || savedRaw.product_units || p.units,
+              product_units: savedRaw.product_units || savedRaw.units || p.product_units,
+            }
+          })
+          setProductsForBranch(branchId, merged, { fromMutation: true })
         }).catch(() => {})
       }
 

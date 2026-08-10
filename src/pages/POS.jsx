@@ -39,6 +39,7 @@ import { printReceiptDirect } from '../utils/printReceipt'
 import { listCustomers, listHeldSales, createSale, createHeldSale, deleteHeldSale } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
 import { loadProductsForBranch, subscribeProducts, getCachedProducts } from '../utils/productsStore'
+import { resolveProductPrice, resolveProductCost } from '../utils/productPrice'
 
 // Common units of measure
 const UNITS_OF_MEASURE = [
@@ -67,22 +68,30 @@ const UNITS_OF_MEASURE = [
   { value: 'cm', label: 'Centimeter', abbreviation: 'cm' },
 ]
 
+const toFiniteNumber = (value, fallback = 0) => {
+  if (value == null || value === '') return fallback
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
 
-// Map API product to POS product shape
+// Map API product to POS product shape — price matches Inventory (base unit is canonical)
 function mapApiProductToPOS(p) {
-  const baseUnit = p.base_unit || 'piece'
-  const price = Number(p.selling_price) ?? Number(p.price) ?? 0
-  const cost = Number(p.cost_price) ?? Number(p.cost) ?? 0
-  const mappedUnits = (p.units && p.units.length > 0)
-    ? p.units.map(u => ({
-        uuid: u.uuid || null,
-        unit: u.unit_name || u.unit || baseUnit,
-        conversion: Number(u.conversion_quantity) ?? Number(u.conversion) ?? 1,
-        price: Number(u.unit_price) ?? Number(u.price) ?? price
-      }))
-    : []
+  const baseUnit = p.base_unit || p.baseUnit || 'piece'
+  const price = resolveProductPrice(p)
+  const cost = resolveProductCost(p)
+  const unitSource = Array.isArray(p.units) && p.units.length > 0
+    ? p.units
+    : (Array.isArray(p.product_units) ? p.product_units : [])
+  const mappedUnits = unitSource.map(u => ({
+    uuid: u.uuid || null,
+    unit: u.unit_name || u.unit || baseUnit,
+    conversion: toFiniteNumber(u.conversion_quantity ?? u.conversion ?? u.base_quantity, 1),
+    price: toFiniteNumber(u.unit_price ?? u.price, price),
+  }))
   // Always ensure the base unit is in the units list (at the front)
-  const hasBaseUnit = mappedUnits.some(u => u.unit === baseUnit && u.conversion === 1)
+  const hasBaseUnit = mappedUnits.some(
+    u => String(u.unit).toLowerCase() === String(baseUnit).toLowerCase() && u.conversion === 1
+  )
   const units = hasBaseUnit
     ? mappedUnits
     : [{ uuid: null, unit: baseUnit, conversion: 1, price }, ...mappedUnits]
@@ -94,7 +103,8 @@ function mapApiProductToPOS(p) {
     itemName: p.name || 'Unknown',
     brand: p.brand || '',
     price,
-    stock: Number(p.quantity) || Number(p.stock) || 0,
+    cost,
+    stock: toFiniteNumber(p.quantity ?? p.stock, 0),
     barcode: p.barcode || '',
     baseUnit,
     units
