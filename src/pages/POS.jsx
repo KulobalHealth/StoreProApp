@@ -36,9 +36,9 @@ import {
 import Tooltip from '../components/Tooltip'
 import Receipt from '../components/Receipt'
 import { printReceiptDirect } from '../utils/printReceipt'
-import { listCustomers, listProducts, listProductsByBranch, listHeldSales, createSale, createHeldSale, deleteHeldSale } from '../api/awoselDb.js'
+import { listCustomers, listHeldSales, createSale, createHeldSale, deleteHeldSale } from '../api/awoselDb.js'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
-import { onProductsUpdated } from '../utils/productsSync'
+import { loadProductsForBranch, subscribeProducts, getCachedProducts } from '../utils/productsStore'
 
 // Common units of measure
 const UNITS_OF_MEASURE = [
@@ -194,57 +194,100 @@ const POS = () => {
   // Get active branch
   const getActiveBranch = getActiveBranchUtil
 
-  // Reusable product fetch function
-  const fetchProducts = useCallback(() => {
+  const resolveBranchId = useCallback(() => {
     const activeBranch = getActiveBranchUtil()
-    const branchId = activeBranch?.uuid || activeBranch?.id || getSessionBranchId()
-    if (!branchId) return
-    setProductsLoading(true)
-    setProductsError('')
-    listProductsByBranch(branchId)
-      .then(res => {
-        const data = res?.data || res
-        const list = Array.isArray(data) ? data : []
-        const mapped = list.map(mapApiProductToPOS)
-        setAllProducts(mapped)
-        setProductsFromApi(mapped)
-      })
-      .catch(err => {
-        const msg = err.message || 'Could not load products'
-        if (msg.toLowerCase().includes('access denied') || msg.toLowerCase().includes('required role')) {
-          setProductsError('Your account does not have permission to load products. Please ask an admin to grant POS access to the "sales" role on the backend.')
-        } else {
-          setProductsError(msg)
-        }
-        setAllProducts([])
-        setProductsFromApi([])
-      })
-      .finally(() => setProductsLoading(false))
+    return activeBranch?.uuid || activeBranch?.id || getSessionBranchId() || null
   }, [])
 
-  // Fetch products on mount
-  useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+  const applyProductList = useCallback((rawList) => {
+    const mapped = (Array.isArray(rawList) ? rawList : []).map(mapApiProductToPOS)
+    setAllProducts(mapped)
+  }, [])
 
-  // Refetch when inventory (or another page) mutates products — same tab or other tabs
-  useEffect(() => onProductsUpdated(fetchProducts), [fetchProducts])
-
-  // Refetch products when the tab/page becomes visible (e.g. after editing inventory)
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') fetchProducts()
+  // Load from the shared products store (deduped, race-safe). force=true hits the network.
+  const fetchProducts = useCallback(async ({ force = false } = {}) => {
+    const branchId = resolveBranchId()
+    if (!branchId) return
+    setProductsError('')
+    // Paint cached list immediately so UI never flashes old→new→old across navigations
+    if (!force) {
+      const cached = getCachedProducts(branchId)
+      if (cached) {
+        applyProductList(cached)
+        setProductsLoading(false)
+      } else {
+        setProductsLoading(true)
+      }
+    } else {
+      setProductsLoading(true)
     }
-    const handleFocus = () => fetchProducts()
-    document.addEventListener('visibilitychange', handleVisibility)
-    window.addEventListener('focus', handleFocus)
+    try {
+      const list = await loadProductsForBranch(branchId, { force })
+      applyProductList(list)
+    } catch (err) {
+      const msg = err.message || 'Could not load products'
+      if (msg.toLowerCase().includes('access denied') || msg.toLowerCase().includes('required role')) {
+        setProductsError('Your account does not have permission to load products. Please ask an admin to grant POS access to the "sales" role on the backend.')
+      } else {
+        setProductsError(msg)
+      }
+      // Keep whatever we already have in the store — don't wipe with empty on a failed refresh
+      const cached = getCachedProducts(branchId)
+      if (!cached) {
+        setAllProducts([])
+      }
+    } finally {
+      setProductsLoading(false)
+    }
+  }, [resolveBranchId, applyProductList])
+
+  // Mount: use shared cache if present, otherwise fetch. Soft-refresh in background.
+  useEffect(() => {
+    const branchId = resolveBranchId()
+    if (!branchId) return undefined
+    const cached = getCachedProducts(branchId)
+    if (cached) {
+      applyProductList(cached)
+      setProductsLoading(false)
+      // Background refresh — store discards stale responses automatically
+      fetchProducts({ force: true })
+    } else {
+      fetchProducts({ force: true })
+    }
+    return undefined
+  }, [resolveBranchId, applyProductList, fetchProducts])
+
+  // Same-tab: Inventory (etc.) wrote a new list into the store — apply it, never race-refetch.
+  useEffect(() => {
+    const branchId = resolveBranchId()
+    return subscribeProducts((snapshot) => {
+      if (!branchId || !snapshot?.branchId) return
+      if (String(snapshot.branchId) !== String(branchId)) return
+      applyProductList(snapshot.products)
+      setProductsLoading(false)
+      setProductsError('')
+    })
+  }, [resolveBranchId, applyProductList])
+
+  // Cross-tab only: another browser tab mutated products — force one refresh.
+  // (Same-tab updates arrive via subscribeProducts above; do NOT also refetch on focus —
+  // that was the race that snapped the list back to old data.)
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'awosel_products_updated_at') fetchProducts({ force: true })
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchProducts({ force: true })
+    }
+    window.addEventListener('storage', onStorage)
+    document.addEventListener('visibilitychange', onVisibility)
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibility)
-      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('storage', onStorage)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [fetchProducts])
 
-  // Instant client-side filtering — no debounce, no API calls
+  // Instant client-side filtering — derived from allProducts (single source)
   useEffect(() => {
     if (!itemSearch || !itemSearch.trim()) {
       setProductsFromApi(allProducts)

@@ -15,7 +15,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { listBranches, listProductsByBranch, updateProduct } from '../api/awoselDb'
 import { getActiveBranch, getSessionBranchId } from '../utils/branch'
-import { notifyProductsUpdated } from '../utils/productsSync'
+import { loadProductsForBranch, setProductsForBranch } from '../utils/productsStore'
 import { useAuth } from '../contexts/AuthContext'
 
 const TRANSFER_HISTORY_KEY = 'warehouse_transfer_history'
@@ -372,7 +372,14 @@ const Warehouse = () => {
       setTransferNote('')
       setDestinationBranchId('')
       setSuccess(`${transferLines.length} product${transferLines.length === 1 ? '' : 's'} transferred to ${destinationBranch.name}.`)
-      notifyProductsUpdated()
+      if (activeBranchId) {
+        try {
+          const list = await loadProductsForBranch(activeBranchId, { force: true })
+          setProductsForBranch(activeBranchId, list, { fromMutation: true })
+        } catch {
+          /* ignore */
+        }
+      }
     } catch (err) {
       setError(err.message || 'Failed to complete warehouse transfer.')
     } finally {

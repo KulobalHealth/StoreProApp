@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
-import { notifyProductsUpdated } from '../utils/productsSync'
+import {
+  loadProductsForBranch,
+  setProductsForBranch,
+  getCachedProducts,
+  subscribeProducts,
+} from '../utils/productsStore'
 import * as XLSX from 'xlsx'
 import { HIcon } from '../components/HIcon'
 import {
@@ -41,7 +46,6 @@ import {
 import Tooltip from '../components/Tooltip'
 import {
   listProducts,
-  listProductsByBranch,
   getProduct,
   createProduct,
   updateProduct,
@@ -155,31 +159,30 @@ const Inventory = () => {
   // Get departments for filter dropdown
   const getDepartments = () => loadDepartments()
 
-  // Fetch all products from API (only re-fetches when branch changes or manual refresh)
-  const fetchProducts = useCallback(async (page) => {
+  const resolveBranchId = useCallback(() => {
+    const activeBranch = getActiveBranch()
+    return activeBranch?.uuid || activeBranch?.id || getSessionBranchId() || null
+  }, [])
+
+  // Fetch all products via the shared store (race-safe, shared with POS)
+  const fetchProducts = useCallback(async (page, { force = true } = {}) => {
     const pageToFetch = page !== undefined && page !== null ? page : currentPage
     setProductsLoading(true)
     setProductsError(null)
     try {
-      const activeBranch = getActiveBranch()
-      const branchId = activeBranch?.uuid || activeBranch?.id
-      let data
+      const branchId = resolveBranchId()
+      let list
       if (branchId) {
-        // Use branch-specific endpoint - fetch ALL products once
-        const res = await listProductsByBranch(branchId)
-        data = res?.data || res
+        list = await loadProductsForBranch(branchId, { force })
       } else {
-        // Fallback to generic products list with server-side search
         const query = { page: pageToFetch, limit: PAGE_SIZE }
         if (debouncedSearchTerm.trim()) query.search = debouncedSearchTerm.trim()
         if (selectedDepartmentFilter && selectedDepartmentFilter !== 'all') query.category = selectedDepartmentFilter
-        data = await listProducts(query)
+        const data = await listProducts(query)
+        list = Array.isArray(data) ? data : (data.products || [])
       }
-      const list = Array.isArray(data) ? data : (data.products || [])
-      // Cache the full product list (mapped) for fast client-side filtering
-      const mapped = list.map(mapApiProductToDisplay)
+      const mapped = (Array.isArray(list) ? list : []).map(mapApiProductToDisplay)
       allProductsCache.current = mapped
-      // Apply client-side filters from cache
       applyFilters(mapped)
     } catch (err) {
       setProductsError(err.message || 'Could not load products')
@@ -189,7 +192,7 @@ const Inventory = () => {
     } finally {
       setProductsLoading(false)
     }
-  }, [currentPage, selectedDepartmentFilter, debouncedSearchTerm])
+  }, [currentPage, selectedDepartmentFilter, debouncedSearchTerm, resolveBranchId])
 
   // Fast client-side filtering from cached products (no API call)
   const applyFilters = useCallback((allProducts) => {
@@ -219,13 +222,25 @@ const Inventory = () => {
     setTotalPages(1)
   }, [debouncedSearchTerm, selectedDepartmentFilter])
 
-  // Only re-fetch from API on initial load and page changes
-  const initialFetchDone = useRef(false)
+  // Initial load + keep Inventory in sync when the shared store changes (e.g. receive/return)
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true
-      fetchProducts(1)
+    const branchId = resolveBranchId()
+    const cached = branchId ? getCachedProducts(branchId) : null
+    if (cached) {
+      const mapped = cached.map(mapApiProductToDisplay)
+      allProductsCache.current = mapped
+      applyFilters(mapped)
+      setProductsLoading(false)
     }
+    fetchProducts(1, { force: true })
+    if (!branchId) return undefined
+    return subscribeProducts((snapshot) => {
+      if (String(snapshot.branchId) !== String(branchId)) return
+      const mapped = (snapshot.products || []).map(mapApiProductToDisplay)
+      allProductsCache.current = mapped
+      applyFilters(mapped)
+      setProductsLoading(false)
+    })
   }, [])
 
   // Re-filter from cache when search/department changes (instant, no API call)
@@ -310,9 +325,15 @@ const Inventory = () => {
     if (!productToDelete) return
     try {
       setDeleteLoading(true)
-      await apiDeleteProduct(productToDelete.uuid || productToDelete.id)
-      await fetchProducts()
-      notifyProductsUpdated()
+      const productId = productToDelete.uuid || productToDelete.id
+      await apiDeleteProduct(productId)
+      const branchId = resolveBranchId()
+      if (branchId) {
+        const prev = getCachedProducts(branchId) || []
+        const next = prev.filter((p) => (p.uuid || p.id) !== productId && String(p.id) !== String(productId))
+        setProductsForBranch(branchId, next, { fromMutation: true })
+      }
+      await fetchProducts(1, { force: true })
       showAlert('Product deleted successfully', 'success')
       setShowDeleteModal(false)
       setProductToDelete(null)
@@ -816,8 +837,12 @@ const Inventory = () => {
     setImportLoading(true)
     try {
       const data = await bulkImportProducts({ branchId, organizationId, products })
-      await fetchProducts()
-      notifyProductsUpdated()
+      // Force reload into shared store so POS picks up imported items
+      if (branchId) {
+        const list = await loadProductsForBranch(branchId, { force: true })
+        setProductsForBranch(branchId, list, { fromMutation: true })
+      }
+      await fetchProducts(1, { force: true })
       setShowImportModal(false)
       setImportPreview([])
       setImportErrors([])
@@ -886,17 +911,48 @@ const Inventory = () => {
 
     try {
       setProductSaving(true)
+      let savedRaw = null
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
         await updateProduct(productId, payload)
+        savedRaw = {
+          ...editingProduct,
+          ...payload,
+          id: editingProduct.id || productId,
+          uuid: editingProduct.uuid || productId,
+          units: payload.product_units,
+        }
         setSuccessProduct({ ...payload, id: productId, action: 'updated' })
       } else {
         const res = await createProduct(payload)
         const created = res?.data || res
+        savedRaw = { ...payload, ...created, units: created?.units || payload.product_units }
         setSuccessProduct({ ...created, action: 'added' })
       }
-      await fetchProducts()
-      notifyProductsUpdated()
+
+      // Write optimistically into the shared store FIRST so POS cannot snap back to old data
+      if (branchId && savedRaw) {
+        const prev = getCachedProducts(branchId) || []
+        const key = savedRaw.uuid || savedRaw.id
+        const exists = prev.some((p) => (p.uuid || p.id) === key || String(p.id) === String(key))
+        const next = exists
+          ? prev.map((p) => ((p.uuid || p.id) === key || String(p.id) === String(key) ? { ...p, ...savedRaw } : p))
+          : [...prev, savedRaw]
+        setProductsForBranch(branchId, next, { fromMutation: true })
+        const mapped = next.map(mapApiProductToDisplay)
+        allProductsCache.current = mapped
+        applyFilters(mapped)
+      }
+
+      // Background reconcile with server (store guards against stale overwrite)
+      if (branchId) {
+        loadProductsForBranch(branchId, { force: true }).then((list) => {
+          if (Array.isArray(list) && list.length) {
+            setProductsForBranch(branchId, list, { fromMutation: true })
+          }
+        }).catch(() => {})
+      }
+
       setShowAddModal(false)
       setEditingProduct(null)
       setShowSuccessModal(true)
