@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { getSessionBranchId, getSessionOrgId, getActiveBranch as getActiveBranchUtil } from '../utils/branch'
+import {
+  getSessionBranchId,
+  getSessionOrgId,
+  getNumericBranchId,
+  getActiveBranch as getActiveBranchUtil,
+  enrichActiveBranch,
+  normalizeBranchRecord,
+} from '../utils/branch'
 import {
   loadProductsForBranch,
   setProductsForBranch,
@@ -26,6 +33,8 @@ import {
   CheckmarkCircle01Icon,
   CheckmarkCircle02Icon,
   Clock01Icon,
+  Clock02Icon,
+  ClipboardIcon,
   Delete01Icon,
   Delete02Icon,
   Download01Icon,
@@ -47,6 +56,8 @@ import {
 import Tooltip from '../components/Tooltip'
 import {
   listProducts,
+  listProductsByBranch,
+  listBranches,
   getProduct,
   createProduct,
   updateProduct,
@@ -232,6 +243,34 @@ const Inventory = () => {
     setTotalProducts(filtered.length)
     setTotalPages(1)
   }, [debouncedSearchTerm, selectedDepartmentFilter])
+
+  // Enrich selected store with uuid + numeric id from /branches (helps create FK linking)
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const currentId = resolveBranchId()
+      if (!currentId) return
+      try {
+        const res = await listBranches()
+        if (cancelled) return
+        const root = res?.data ?? res
+        const list = Array.isArray(root)
+          ? root
+          : (root?.branches || root?.data || root?.items || [])
+        const match = (Array.isArray(list) ? list : [])
+          .map(normalizeBranchRecord)
+          .find((b) => (
+            String(b.uuid || '') === String(currentId) ||
+            String(b.id || '') === String(currentId) ||
+            String(b.numeric_id || '') === String(currentId)
+          ))
+        if (match) enrichActiveBranch(match)
+      } catch {
+        /* managers may lack branch list access */
+      }
+    })()
+    return () => { cancelled = true }
+  }, [resolveBranchId])
 
   // Initial load + keep Inventory in sync when the shared store changes (e.g. receive/return)
   useEffect(() => {
@@ -815,8 +854,15 @@ const Inventory = () => {
     }
 
     const activeBranch = getActiveBranch()
-    const branchId = activeBranch?.uuid || activeBranch?.id || ''
-    const organizationId = user?.organization_id || user?.organizationId || ''
+    const uuid = String(activeBranch?.uuid || getSessionBranchId() || '')
+    const numeric = getNumericBranchId()
+    const hasNumeric =
+      numeric != null && numeric !== '' && !Number.isNaN(Number(numeric)) && String(numeric) !== uuid
+    // API validates branchId as a string (UUID). Keep numeric as string on branch_id for FK backends.
+    const branchId = uuid || String(activeBranch?.id || '')
+    const branchIdFk = hasNumeric ? String(numeric) : branchId
+    const listBranchId = uuid || branchId
+    const organizationId = String(getSessionOrgId() || user?.organization_id || user?.organizationId || '')
 
     if (!branchId || !organizationId) {
       showAlert('Please select an active branch before importing products.', 'warning')
@@ -827,7 +873,7 @@ const Inventory = () => {
       name: (row.name || '').trim() || 'Untitled',
       brand: (row.brand || '').trim() || '-',
       category: (row.category || '').trim() || '-',
-      sku: (row.sku || '').trim() || '',
+      sku: (row.sku || '').trim() || `SKU-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       barcode: (row.barcode || '').trim() || '-',
       cost_price: parseFloat(row.cost) || 0,
       selling_price: parseFloat(row.price) || 0,
@@ -847,11 +893,17 @@ const Inventory = () => {
 
     setImportLoading(true)
     try {
-      const data = await bulkImportProducts({ branchId, organizationId, products })
+      const data = await bulkImportProducts({
+        branchId,
+        organizationId,
+        branch_id: branchIdFk,
+        organization_id: organizationId,
+        products,
+      })
       // Force reload into shared store so POS picks up imported items
-      if (branchId) {
-        const list = await loadProductsForBranch(branchId, { force: true })
-        setProductsForBranch(branchId, list, { fromMutation: true })
+      if (listBranchId) {
+        const list = await loadProductsForBranch(listBranchId, { force: true })
+        setProductsForBranch(listBranchId, list, { fromMutation: true })
       }
       await fetchProducts(1, { force: true })
       setShowImportModal(false)
@@ -879,9 +931,23 @@ const Inventory = () => {
 
   // Handle add/edit product
   const handleSaveProduct = async (productData) => {
-    const activeBranch = getActiveBranch()
-    const branchId = activeBranch?.uuid || activeBranch?.id || ''
-    const organizationId = user?.organization_id || user?.organization?.id || activeBranch?.organization_id || ''
+    // Prefer session helpers so create + branch list always use the same IDs
+    const branchId = resolveBranchId() || getSessionBranchId() || ''
+    const organizationId =
+      getSessionOrgId() ||
+      user?.organization_id ||
+      user?.organization?.id ||
+      user?.organizationId ||
+      ''
+
+    if (!branchId) {
+      showAlert('No active branch selected. Select a store before adding products.', 'error')
+      return
+    }
+    if (!organizationId) {
+      showAlert('Missing organization. Please log out and log back in, then try again.', 'error')
+      return
+    }
 
     // Build product_units from the form's units array
     const productUnits = Array.isArray(productData.units) && productData.units.length > 0
@@ -902,12 +968,56 @@ const Inventory = () => {
           cost_price: parseFloat(productData.cost) || 0,
         }]
 
-    const payload = {
+    const sku = (productData.sku || '').trim() || `SKU-${Date.now()}`
+
+    // List by UUID; create/attach with numeric bigint when known (branch FK is often numeric=4).
+    let listBranchId = branchId
+    let numericBranchId = getNumericBranchId()
+    try {
+      const res = await listBranches()
+      const root = res?.data ?? res
+      const list = Array.isArray(root)
+        ? root
+        : (root?.branches || root?.data || root?.items || [])
+      const match = (Array.isArray(list) ? list : [])
+        .map(normalizeBranchRecord)
+        .find((b) => (
+          String(b.uuid || '') === String(branchId) ||
+          String(b.id || '') === String(branchId) ||
+          String(b.numeric_id || '') === String(branchId)
+        ))
+      if (match) {
+        enrichActiveBranch(match)
+        listBranchId = match.uuid || branchId
+        if (match.numeric_id != null) numericBranchId = match.numeric_id
+        else if (match.id != null && String(match.id) !== String(match.uuid || '')) {
+          numericBranchId = match.id
+        }
+      }
+    } catch (err) {
+      console.warn('Could not refresh branches before product create:', err)
+    }
+
+    const hasDistinctNumeric =
+      numericBranchId != null &&
+      numericBranchId !== '' &&
+      !Number.isNaN(Number(numericBranchId)) &&
+      String(numericBranchId) !== String(listBranchId)
+
+    // API zod schema expects branchId as a string (UUID). Use UUID for branchId;
+    // put numeric id as a string on branch_id when the store has a distinct bigint FK.
+    const branchIdStr = String(listBranchId)
+    const branchIdFk = hasDistinctNumeric ? String(numericBranchId) : branchIdStr
+    const organizationIdStr = String(organizationId)
+    const createBranchId = branchIdFk
+
+    // Product row matches CSV Import (branch/org only on the request wrapper)
+    const productRow = {
       name: (productData.name || '').trim() || 'Untitled',
       brand: (productData.brand || '').trim() || '-',
       category: (productData.category || '').trim() || '-',
-      sku: (productData.sku || '').trim() || '',
-      barcode: (productData.barcode || '').trim() || '-',
+      sku,
+      barcode: (productData.barcode || '').trim() || sku,
       cost_price: parseFloat(productData.cost) || 0,
       selling_price: parseFloat(productData.price) || 0,
       quantity: parseFloat(productData.stock) || 0,
@@ -916,17 +1026,233 @@ const Inventory = () => {
       min_stock_quantity: parseFloat(productData.minStock) || 0,
       reorder_quantity: parseFloat(productData.reorderPoint) || 0,
       product_units: productUnits,
-      branchId: branchId,
-      organizationId: organizationId,
+    }
+
+    const payload = {
+      ...productRow,
+      branchId: branchIdStr,
+      organizationId: organizationIdStr,
+      branch_id: branchIdFk,
+      organization_id: organizationIdStr,
+    }
+
+    const extractProductList = (res) => {
+      const root = res?.data ?? res
+      if (Array.isArray(root)) return root
+      if (Array.isArray(root?.products)) return root.products
+      if (Array.isArray(root?.data)) return root.data
+      if (Array.isArray(root?.items)) return root.items
+      if (Array.isArray(root?.rows)) return root.rows
+      if (Array.isArray(res?.products)) return res.products
+      return []
+    }
+
+    const branchIdsEqual = (a, b) => {
+      if (a == null || b == null || a === '' || b === '') return false
+      return String(a) === String(b)
+    }
+
+    const productBelongsToStore = (p) => {
+      if (!p || typeof p !== 'object') return false
+      const candidates = [p.branch_id, p.branchId, p.branch_uuid, p.branchUuid]
+      return candidates.some((c) => (
+        branchIdsEqual(c, listBranchId) ||
+        branchIdsEqual(c, createBranchId) ||
+        branchIdsEqual(c, numericBranchId) ||
+        branchIdsEqual(c, branchId)
+      ))
+    }
+
+    const matchProduct = (p, productLike) => {
+      const key = productLike?.uuid || productLike?.id
+      if (key != null && key !== '' && key !== 'undefined') {
+        if ((p.uuid || p.id) === key || String(p.id) === String(key) || String(p.uuid || '') === String(key)) {
+          return true
+        }
+      }
+      if (sku && p.sku && String(p.sku).trim().toLowerCase() === String(sku).trim().toLowerCase()) return true
+      if (
+        productLike?.name &&
+        p.name &&
+        String(p.name).toLowerCase() === String(productLike.name).toLowerCase() &&
+        String(p.barcode || '').toLowerCase() === String(productLike.barcode || '').toLowerCase()
+      ) {
+        return true
+      }
+      return false
+    }
+
+    const unwrapCreated = (res) => {
+      if (!res || typeof res !== 'object') return {}
+      const queue = [res, res.data, res.data?.data, res.data?.product, res.product, res.item]
+      const seen = new Set()
+      while (queue.length) {
+        const node = queue.shift()
+        if (!node || typeof node !== 'object') continue
+        if (seen.has(node)) continue
+        seen.add(node)
+        if (Array.isArray(node)) {
+          if (node[0]) queue.unshift(node[0])
+          continue
+        }
+        const id = node.uuid || node.id || node.product_uuid || node.product_id || node.productId
+        if (id || node.sku || node.name) {
+          return {
+            ...node,
+            id: node.id || node.uuid || node.product_id || node.productId || node.product_uuid,
+            uuid: node.uuid || node.product_uuid || node.id || node.product_id || node.productId,
+          }
+        }
+        for (const key of ['products', 'created', 'successful', 'items', 'rows', 'data']) {
+          if (node[key] != null) queue.push(node[key])
+        }
+        if (node.product) queue.push(node.product)
+      }
+      return {}
+    }
+
+    const summarizeRes = (res) => {
+      try {
+        const data = res?.data
+        return {
+          keys: Object.keys(res || {}),
+          dataType: data == null ? 'null' : Array.isArray(data) ? 'array' : typeof data,
+          dataKeys: data && typeof data === 'object' && !Array.isArray(data) ? Object.keys(data).slice(0, 20) : null,
+          code: res?.code,
+          message: res?.message,
+          created: res?.created ?? data?.created,
+          failed: res?.failed ?? data?.failed,
+        }
+      } catch {
+        return {}
+      }
+    }
+
+    const findOnBranch = async (productLike, { attempts = 3, delayMs = 600 } = {}) => {
+      const branchCandidates = [...new Set(
+        [listBranchId, createBranchId, numericBranchId, branchId]
+          .filter((v) => v != null && v !== '')
+          .map(String)
+      )]
+      let lastCount = 0
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        if (attempt > 0) await new Promise((r) => setTimeout(r, delayMs))
+        for (const candidate of branchCandidates) {
+          try {
+            // Full paginated fetch (API max 500/page). SKU search first when available.
+            const queries = sku
+              ? [{ search: String(sku) }, {}]
+              : [{}]
+            for (const query of queries) {
+              const res = await listProductsByBranch(candidate, query)
+              const list = extractProductList(res)
+              lastCount = Math.max(lastCount, list.length)
+              const found = list.find((p) => matchProduct(p, productLike))
+              if (found) return { product: found, listCount: list.length, branchUsed: candidate, via: 'branch-list' }
+            }
+          } catch (err) {
+            console.warn('listProductsByBranch failed for', candidate, err)
+          }
+        }
+      }
+      return { product: null, listCount: lastCount, branchUsed: listBranchId, via: null }
+    }
+
+    const findViaOrgOrGet = async (productLike) => {
+      // Org catalog search — works even when branch list is capped at 500
+      try {
+        const orgRes = await listProducts({ search: sku, limit: 100 })
+        const orgList = extractProductList(orgRes)
+        const hit = orgList.find((p) => matchProduct(p, productLike))
+        if (hit && productBelongsToStore(hit)) {
+          return { product: hit, via: 'org-search-branched' }
+        }
+        if (hit) return { product: hit, via: 'org-search-unbranched' }
+      } catch (err) {
+        console.warn('org product search failed', err)
+      }
+
+      const productId = productLike?.uuid || productLike?.id
+      if (productId) {
+        try {
+          const res = await getProduct(productId)
+          const product = unwrapCreated(res)
+          if (product && (product.uuid || product.id || product.sku)) {
+            if (productBelongsToStore(product)) {
+              return { product, via: 'get-product-branched' }
+            }
+            return { product, via: 'get-product-unbranched' }
+          }
+        } catch (err) {
+          console.warn('getProduct failed', err)
+        }
+      }
+      return { product: null, via: null }
+    }
+
+    const toSavedRaw = (created) => ({
+      ...payload,
+      ...created,
+      id: created?.id || created?.uuid,
+      uuid: created?.uuid || created?.id,
+      name: created?.name || payload.name,
+      sku: created?.sku || payload.sku,
+      barcode: created?.barcode || payload.barcode,
+      selling_price: created?.selling_price ?? payload.selling_price,
+      cost_price: created?.cost_price ?? payload.cost_price,
+      quantity: created?.quantity ?? payload.quantity,
+      base_unit: created?.base_unit || payload.base_unit,
+      units: created?.units || created?.product_units || payload.product_units,
+      product_units: created?.product_units || created?.units || payload.product_units,
+      _localCreatedAt: Date.now(),
+    })
+
+    const attachToBranch = async (productId) => {
+      if (!productId) return false
+      const bodies = [
+        {
+          branchId: branchIdStr,
+          organizationId: organizationIdStr,
+          branch_id: branchIdFk,
+          organization_id: organizationIdStr,
+        },
+        {
+          branchId: branchIdStr,
+          organizationId: organizationIdStr,
+          branch_id: branchIdStr,
+          organization_id: organizationIdStr,
+        },
+      ]
+      for (const body of bodies) {
+        try {
+          await updateProduct(productId, {
+            ...body,
+            // Keep stock/price so PATCH isn't a no-op empty update on some backends
+            selling_price: productRow.selling_price,
+            cost_price: productRow.cost_price,
+            quantity: productRow.quantity,
+          })
+          return true
+        } catch (err) {
+          console.warn('attachToBranch update failed', body, err)
+        }
+      }
+      return false
     }
 
     try {
       setProductSaving(true)
       let savedRaw = null
+      const isCreate = !editingProduct
       if (editingProduct) {
         const productId = editingProduct.uuid || editingProduct.id
-        await updateProduct(productId, payload)
-        // API-shaped object so POS/Inventory mappers read the same selling_price + unit prices
+        await updateProduct(productId, {
+          ...productRow,
+          branchId: branchIdStr,
+          organizationId: organizationIdStr,
+          branch_id: branchIdFk,
+          organization_id: organizationIdStr,
+        })
         savedRaw = {
           ...editingProduct,
           ...payload,
@@ -942,46 +1268,203 @@ const Inventory = () => {
         }
         setSuccessProduct({ ...payload, id: productId, action: 'updated' })
       } else {
-        const res = await createProduct(payload)
-        const created = res?.data || res
-        savedRaw = {
-          ...payload,
-          ...created,
-          selling_price: created?.selling_price ?? payload.selling_price,
-          cost_price: created?.cost_price ?? payload.cost_price,
-          units: created?.units || payload.product_units,
-          product_units: created?.units || payload.product_units,
+        let created = {}
+        let lastMeta = ''
+
+        const runBulk = async (body, step) => {
+          const bulkRes = await bulkImportProducts(body)
+          lastMeta = JSON.stringify({ step, ...summarizeRes(bulkRes) })
+          const failed = Number(bulkRes?.failed ?? bulkRes?.data?.failed ?? 0)
+          const createdCount = bulkRes?.created ?? bulkRes?.data?.created
+          if (failed > 0) {
+            throw new Error(bulkRes?.message || bulkRes?.data?.message || `Import reported ${failed} failed row(s).`)
+          }
+          if (createdCount != null && Number(createdCount) === 0) {
+            throw new Error(bulkRes?.message || bulkRes?.data?.message || 'Import reported 0 products created.')
+          }
+          let row = unwrapCreated(bulkRes)
+          if (!row?.uuid && !row?.id) {
+            row = { name: productRow.name, sku: productRow.sku, barcode: productRow.barcode }
+          }
+          return row
         }
-        setSuccessProduct({ ...created, action: 'added' })
+
+        // 1) Bulk create — branchId must be UUID string; branch_id may be numeric string
+        try {
+          created = await runBulk({
+            branchId: branchIdStr,
+            organizationId: organizationIdStr,
+            branch_id: branchIdFk,
+            organization_id: organizationIdStr,
+            products: [productRow],
+          }, 'bulk-create')
+        } catch (bulkErr) {
+          console.warn('Bulk create failed, trying /products/single:', bulkErr)
+          lastMeta = String(bulkErr?.message || bulkErr)
+          const res = await createProduct(payload)
+          lastMeta = JSON.stringify({ step: 'single', ...summarizeRes(res) })
+          created = unwrapCreated(res)
+          if (!created?.uuid && !created?.id && !created?.name && !created?.sku) {
+            throw new Error(res?.message || bulkErr.message || 'Server did not return the created product.')
+          }
+        }
+
+        savedRaw = toSavedRaw(created)
+
+        // If API didn't return an id, resolve via org SKU search before verifying
+        if (!(savedRaw.uuid || savedRaw.id)) {
+          const orgLookup = await findViaOrgOrGet(savedRaw)
+          if (orgLookup.product) {
+            savedRaw = toSavedRaw({ ...savedRaw, ...orgLookup.product })
+            lastMeta = JSON.stringify({ step: 'resolved-via-org', via: orgLookup.via, id: savedRaw.uuid || savedRaw.id })
+          }
+        }
+
+        let verified = await findOnBranch(savedRaw)
+        if (!verified.product) {
+          const alt = await findViaOrgOrGet(savedRaw)
+          if (alt.via === 'org-search-branched' || alt.via === 'get-product-branched') {
+            verified = { product: alt.product, listCount: verified.listCount, branchUsed: listBranchId, via: alt.via }
+          } else if (alt.product) {
+            // Exists but not linked — attach using numeric id
+            const productId = alt.product.uuid || alt.product.id || savedRaw.uuid || savedRaw.id
+            savedRaw = toSavedRaw({ ...savedRaw, ...alt.product })
+            if (productId) {
+              await attachToBranch(productId)
+              verified = await findOnBranch(savedRaw, { attempts: 4, delayMs: 600 })
+              if (!verified.product) {
+                const again = await findViaOrgOrGet(savedRaw)
+                if (again.via === 'org-search-branched' || again.via === 'get-product-branched') {
+                  verified = { product: again.product, listCount: verified.listCount, branchUsed: listBranchId, via: again.via }
+                } else if (again.product && verified.listCount >= 500) {
+                  // Branch list is capped — trust get/org after attach when store catalog is huge
+                  verified = {
+                    product: { ...again.product, branch_id: createBranchId },
+                    listCount: verified.listCount,
+                    branchUsed: listBranchId,
+                    via: 'capped-list-after-attach',
+                  }
+                }
+              }
+            }
+          } else if (savedRaw.uuid || savedRaw.id) {
+            await attachToBranch(savedRaw.uuid || savedRaw.id)
+            verified = await findOnBranch(savedRaw, { attempts: 4, delayMs: 600 })
+            if (!verified.product) {
+              const again = await findViaOrgOrGet(savedRaw)
+              if (again.via === 'org-search-branched' || again.via === 'get-product-branched') {
+                verified = { product: again.product, listCount: verified.listCount, branchUsed: listBranchId, via: again.via }
+              } else if (again.product && verified.listCount >= 500) {
+                verified = {
+                  product: { ...again.product, branch_id: createBranchId },
+                  listCount: verified.listCount,
+                  branchUsed: listBranchId,
+                  via: 'capped-list-after-attach',
+                }
+              }
+            }
+          }
+        }
+
+        // If still not found but branch page is full (500+) and we have a created id, keep it locally
+        // only when getProduct confirms it exists — avoids false "success" for truly unlinked rows.
+        if (!verified.product && verified.listCount >= 500 && (savedRaw.uuid || savedRaw.id)) {
+          const again = await findViaOrgOrGet(savedRaw)
+          if (again.product) {
+            verified = {
+              product: again.product,
+              listCount: verified.listCount,
+              branchUsed: listBranchId,
+              via: again.via || 'capped-list-fallback',
+            }
+          }
+        }
+
+        if (verified.product) {
+          const onBranch = verified.product
+          savedRaw = {
+            ...savedRaw,
+            ...onBranch,
+            id: onBranch.id || savedRaw.id,
+            uuid: onBranch.uuid || savedRaw.uuid,
+            selling_price: payload.selling_price,
+            cost_price: payload.cost_price,
+            units: onBranch.units || onBranch.product_units || savedRaw.units,
+            _localCreatedAt: Date.now(),
+          }
+        } else {
+          let orgHit = null
+          try {
+            const orgRes = await listProducts({ search: sku, limit: 50 })
+            const orgList = extractProductList(orgRes)
+            orgHit = orgList.find((p) => matchProduct(p, savedRaw)) || null
+          } catch (_) { /* ignore */ }
+
+          throw new Error(
+            `Product was saved but is not on this store's list yet. ` +
+            `Re-select the store from the dashboard and try Import (one-row CSV), or contact support. ` +
+            `store=${listBranchId}` +
+            (hasDistinctNumeric ? ` numeric=${numericBranchId}` : '') +
+            ` createBranch=${createBranchId} sku=${sku} branchListCount=${verified.listCount}` +
+            (orgHit
+              ? ` (found in org catalog id=${orgHit.uuid || orgHit.id}, branch_id=${orgHit.branch_id || orgHit.branchId || 'none'})`
+              : ' (not in org catalog search)') +
+            (lastMeta ? ` meta=${lastMeta}` : '')
+          )
+        }
+
+        setSuccessProduct({ ...savedRaw, action: 'added' })
       }
 
-      // Write optimistically into the shared store FIRST so POS shows the new price immediately
+      // Write into the shared store so Inventory + POS both show the product
       if (branchId && savedRaw) {
         const prev = getCachedProducts(branchId) || []
         const key = savedRaw.uuid || savedRaw.id
-        const sameId = (p) => (p.uuid || p.id) === key || String(p.id) === String(key) || String(p.uuid || '') === String(key)
+        const sameId = (p) => {
+          if (key != null && key !== '') {
+            if ((p.uuid || p.id) === key || String(p.id) === String(key) || String(p.uuid || '') === String(key)) {
+              return true
+            }
+          }
+          return Boolean(savedRaw.sku && p.sku && String(p.sku) === String(savedRaw.sku))
+        }
         const exists = prev.some(sameId)
         const next = exists
           ? prev.map((p) => (sameId(p) ? { ...p, ...savedRaw } : p))
-          : [...prev, savedRaw]
+          : [savedRaw, ...prev]
         setProductsForBranch(branchId, next, { fromMutation: true })
         const mapped = next.map(mapApiProductToDisplay)
         allProductsCache.current = mapped
-        applyFilters(mapped)
+        if (isCreate) {
+          setSearchTerm('')
+          setDebouncedSearchTerm('')
+          setSelectedDepartmentFilter('all')
+          setStockFilter('all')
+          setTablePage(1)
+          setProducts(mapped)
+          setTotalProducts(mapped.length)
+          setTotalPages(1)
+        } else {
+          applyFilters(mapped)
+        }
       }
 
-      // Soft reconcile: refresh from API but MERGE into the optimistic row so a lagging
-      // selling_price (e.g. still 110 while unit_price is 115) cannot wipe the edit.
       if (branchId && savedRaw) {
-        const editedKey = savedRaw.uuid || savedRaw.id
         loadProductsForBranch(branchId, { force: true }).then((list) => {
-          if (!Array.isArray(list) || !list.length) return
-          const merged = list.map((p) => {
-            const id = p.uuid || p.id
-            if (id !== editedKey && String(p.id) !== String(editedKey) && String(p.uuid || '') !== String(editedKey)) {
-              return p
+          if (!Array.isArray(list)) return
+          const editedKey = savedRaw.uuid || savedRaw.id
+          const sameId = (p) => {
+            if (editedKey != null && editedKey !== '') {
+              if ((p.uuid || p.id) === editedKey || String(p.id) === String(editedKey) || String(p.uuid || '') === String(editedKey)) {
+                return true
+              }
             }
-            // Keep the price/units we just saved when the API still returns the old selling_price
+            return Boolean(savedRaw.sku && p.sku && String(p.sku) === String(savedRaw.sku))
+          }
+          let found = false
+          const merged = list.map((p) => {
+            if (!sameId(p)) return p
+            found = true
             return {
               ...p,
               ...savedRaw,
@@ -993,6 +1476,7 @@ const Inventory = () => {
               product_units: savedRaw.product_units || savedRaw.units || p.product_units,
             }
           })
+          if (!found && isCreate) merged.unshift(savedRaw)
           setProductsForBranch(branchId, merged, { fromMutation: true })
         }).catch(() => {})
       }
@@ -1066,15 +1550,11 @@ const Inventory = () => {
 
       {/* Header */}
       <div className="app-page-header">
-        <div className="px-4 sm:px-6 lg:px-8 py-3">
+        <div className="px-4 py-2 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between">
             <div className="app-page-title-wrap">
-              <div className="app-page-icon h-9 w-9 rounded-control">
-                <HIcon icon={Package01Icon} size={18} strokeWidth={2}  />
-              </div>
               <div>
-                <p className="app-page-kicker">Operations</p>
-                <h1 className="app-page-title">Inventory</h1>
+                <h1 className="app-page-title">Inventory Manager</h1>
               </div>
             </div>
             <input
@@ -1084,7 +1564,7 @@ const Inventory = () => {
               onChange={handleFileSelect}
               style={{ display: 'none' }}
             />
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
               <Tooltip text="Upload a CSV or Excel file to add products in bulk">
                 <button
                   onClick={handleImportClick}
@@ -1118,7 +1598,35 @@ const Inventory = () => {
                   className="inline-flex items-center gap-1 rounded-md border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-xs font-medium text-orange-600 transition-colors hover:bg-orange-100"
                 >
                   <HIcon icon={RotateLeft01Icon} size={13}  />
-                  Return
+                  Return Item
+                </button>
+              </Tooltip>
+              <Tooltip text="Record incoming stock from suppliers">
+                <button
+                  onClick={() => navigate('/receive-items')}
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  <HIcon icon={CheckListIcon} size={13} className="text-primary-500"  />
+                  Receive Items
+                </button>
+              </Tooltip>
+              <Tooltip text="View past stock receipts">
+                <button
+                  onClick={() => navigate('/receive-history')}
+                  className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  <HIcon icon={Clock02Icon} size={13} className="text-primary-500"  />
+                  Receive History
+                </button>
+              </Tooltip>
+              <Tooltip text="Stock taking is coming soon">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-1 rounded-md border border-dashed border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-400 cursor-not-allowed"
+                >
+                  <HIcon icon={ClipboardIcon} size={13}  />
+                  Stock Taking
                 </button>
               </Tooltip>
               <Tooltip text="Add a single new product to inventory">
@@ -1135,78 +1643,60 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="app-page-content space-y-5">
+      <div className="app-page-content !px-4 !py-3 space-y-3 sm:!px-5 lg:!px-6">
         {/* Summary Stats */}
-        <div className="app-stat-grid gap-4">
-          <div className="app-stat-card">
+        <div className="app-stat-grid gap-2.5">
+          <div className="app-stat-card !p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="app-stat-label">Total Products</p>
-                <p className="app-stat-value">{totalProducts}</p>
+                <p className="app-stat-value !mt-0.5 !text-xl">{totalProducts}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
                 <HIcon icon={Package01Icon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="app-stat-card">
+          <div className="app-stat-card !p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="app-stat-label">Stock Value</p>
-                <p className="mt-1 text-2xl font-bold text-primary-600">
+                <p className="mt-0.5 text-xl font-bold text-primary-600">
                   ₵{products.reduce((sum, p) => sum + (Number(p.stock) || 0) * (Number(p.cost) || 0), 0).toFixed(2)}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
                 <HIcon icon={ArrowMoveUpRightIcon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="app-stat-card">
+          <div className="app-stat-card !p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="app-stat-label">Low Stock</p>
-                <p className="app-stat-value">{lowStockItems.length}</p>
+                <p className="app-stat-value !mt-0.5 !text-xl">{lowStockItems.length}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-primary-50 flex items-center justify-center">
                 <HIcon icon={Alert02Icon} className="text-primary-500" size={20}  />
               </div>
             </div>
           </div>
-          <div className="app-stat-card-accent">
+          <div className="app-stat-card-accent !p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="app-stat-label text-white/80">Expired</p>
-                <p className="app-stat-value text-white">{expiredStockItems.length}</p>
+                <p className="app-stat-value !mt-0.5 !text-xl text-white">{expiredStockItems.length}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center">
                 <HIcon icon={Clock01Icon} className="text-white" size={20}  />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Low Stock Alert */}
-        {lowStockItems.length > 0 && (
-          <div className="rounded-panel border border-warning-100 bg-warning-50 p-4">
-            <div className="flex items-start gap-3">
-              <HIcon icon={Alert02Icon} className="text-amber-600 mt-0.5 shrink-0" size={18}  />
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-amber-900 text-sm">
-                  {lowStockItems.length} product(s) running low on stock
-                </p>
-                <p className="text-xs text-amber-700 mt-0.5">
-                  Consider restocking: {lowStockItems.slice(0, 5).map(p => p.name).join(', ')}
-                  {lowStockItems.length > 5 && ` and ${lowStockItems.length - 5} more`}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Search and Filter */}
-        <div className="app-filter-bar space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="app-filter-bar !p-3 space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="relative">
               <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <input
@@ -1214,7 +1704,7 @@ const Inventory = () => {
                 placeholder="Search by name, SKU, or barcode..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="app-input pl-10"
+                className="app-input !rounded-[4px] !py-2 pl-10 text-xs"
               />
             </div>
             <div className="relative">
@@ -1222,7 +1712,7 @@ const Inventory = () => {
               <select
                 value={selectedDepartmentFilter}
                 onChange={(e) => setSelectedDepartmentFilter(e.target.value)}
-                className="app-input pl-10 appearance-none"
+                className="app-input !rounded-[4px] !py-2 pl-10 text-xs appearance-none"
               >
                 <option value="all">All departments</option>
                 {loadDepartments().map((dept) => {
@@ -1323,8 +1813,8 @@ const Inventory = () => {
               {productsError}
             </div>
           )}
-          <div className="max-h-[62vh] overflow-auto">
-            <table className="w-full">
+          <div className="max-h-[56vh] overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <table className="w-full [&_th]:!px-3 [&_th]:!py-2 [&_th]:!text-[10px]">
               <thead>
                 <tr className="app-table-head-dark">
                   <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 rounded-tl-[2px]">Product</th>
@@ -1343,7 +1833,7 @@ const Inventory = () => {
               <tbody className="divide-y divide-gray-100">
                 {productsLoading ? (
                   <tr>
-                    <td colSpan={11} className="py-16 text-center">
+                    <td colSpan={11} className="py-10 text-center">
                       <div className="flex flex-col items-center gap-3 text-gray-500">
                         <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                         <span className="text-sm">Loading products...</span>
@@ -1360,9 +1850,9 @@ const Inventory = () => {
                     const profit = sellingPrice - costPrice
                     return (
                       <tr key={product.id} onClick={() => handleEditClick(product)} className={`hover:bg-primary-50/40 transition-colors cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <td className="py-2 px-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
                               <HIcon icon={Package01Icon} size={14} className="text-primary-500"  />
                             </div>
                             <div className="min-w-0">
@@ -1373,8 +1863,8 @@ const Inventory = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-gray-600 text-sm">{product.sku || '—'}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3 text-gray-600 text-xs">{product.sku || '—'}</td>
+                        <td className="py-2 px-3">
                           {product.category && product.category !== '-' ? (
                             <span className="inline-flex px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
                               {product.category}
@@ -1383,7 +1873,7 @@ const Inventory = () => {
                             <span className="text-gray-400 text-sm">—</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-2 px-3 text-right">
                           <span className={`font-semibold text-sm ${isLowStock ? 'text-red-600' : 'text-gray-900'}`}>
                             {product.stock}
                           </span>
@@ -1391,21 +1881,21 @@ const Inventory = () => {
                             <span className="ml-1 inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">LOW</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-right text-gray-500 text-sm">{Number(product.minStock) || 0}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-2 px-3 text-right text-gray-500 text-xs">{Number(product.minStock) || 0}</td>
+                        <td className="py-2 px-3 text-right">
                           <span className={`text-sm ${needsReplenishment ? 'text-primary-600 font-semibold' : 'text-gray-500'}`}>
                             {reorderPoint}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-medium text-gray-900 text-sm">₵{sellingPrice.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-right text-gray-500 text-sm">₵{costPrice.toFixed(2)}</td>
-                        <td className={`py-3 px-4 text-right font-semibold text-sm ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <td className="py-2 px-3 text-right font-medium text-gray-900 text-xs">₵{sellingPrice.toFixed(2)}</td>
+                        <td className="py-2 px-3 text-right text-gray-500 text-xs">₵{costPrice.toFixed(2)}</td>
+                        <td className={`py-2 px-3 text-right font-semibold text-xs ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           ₵{profit.toFixed(2)}
                         </td>
-                        <td className="py-3 px-4 text-right font-medium text-primary-600 text-sm">
+                        <td className="py-2 px-3 text-right font-medium text-primary-600 text-xs">
                           ₵{((Number(product.stock) || 0) * costPrice).toFixed(2)}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           <div className="flex justify-center gap-1">
                             <Tooltip text="Edit this product">
                               <button
@@ -1430,7 +1920,7 @@ const Inventory = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={11} className="py-16 text-center">
+                    <td colSpan={11} className="py-10 text-center">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <HIcon icon={Package01Icon} size={40}  />
                         <p className="text-sm font-medium text-gray-500">No products found</p>
@@ -1452,8 +1942,8 @@ const Inventory = () => {
 
           {/* Pagination */}
           {displayProducts.length > 0 && (
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <span className="text-sm text-gray-600">
+            <div className="px-3 py-2 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <span className="text-xs text-gray-600">
                 Showing <span className="font-medium text-gray-900">{(tablePage - 1) * TABLE_PAGE_SIZE + 1}–{Math.min(tablePage * TABLE_PAGE_SIZE, displayProducts.length)}</span> of <span className="font-medium text-gray-900">{displayProducts.length}</span>{stockFilter !== 'all' && <span className="text-primary-500 font-medium"> · {stockFilter === 'high_sale' ? 'High Sale' : stockFilter === 'low_sale' ? 'Low Sale' : stockFilter === 'out_of_stock' ? 'Out of Stock' : 'Expired'}</span>}
               </span>
               <div className="flex items-center gap-1">
@@ -2678,122 +3168,85 @@ const AddProductModal = ({ product, onSave, onClose, departments = [], showAlert
   )
 }
 
-// Product Success Modal Component
+// Product Success Modal — simple confirmation with animated check
 const ProductSuccessModal = ({ product, onClose }) => {
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  useEffect(() => {
+    const timer = setTimeout(() => onCloseRef.current(), 2200)
+    return () => clearTimeout(timer)
+  }, [])
+
   if (!product) return null
-  const price = Number(product.price) || 0
-  const cost = Number(product.cost) || 0
-  const stock = Number(product.stock) || 0
-  const minStock = Number(product.minStock) || 0
+
+  const isAdded = product.action === 'added'
+  const title = isAdded ? 'Product added' : 'Product updated'
+  const subtitle = product.name || (isAdded ? 'Saved to inventory' : 'Changes saved')
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
-      <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gray-900 px-6 py-6">
-          <div className="flex flex-col items-center">
-            <div className="bg-primary-500 rounded-full p-3 mb-3">
-              <HIcon icon={CheckmarkCircle02Icon} size={32} className="text-white"  />
-            </div>
-            <h2 className="text-xl font-bold text-white">
-              Product {product.action === 'added' ? 'Added' : 'Updated'}!
-            </h2>
-            <p className="text-gray-500 text-sm mt-1">
-              {product.action === 'added' 
-                ? 'Added to inventory successfully' 
-                : 'Product information updated'}
-            </p>
-          </div>
-        </div>
-
-        {/* Product Details */}
-        <div className="px-6 py-5">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <span className="text-gray-500 text-sm">Product Name</span>
-              <span className="text-gray-900 font-semibold text-sm">{product.name}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-sm">SKU</span>
-              <span className="text-gray-900 font-medium text-sm">{product.sku}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-sm">Barcode</span>
-              <span className="text-gray-900 font-medium text-sm">{product.barcode}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-sm">Category</span>
-              <span className="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-medium">{product.category}</span>
-            </div>
-            {product.baseUnit && (
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Base Unit</span>
-                <span className="text-gray-900 font-medium text-sm">{product.baseUnit}</span>
-              </div>
-            )}
-            {product.units && product.units.length > 0 && (
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Available Units</span>
-                <span className="text-primary-500 font-semibold text-sm">{product.units.length}</span>
-              </div>
-            )}
-            <div className="pt-3 border-t border-gray-100 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Stock</span>
-                <span className={`font-semibold text-sm ${stock <= minStock ? 'text-red-600' : 'text-gray-900'}`}>
-                  {stock}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Min Stock</span>
-                <span className="text-gray-900 font-medium text-sm">{minStock}</span>
-              </div>
-            </div>
-            <div className="pt-3 border-t border-gray-100 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Selling Price</span>
-                <span className="text-gray-900 font-semibold text-sm">₵{price.toFixed(2)}</span>
-              </div>
-              {cost > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Cost Price</span>
-                  <span className="text-gray-700 text-sm">₵{cost.toFixed(2)}</span>
-                </div>
-              )}
-              {cost > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500 text-sm">Profit Margin</span>
-                  <span className="text-primary-500 font-bold text-sm">
-                    {(((price - cost) / cost) * 100).toFixed(1)}%
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="pt-3 border-t border-gray-100">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Stock Value</span>
-                <span className="text-lg font-bold text-primary-500">
-                  ₵{(stock * cost).toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-primary-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-600 transition-colors flex items-center gap-2 text-sm"
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        className="w-full max-w-[280px] rounded-2xl bg-white px-8 py-10 text-center shadow-panel animate-[fadeUp_0.28s_ease-out]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center">
+          <svg
+            className="success-check-svg"
+            viewBox="0 0 52 52"
+            width="72"
+            height="72"
+            aria-hidden="true"
           >
-            <HIcon icon={Tick01Icon} size={16}  />
-            Continue
-          </button>
+            <circle className="success-check-circle" cx="26" cy="26" r="24" fill="none" />
+            <path className="success-check-mark" fill="none" d="M15.5 27.2l7.2 7.1 14.3-15.2" />
+          </svg>
         </div>
+        <h2 className="text-lg font-bold tracking-tight text-gray-900">{title}</h2>
+        <p className="mt-1.5 text-sm text-gray-500 line-clamp-2">{subtitle}</p>
       </div>
+
+      <style>{`
+        .success-check-circle {
+          stroke: #10b981;
+          stroke-width: 2.5;
+          stroke-dasharray: 160;
+          stroke-dashoffset: 160;
+          animation: successCheckCircle 0.55s ease-out forwards;
+        }
+        .success-check-mark {
+          stroke: #10b981;
+          stroke-width: 3;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          stroke-dasharray: 48;
+          stroke-dashoffset: 48;
+          animation: successCheckMark 0.35s ease-out 0.4s forwards;
+        }
+        .success-check-svg {
+          animation: successCheckPop 0.45s cubic-bezier(0.22, 1.2, 0.36, 1) forwards;
+          transform-origin: center;
+        }
+        @keyframes successCheckCircle {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes successCheckMark {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes successCheckPop {
+          0% { transform: scale(0.6); opacity: 0; }
+          70% { transform: scale(1.06); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }
 
 export default Inventory
-

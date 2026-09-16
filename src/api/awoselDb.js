@@ -128,9 +128,95 @@ export async function listProducts(query = {}) {
   return fetchApi('GET', '/products?' + params.toString())
 }
 
-export async function listProductsByBranch(branchId) {
-  // Cache-bust query so Cloudflare / browser cannot reuse a previous branch product list
-  return fetchApi('GET', `/products/branch/${sanitizePath(branchId)}?_=${Date.now()}`)
+export async function listProductsByBranch(branchId, query = {}) {
+  // API rejects limit > 500 — page through until every product is loaded
+  const PAGE_SIZE = 500
+  const limit = Math.min(PAGE_SIZE, Math.max(1, Number(query.limit) || PAGE_SIZE))
+  const singlePage = query.page != null || query.offset != null || query.fetchAll === false
+
+  const buildParams = (extra = {}) => {
+    const params = new URLSearchParams({ _: String(Date.now()), limit: String(limit) })
+    Object.entries({ ...query, ...extra }).forEach(([key, value]) => {
+      if (key === 'limit' || key === 'fetchAll' || value == null || value === '') return
+      params.set(key, String(value))
+    })
+    return params
+  }
+
+  const extractList = (res) => {
+    const root = res?.data ?? res
+    if (Array.isArray(root)) return root
+    if (Array.isArray(root?.products)) return root.products
+    if (Array.isArray(root?.data)) return root.data
+    if (Array.isArray(root?.items)) return root.items
+    if (Array.isArray(root?.rows)) return root.rows
+    if (Array.isArray(res?.products)) return res.products
+    return []
+  }
+
+  const extractTotal = (res) => {
+    const root = res?.data ?? res
+    const total = root?.total ?? root?.totalCount ?? root?.count ?? root?.meta?.total ?? res?.total
+    const n = Number(total)
+    return Number.isFinite(n) ? n : null
+  }
+
+  const productKey = (p) => {
+    const id = p?.uuid || p?.id
+    return id != null && id !== '' ? String(id) : null
+  }
+
+  if (singlePage) {
+    const res = await fetchApi('GET', `/products/branch/${sanitizePath(branchId)}?${buildParams().toString()}`)
+    return res
+  }
+
+  const all = []
+  const seen = new Set()
+  let page = 1
+  let useOffset = false
+  const maxPages = 200 // safety cap: 500 * 200 = 100k
+
+  while (page <= maxPages) {
+    const extra = useOffset
+      ? { offset: String((page - 1) * limit) }
+      : { page: String(page) }
+    const res = await fetchApi(
+      'GET',
+      `/products/branch/${sanitizePath(branchId)}?${buildParams(extra).toString()}`
+    )
+    const list = extractList(res)
+    if (!list.length) break
+
+    let added = 0
+    for (const product of list) {
+      const key = productKey(product)
+      if (key) {
+        if (seen.has(key)) continue
+        seen.add(key)
+      }
+      all.push(product)
+      added += 1
+    }
+
+    // Page/offset param ignored by API (same rows again) — stop or switch strategy
+    if (added === 0) {
+      if (!useOffset && page === 2) {
+        // Retry from page 1 using offset instead of page
+        useOffset = true
+        page = 2
+        continue
+      }
+      break
+    }
+
+    const total = extractTotal(res)
+    if (total != null && all.length >= total) break
+    if (list.length < limit) break
+    page += 1
+  }
+
+  return { data: all, products: all, total: all.length }
 }
 
 export async function getProduct(id) {

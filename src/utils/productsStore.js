@@ -43,7 +43,35 @@ let cache = {
 
 /** After a local mutation, ignore network refreshes briefly so CDN/API lag can't snap UI back to old data */
 let mutationGuardUntil = 0
-const MUTATION_GUARD_MS = 10000
+const MUTATION_GUARD_MS = 30000
+
+/**
+ * Keep recently-created local rows when the API list is still lagging
+ * (common right after POST /products/single).
+ */
+function mergeIncomingWithLocalCreates(branchId, incoming) {
+  if (cache.branchId !== String(branchId) || !cache.products.length) return incoming
+  const incomingIds = new Set(
+    incoming.map((p) => String(p.uuid || p.id)).filter((id) => id && id !== 'undefined')
+  )
+  const localOnly = cache.products.filter((p) => {
+    const id = String(p.uuid || p.id || '')
+    const isLocalCreate = Boolean(p._localCreatedAt)
+    const stillFresh = isLocalCreate && (Date.now() - Number(p._localCreatedAt) < 120000)
+    const missingFromApi = !id || id === 'undefined' || !incomingIds.has(id)
+    // Also match by name+sku when API hasn't assigned an id yet / id shape differs
+    const matchedBySku = id && id !== 'undefined' && incomingIds.has(id)
+      ? true
+      : incoming.some((api) =>
+          (p.sku && api.sku && String(p.sku) === String(api.sku)) ||
+          (p.name && api.name && String(p.name).toLowerCase() === String(api.name).toLowerCase() &&
+            String(p.barcode || '') === String(api.barcode || ''))
+        )
+    return stillFresh && missingFromApi && !matchedBySku
+  })
+  if (!localOnly.length) return incoming
+  return [...localOnly, ...incoming]
+}
 
 /** @type {Map<string, { seq: number, promise: Promise<any[]> }>} */
 const inflight = new Map()
@@ -162,8 +190,14 @@ export async function loadProductsForBranch(branchId, { force = false } = {}) {
       if (Date.now() < mutationGuardUntil && cache.branchId === id && cache.products.length > 0) {
         return cache.products
       }
-      const data = res?.data || res
-      const list = normalizeProductList(Array.isArray(data) ? data : (data?.products || []))
+      const root = res?.data ?? res
+      const incoming = normalizeProductList(
+        Array.isArray(root)
+          ? root
+          : (root?.products || root?.data || root?.items || res?.products || [])
+      )
+      // Never drop a product that was just created locally but isn't in the API response yet
+      const list = mergeIncomingWithLocalCreates(id, incoming)
       cache = {
         branchId: id,
         products: list,

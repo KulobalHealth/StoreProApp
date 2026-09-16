@@ -287,15 +287,15 @@ const Users = () => {
     <div className="min-h-full bg-gray-50">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 py-2 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <HIcon icon={UserGroupIcon} size={18} strokeWidth={2}  />
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-500 text-white">
+                <HIcon icon={UserGroupIcon} size={15} strokeWidth={2}  />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Employee Management</h1>
-                <p className="text-gray-500 text-xs">Manage your team members and their roles</p>
+                <h1 className="text-base font-bold tracking-tight text-gray-900">Employee Management</h1>
+                <p className="hidden text-[11px] text-gray-500 sm:block">Manage your team members and their roles</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -303,19 +303,20 @@ const Users = () => {
                 <button
                   type="button"
                   onClick={fetchEmployees}
-                  className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 p-0 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
                 >
-                  <HIcon icon={RefreshIcon} size={18} className={loading ? 'animate-spin' : ''}  />
+                  <HIcon icon={RefreshIcon} size={15} className={loading ? 'animate-spin' : ''}  />
                 </button>
               </Tooltip>
               <Tooltip text="Add a new employee to this branch">
                 <button
                   type="button"
                   onClick={openAddModal}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 shadow-sm transition-all"
+                  className="flex h-8 items-center gap-1.5 rounded-lg bg-primary-500 px-3 text-xs text-white shadow-sm transition-all hover:bg-primary-600 sm:px-4"
                 >
-                  <HIcon icon={UserAdd01Icon} size={18}  />
-                  <span className="font-medium">Add Employee</span>
+                  <HIcon icon={UserAdd01Icon} size={15}  />
+                  <span className="hidden font-medium sm:inline">Add Employee</span>
+                  <span className="font-medium sm:hidden">Add</span>
                 </button>
               </Tooltip>
             </div>
@@ -323,16 +324,16 @@ const Users = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="space-y-2.5 px-4 py-2.5 sm:px-5 lg:px-6">
       {/* Stats Cards */}
       {!loading && list.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 mb-1">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-2.5">
+            <div className="mb-0.5 flex items-center gap-1.5">
               <HIcon icon={UserGroupIcon} size={16} className="text-gray-400"  />
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+            <p className="text-lg font-bold text-gray-900">{stats.total}</p>
           </div>
           {ROLES.map(role => {
             const colors = ROLE_COLORS[role]
@@ -340,13 +341,13 @@ const Users = () => {
               <button
                 key={role}
                 onClick={() => setRoleFilter(f => f === role ? 'all' : role)}
-                className={`rounded-lg border p-4 text-left transition-all ${roleFilter === role ? `${colors.bg} ${colors.border} ring-2 ring-offset-1 ring-${role === 'manager' ? 'blue' : role === 'sales' ? 'emerald' : role === 'account' ? 'purple' : 'red'}-300` : 'bg-white border-gray-200 hover:border-gray-300'}`}
+                className={`rounded-lg border p-2.5 text-left transition-all ${roleFilter === role ? `${colors.bg} ${colors.border} ring-2 ring-offset-1 ring-${role === 'manager' ? 'blue' : role === 'sales' ? 'emerald' : role === 'account' ? 'purple' : 'red'}-300` : 'bg-white border-gray-200 hover:border-gray-300'}`}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="mb-0.5 flex items-center gap-1.5">
                   <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wider capitalize">{role}</span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900">{stats.byRole[role] || 0}</p>
+                <p className="text-lg font-bold text-gray-900">{stats.byRole[role] || 0}</p>
               </button>
             )
           })}
@@ -355,7 +356,7 @@ const Users = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-2.5">
           <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
             <HIcon icon={Cancel01Icon} size={16} className="text-red-600"  />
           </div>
@@ -367,7 +368,7 @@ const Users = () => {
       )}
 
       {/* Search & Filter Bar */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-2.5 sm:flex-row">
         <div className="relative flex-1">
           <HIcon icon={Search01Icon} size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"  />
           <input
@@ -375,7 +376,7 @@ const Users = () => {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search users by name, username or email..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm bg-gray-50 focus:bg-white transition-colors"
+            className="w-full rounded-[4px] border border-gray-200 bg-gray-50 py-1.5 pl-10 pr-4 text-xs transition-colors focus:border-transparent focus:bg-white focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div className="relative">
@@ -383,7 +384,7 @@ const Users = () => {
           <select
             value={roleFilter}
             onChange={e => setRoleFilter(e.target.value)}
-            className="pl-9 pr-8 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm bg-gray-50 focus:bg-white appearance-none cursor-pointer"
+            className="cursor-pointer appearance-none rounded-[4px] border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-8 text-xs focus:border-transparent focus:bg-white focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All roles</option>
             {ROLES.map(r => <option key={r} value={r} className="capitalize">{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
@@ -395,12 +396,12 @@ const Users = () => {
       {/* Users List */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center">
+          <div className="p-8 text-center">
             <div className="w-10 h-10 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-500 font-medium">Loading employees...</p>
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="p-12 text-center">
+          <div className="p-8 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               {list.length === 0 ? <HIcon icon={UserAdd01Icon} size={28} className="text-gray-400"  /> : <HIcon icon={Search01Icon} size={28} className="text-gray-400"  />}
             </div>
@@ -419,7 +420,7 @@ const Users = () => {
         ) : (
           <>
             {/* Table Header */}
-            <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="hidden grid-cols-12 gap-3 border-b border-gray-100 bg-gray-50 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 lg:grid">
               <div className="col-span-3">Employee</div>
               <div className="col-span-2">Role</div>
               <div className="col-span-2">Email</div>
@@ -435,27 +436,27 @@ const Users = () => {
                 const isCurrentUser = u.id === user?.id
 
                 return (
-                  <div key={u.id} className="group px-4 sm:px-6 py-4 hover:bg-gray-50/50 transition-colors">
-                    <div className="lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center flex flex-col gap-3">
+                  <div key={u.id} className="group px-3 py-2 transition-colors hover:bg-gray-50/50 sm:px-4">
+                    <div className="flex flex-col gap-2 lg:grid lg:grid-cols-12 lg:items-center lg:gap-3">
                       {/* Avatar + Name */}
-                      <div className="col-span-3 flex items-center gap-3 min-w-0">
-                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarColor(u)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm`}>
+                      <div className="col-span-3 flex min-w-0 items-center gap-2">
+                        <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${getAvatarColor(u)} flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm`}>
                           {getInitials(u)}
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{getDisplayName(u)}</p>
+                            <p className="truncate text-xs font-semibold text-gray-900">{getDisplayName(u)}</p>
                             {isCurrentUser && (
                               <span className="flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 bg-primary-100 text-primary-700 rounded">YOU</span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 truncate">{u.email || '—'}</p>
+                          <p className="truncate text-[10px] text-gray-500">{u.email || '—'}</p>
                         </div>
                       </div>
 
                       {/* Role Badge */}
                       <div className="col-span-2">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${roleColor.bg} ${roleColor.text} border ${roleColor.border}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${roleColor.bg} ${roleColor.text} border ${roleColor.border}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${roleColor.dot}`} />
                           {(u.role || 'sales').charAt(0).toUpperCase() + (u.role || 'sales').slice(1)}
                         </span>
@@ -463,11 +464,11 @@ const Users = () => {
 
                       {/* Email */}
                       <div className="col-span-2 hidden lg:block">
-                        <p className="text-sm text-gray-600 truncate">{u.email || '—'}</p>
+                        <p className="truncate text-xs text-gray-600">{u.email || '—'}</p>
                       </div>
 
                       {/* Phone */}
-                      <div className="col-span-2 hidden lg:flex items-center gap-1.5 text-sm text-gray-500">
+                      <div className="col-span-2 hidden items-center gap-1.5 text-xs text-gray-500 lg:flex">
                         <HIcon icon={CallIcon} size={13} className="flex-shrink-0"  />
                         {u.phone || '—'}
                       </div>
@@ -483,7 +484,7 @@ const Users = () => {
                           <button
                             type="button"
                             onClick={() => openEditModal(u)}
-                            className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-600 transition-colors"
+                            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-primary-50 hover:text-primary-600"
                           >
                             <HIcon icon={PencilEdit01Icon} size={16}  />
                           </button>
@@ -493,7 +494,7 @@ const Users = () => {
                             type="button"
                             onClick={() => handleDeleteUser(u)}
                             disabled={isCurrentUser || submitting}
-                            className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                           >
                             <HIcon icon={Delete01Icon} size={16}  />
                           </button>
@@ -506,7 +507,7 @@ const Users = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-3 py-1.5">
               <p className="text-xs text-gray-500">
                 Showing <span className="font-semibold text-gray-700">{filteredUsers.length}</span> of{' '}
                 <span className="font-semibold text-gray-700">{list.length}</span> employees

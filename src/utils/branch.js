@@ -50,13 +50,13 @@ export function getNumericBranchId() {
     const saved = localStorage.getItem('awosel_active_branch')
     if (saved) {
       const branch = JSON.parse(saved)
+      if (branch?.numeric_id != null && !isNaN(Number(branch.numeric_id))) {
+        return branch.numeric_id
+      }
       // If id is numeric (or numeric string) and different from uuid, use it
       if (branch?.id != null && branch.id !== branch.uuid && !isNaN(Number(branch.id))) {
         return branch.id
       }
-      // If id is the same as uuid, this branch was stored without a separate numeric id
-      // Try to find a numeric_id field
-      if (branch?.numeric_id) return branch.numeric_id
     }
   } catch {}
 
@@ -66,30 +66,28 @@ export function getNumericBranchId() {
 
 /**
  * Get the full active branch object (id, uuid, name) from localStorage.
+ * Prefer the UI-selected store so admin store switches are never overridden by
+ * a stale user.branch_id stub.
  */
 export function getActiveBranch() {
-  // 1. Check user data for branch info
+  // 1. Selected store in the UI (admins pick one; managers set at login)
+  try {
+    const saved = localStorage.getItem('awosel_active_branch')
+    if (saved) {
+      const branch = JSON.parse(saved)
+      if (branch?.uuid || branch?.id) return branch
+    }
+  } catch {}
+
+  // 2. Minimal object from user profile (managers / sales)
   try {
     const savedUser = localStorage.getItem('user')
     if (savedUser) {
       const user = JSON.parse(savedUser)
       if (user?.branch_id) {
-        // Check if we also have the full branch object in active branch
-        const saved = localStorage.getItem('awosel_active_branch')
-        if (saved) {
-          const branch = JSON.parse(saved)
-          if ((branch?.id || branch?.uuid) === user.branch_id) return branch
-        }
-        // Return minimal object from user data
         return { id: user.branch_id, uuid: user.branch_id, name: user.branch_name || 'My Branch' }
       }
     }
-  } catch {}
-
-  // 2. Fall back to active branch in localStorage
-  try {
-    const saved = localStorage.getItem('awosel_active_branch')
-    if (saved) return JSON.parse(saved)
   } catch {}
 
   return null
@@ -119,4 +117,73 @@ export function getSessionOrgId() {
   } catch {}
 
   return null
+}
+
+/**
+ * Normalize a branch API record so uuid and numeric id stay distinct.
+ */
+export function normalizeBranchRecord(branch) {
+  if (!branch || typeof branch !== 'object') return branch
+  const uuid =
+    branch.uuid ||
+    branch.branch_uuid ||
+    (typeof branch.id === 'string' && String(branch.id).includes('-') ? branch.id : null) ||
+    branch.branchId ||
+    null
+
+  const numericFromFields = [branch.numeric_id, branch.branch_numeric_id]
+    .find((v) => v != null && v !== '' && !Number.isNaN(Number(v)))
+
+  let numeric = numericFromFields
+  if (
+    numeric == null &&
+    branch.id != null &&
+    !Number.isNaN(Number(branch.id)) &&
+    String(branch.id) !== String(uuid || '')
+  ) {
+    numeric = branch.id
+  }
+  if (
+    numeric == null &&
+    branch.branch_id != null &&
+    !Number.isNaN(Number(branch.branch_id)) &&
+    String(branch.branch_id) !== String(uuid || '')
+  ) {
+    numeric = branch.branch_id
+  }
+
+  return {
+    ...branch,
+    uuid: uuid || (branch.id != null ? branch.id : null),
+    id: numeric != null ? numeric : (branch.id || uuid),
+    numeric_id: numeric != null ? numeric : branch.numeric_id,
+    name: branch.name || branch.branchName || branch.branch_name || 'Unnamed Store',
+    location: branch.location || branch.address || branch.branch_location || '',
+    store_type: branch.store_type || branch.storeType || branch.type || '',
+    logo: branch.logo || branch.logo_url || branch.image || branch.image_url || '',
+  }
+}
+
+/**
+ * Persist a richer branch object (e.g. after listBranches) without changing
+ * the currently selected store identity.
+ */
+export function enrichActiveBranch(branchLike) {
+  if (!branchLike) return null
+  const normalized = normalizeBranchRecord(branchLike)
+  try {
+    const saved = localStorage.getItem('awosel_active_branch')
+    const current = saved ? JSON.parse(saved) : null
+    const currentKey = current?.uuid || current?.id
+    const nextKey = normalized.uuid || normalized.id
+    if (currentKey && nextKey && String(currentKey) !== String(nextKey) && String(current?.uuid) !== String(normalized.uuid)) {
+      // Different store — don't overwrite selection
+      return current
+    }
+    const merged = { ...(current || {}), ...normalized }
+    localStorage.setItem('awosel_active_branch', JSON.stringify(merged))
+    return merged
+  } catch {
+    return normalized
+  }
 }

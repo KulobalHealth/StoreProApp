@@ -23,7 +23,7 @@ import {
   UserIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
-import { listSales } from '../api/awoselDb.js'
+import { listEmployees, listSales } from '../api/awoselDb.js'
 import { getSessionBranchId } from '../utils/branch'
 
 const getSaleDateValue = (sale) => sale?.created_at || sale?.createdAt || sale?.date || sale?.timestamp || null
@@ -42,6 +42,8 @@ const normalizeSale = (sale) => {
   const paymentMethod = sale.payment_method || sale.paymentMethod || 'Other'
   const paymentMethodLower = paymentMethod.toLowerCase()
   const items = Array.isArray(sale.items) ? sale.items : []
+  const cashierName = sale.cashier_name || sale.cashierName || sale.employee_name || sale.employeeName || sale.created_by_name || sale.staff_name || 'Unknown Cashier'
+  const cashierId = sale.cashier_id || sale.cashierId || sale.employee_id || sale.employeeId || sale.user_id || sale.userId || sale.created_by || ''
 
   return {
     ...sale,
@@ -52,6 +54,9 @@ const normalizeSale = (sale) => {
     _paymentMethod: paymentMethod,
     _paymentMethodLower: paymentMethodLower,
     _itemCount: items.length,
+    _cashierName: cashierName,
+    _cashierKey: String(cashierName).toLowerCase(),
+    _cashierId: String(cashierId),
     _searchText: `${receiptNumber} ${customerName} ${paymentMethod}`.toLowerCase(),
   }
 }
@@ -94,6 +99,8 @@ const SalesHistory = () => {
   const [selectedSale, setSelectedSale] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [paymentFilter, setPaymentFilter] = useState('all')
+  const [cashierFilter, setCashierFilter] = useState('all')
+  const [branchUsers, setBranchUsers] = useState([])
   const [sortBy, setSortBy] = useState('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const PAGE_SIZE = 10
@@ -224,6 +231,17 @@ const SalesHistory = () => {
     fetchSales()
   }, [filter, date, month, year])
 
+  useEffect(() => {
+    const branchId = getSessionBranchId()
+    if (!branchId) return
+    listEmployees(branchId)
+      .then(res => {
+        const users = Array.isArray(res) ? res : (res?.data || [])
+        setBranchUsers(Array.isArray(users) ? users : [])
+      })
+      .catch(() => setBranchUsers([]))
+  }, [])
+
   const paymentEntries = useMemo(
     () => Object.entries(summary.payment_methods || {}).filter(([, value]) => value > 0),
     [summary.payment_methods],
@@ -233,6 +251,17 @@ const SalesHistory = () => {
   const paymentMethods = useMemo(() => {
     return Object.keys(summary.payment_method_counts || {})
   }, [summary.payment_method_counts])
+
+  const cashiers = useMemo(() => {
+    return branchUsers
+      .map(user => {
+        const label = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.name || user.email || 'Unnamed User'
+        const id = user.uuid || user.id || user.user_id
+        return { label, value: String(id || label).toLowerCase() }
+      })
+      .filter((user, index, users) => users.findIndex(candidate => candidate.value === user.value) === index)
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [branchUsers])
 
   // Filtered + sorted + searched sales
   const processedSales = useMemo(() => {
@@ -245,12 +274,15 @@ const SalesHistory = () => {
       const normalizedPaymentFilter = paymentFilter.toLowerCase()
       result = result.filter(sale => sale._paymentMethodLower === normalizedPaymentFilter)
     }
+    if (cashierFilter !== 'all') {
+      result = result.filter(sale => sale._cashierId.toLowerCase() === cashierFilter || sale._cashierKey === cashierFilter)
+    }
     if (sortBy === 'newest') result.sort((a, b) => b._saleTimestamp - a._saleTimestamp)
     else if (sortBy === 'oldest') result.sort((a, b) => a._saleTimestamp - b._saleTimestamp)
     else if (sortBy === 'highest') result.sort((a, b) => (Number(b.total) || 0) - (Number(a.total) || 0))
     else if (sortBy === 'lowest') result.sort((a, b) => (Number(a.total) || 0) - (Number(b.total) || 0))
     return result
-  }, [sales, deferredSearchTerm, paymentFilter, sortBy])
+  }, [sales, deferredSearchTerm, paymentFilter, cashierFilter, sortBy])
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(processedSales.length / PAGE_SIZE))
@@ -304,15 +336,12 @@ const SalesHistory = () => {
     <div className="min-h-full bg-gray-50">
       {/* Compact Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <HIcon icon={Analytics02Icon} size={18} strokeWidth={2}  />
-              </div>
+        <div className="px-4 py-1.5 sm:px-5 lg:px-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+            <div className="flex items-center gap-2.5">
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Sales History</h1>
-                <p className="text-gray-500 text-xs">Track sales, revenue, and profit analytics</p>
+                <h1 className="text-base font-bold leading-tight text-gray-900 tracking-tight">Sales History</h1>
+                <p className="mt-0.5 text-[11px] leading-tight text-gray-500">Track sales, revenue, and profit analytics</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -320,7 +349,7 @@ const SalesHistory = () => {
                 <button
                   onClick={() => fetchSales({ forceRefresh: true })}
                   disabled={loading}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors"
                 >
                   <HIcon icon={RefreshIcon} size={16} className={`text-primary-500 ${loading ? 'animate-spin' : ''}`}  />
                   Refresh
@@ -330,7 +359,7 @@ const SalesHistory = () => {
                 <button
                   onClick={handleExportCSV}
                   disabled={processedSales.length === 0}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <HIcon icon={Download01Icon} size={16} className="text-primary-500"  />
                   Export CSV
@@ -341,7 +370,7 @@ const SalesHistory = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+      <div className="px-4 sm:px-5 lg:px-6 py-3 space-y-3">
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
             <HIcon icon={Cancel01Icon} size={16} className="shrink-0"  />
@@ -350,8 +379,8 @@ const SalesHistory = () => {
         )}
 
         {/* Period Filter Chips */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <div className="flex items-center gap-1.5 text-gray-500 mr-1">
               <HIcon icon={Calendar01Icon} size={14}  />
               <span className="text-xs font-medium uppercase tracking-wider">Period:</span>
@@ -376,6 +405,18 @@ const SalesHistory = () => {
                   {f.label}
                 </button>
               ))}
+              <div className="relative">
+                <HIcon icon={UserIcon} size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-primary-500" />
+                <select
+                  value={cashierFilter}
+                  onChange={e => { setCashierFilter(e.target.value); setCurrentPage(1) }}
+                  className="h-[30px] min-w-[150px] rounded-lg border border-primary-200 bg-primary-50 py-1 pl-8 pr-7 text-xs font-semibold text-primary-700 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  aria-label="Filter sales by cashier"
+                >
+                  <option value="all">All Cashiers</option>
+                  {cashiers.map(cashier => <option key={cashier.value} value={cashier.value}>{cashier.label}</option>)}
+                </select>
+              </div>
               {filter === 'date' && (
                 <input
                   type="date"
@@ -420,48 +461,48 @@ const SalesHistory = () => {
         </div>
 
         {/* Summary Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
+          <div className="bg-white rounded-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Transactions</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{summary.sale_count ?? 0}</p>
+                <p className="text-xl font-bold text-gray-900 mt-0.5">{summary.sale_count ?? 0}</p>
               </div>
               <HIcon icon={ShoppingCart01Icon} className="text-primary-500" size={20}  />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</p>
-                <p className="text-2xl font-bold text-primary-500 mt-1">₵{(Number(summary.total_amount) || 0).toFixed(2)}</p>
+                <p className="text-xl font-bold text-primary-500 mt-0.5">₵{(Number(summary.total_amount) || 0).toFixed(2)}</p>
               </div>
               <HIcon icon={DollarCircleIcon} className="text-primary-500" size={20}  />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Profit</p>
-                <p className="text-2xl font-bold text-emerald-600 mt-1">₵{(Number(summary.total_profit) || 0).toFixed(2)}</p>
+                <p className="text-xl font-bold text-emerald-600 mt-0.5">₵{(Number(summary.total_profit) || 0).toFixed(2)}</p>
               </div>
               <HIcon icon={ArrowMoveUpRightIcon} className="text-emerald-500" size={20}  />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Sale</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">₵{avgSale.toFixed(2)}</p>
+                <p className="text-xl font-bold text-gray-900 mt-0.5">₵{avgSale.toFixed(2)}</p>
               </div>
               <HIcon icon={Analytics02Icon} className="text-primary-500" size={20}  />
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
+          <div className="rounded-lg border border-gray-200 p-3 bg-primary-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-white/80 uppercase tracking-wider">Margin</p>
-                <p className="text-2xl font-bold text-white mt-1">{profitMargin.toFixed(1)}%</p>
+                <p className="text-xl font-bold text-white mt-0.5">{profitMargin.toFixed(1)}%</p>
               </div>
               <HIcon icon={ArrowMoveUpRightIcon} className="text-white/80" size={20}  />
             </div>
@@ -470,13 +511,13 @@ const SalesHistory = () => {
 
         {/* Payment Breakdown */}
         {paymentEntries.length > 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 px-4 py-2.5">
+          <div className="bg-white rounded-lg border border-gray-200 px-3 py-2">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 shrink-0">
                 <HIcon icon={CreditCardIcon} size={14} className="text-primary-500"  />
-                <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Payment Breakdown — {periodLabel}</h3>
+                <h3 className="text-xs font-semibold capitalize text-gray-700 tracking-wide">Payment Breakdown {periodLabel}</h3>
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="ml-auto flex flex-wrap justify-end gap-1.5">
                 {paymentEntries.map(([method, amount]) => (
                   <div
                     key={method}
@@ -492,16 +533,16 @@ const SalesHistory = () => {
         )}
 
         {/* Search, Filter, and Sort */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="relative md:col-span-2">
+        <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-2">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-[minmax(280px,480px)_240px]">
+            <div className="relative">
               <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
               <input
                 type="text"
                 placeholder="Search by receipt #, customer, or payment method..."
                 value={searchTerm}
                 onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1) }}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-sm"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-xs"
               />
             </div>
             <div className="relative">
@@ -509,7 +550,7 @@ const SalesHistory = () => {
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 bg-white appearance-none text-sm"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 bg-white appearance-none text-xs"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -565,12 +606,12 @@ const SalesHistory = () => {
         {/* Sales Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
-            <div className="py-20 text-center">
+            <div className="py-12 text-center">
               <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <p className="text-gray-500 text-sm">Loading sales...</p>
             </div>
           ) : processedSales.length === 0 ? (
-            <div className="py-20 text-center">
+            <div className="py-12 text-center">
               <HIcon icon={ReceiptTextIcon} size={48} className="mx-auto mb-3 text-gray-300"  />
               <p className="text-gray-500 font-medium">No sales found</p>
               <p className="text-gray-500 text-sm mt-1">
@@ -581,20 +622,20 @@ const SalesHistory = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-900 text-white">
-                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Time</th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Receipt #</th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Customer</th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Items</th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Discount</th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Tax</th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Total</th>
-                      <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Profit</th>
-                      <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Payment</th>
-                      <th className="text-center py-3 px-4 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                      <th className="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Time</th>
+                      <th className="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Receipt #</th>
+                      <th className="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Customer</th>
+                      <th className="text-right py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Items</th>
+                      <th className="text-right py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Discount</th>
+                      <th className="text-right py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Tax</th>
+                      <th className="text-right py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Total</th>
+                      <th className="text-right py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Profit</th>
+                      <th className="text-left py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Payment</th>
+                      <th className="text-center py-2 px-3 text-[11px] font-semibold uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -603,7 +644,7 @@ const SalesHistory = () => {
                         key={sale.id}
                         className="hover:bg-primary-50/40 transition-colors group"
                       >
-                        <td className="py-3 px-4 text-sm text-gray-600">
+                        <td className="py-2 px-3 text-xs text-gray-600">
                           <div className="flex items-center gap-1.5">
                             <HIcon icon={Clock01Icon} size={13} className="text-gray-400 shrink-0"  />
                             {sale._saleDate
@@ -611,33 +652,33 @@ const SalesHistory = () => {
                               : '—'}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
-                          <span className="text-sm font-semibold text-gray-900">{sale._receiptNumber || '—'}</span>
+                        <td className="py-2 px-3">
+                          <span className="text-xs font-semibold text-gray-900">{sale._receiptNumber || '—'}</span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           <div className="flex items-center gap-1.5">
                             <HIcon icon={UserIcon} size={13} className="text-gray-400 shrink-0"  />
-                            <span className="text-sm text-gray-700">{sale._customerName || 'Walk-in'}</span>
+                            <span className="text-xs text-gray-700">{sale._customerName || 'Walk-in'}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-gray-100 text-gray-700 text-xs font-semibold">
+                        <td className="py-2 px-3 text-right">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 text-gray-700 text-[11px] font-semibold">
                             {sale._itemCount}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right text-sm text-orange-600 font-medium">
+                        <td className="py-2 px-3 text-right text-xs text-orange-600 font-medium">
                           {(Number(sale.discount) || 0) > 0 ? `-₵${(Number(sale.discount) || 0).toFixed(2)}` : '—'}
                         </td>
-                        <td className="py-3 px-4 text-right text-sm text-gray-500">
+                        <td className="py-2 px-3 text-right text-xs text-gray-500">
                           {(Number(sale.tax) || 0) > 0 ? `₵${(Number(sale.tax) || 0).toFixed(2)}` : '—'}
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className="text-sm font-bold text-gray-900">₵{(Number(sale.total) || 0).toFixed(2)}</span>
+                        <td className="py-2 px-3 text-right">
+                          <span className="text-xs font-bold text-gray-900">₵{(Number(sale.total) || 0).toFixed(2)}</span>
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className="text-sm font-semibold text-emerald-600">₵{(Number(sale.total_profit) || 0).toFixed(2)}</span>
+                        <td className="py-2 px-3 text-right">
+                          <span className="text-xs font-semibold text-emerald-600">₵{(Number(sale.total_profit) || 0).toFixed(2)}</span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-2 px-3">
                           <span className={`inline-block px-2.5 py-1 rounded-sm text-xs font-semibold capitalize ${
                             sale._paymentMethodLower === 'cash'
                               ? 'bg-emerald-50 text-emerald-700'
@@ -650,12 +691,12 @@ const SalesHistory = () => {
                             {sale._paymentMethod || '—'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-2 px-3 text-center">
                           <Tooltip text="View sale details & line items">
                             <button
                               type="button"
                               onClick={() => setSelectedSale(sale)}
-                              className="inline-flex items-center justify-center p-2 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors opacity-70 group-hover:opacity-100"
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors opacity-70 group-hover:opacity-100"
                             >
                               <HIcon icon={ViewIcon} size={16}  />
                             </button>

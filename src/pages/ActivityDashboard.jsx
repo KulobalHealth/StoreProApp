@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { listBranches, createBranch } from '../api/awoselDb'
+import { normalizeBranchRecord } from '../utils/branch'
 import logo from '../MainLogo.jpeg'
 import { HIcon } from '../components/HIcon'
 import {
@@ -19,15 +20,7 @@ const STORE_LOGO_DRAFT_KEY = 'awosel_store_logo_draft'
 const BRANCH_CACHE_KEY = 'awosel_branches_cache'
 const BRANCHES_UPDATED_EVENT = 'awosel:branches-updated'
 
-const normalizeBranch = (branch) => ({
-  ...branch,
-  uuid: branch.uuid || branch.id || branch.branch_id || branch.branchId,
-  id: branch.id || branch.uuid || branch.branch_id || branch.branchId,
-  name: branch.name || branch.branchName || branch.branch_name || 'Unnamed Store',
-  location: branch.location || branch.address || branch.branch_location || '',
-  store_type: branch.store_type || branch.storeType || branch.type || '',
-  logo: branch.logo || branch.logo_url || branch.image || branch.image_url || '',
-})
+const normalizeBranch = (branch) => normalizeBranchRecord(branch)
 
 const publishBranchUpdates = (branchList) => {
   localStorage.setItem(BRANCH_CACHE_KEY, JSON.stringify(branchList))

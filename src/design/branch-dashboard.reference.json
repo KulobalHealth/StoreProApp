@@ -1,0 +1,57 @@
+{
+  "source": {
+    "type": "uploaded_reference_image",
+    "filename": "pos-enerpize.webp",
+    "quality": "clear desktop screenshot",
+    "interpretation": "Dashboard shell and content extracted from the latest user reference."
+  },
+  "canvas": {
+    "background": "#EAF0F7",
+    "maxContentWidth": 1500,
+    "desktopPadding": 16,
+    "mobilePadding": 16
+  },
+  "navigation": {
+    "position": "top-with-left-sidebar",
+    "height": 42,
+    "background": "#2787C2",
+    "foreground": "#FFFFFF",
+    "activeTreatment": "light gray sidebar row",
+    "density": "compact"
+  },
+  "typography": {
+    "family": "Manrope, sans-serif",
+    "headingWeight": 800,
+    "bodyColor": "#475569",
+    "mutedColor": "#94A3B8",
+    "headingColor": "#1E293B"
+  },
+  "geometry": {
+    "cardRadius": 8,
+    "controlRadius": 0,
+    "cardBorder": "#E2E8F0",
+    "cardShadow": "0 1px 2px rgba(15, 23, 42, 0.035)",
+    "gridColumns": { "desktop": 3, "tablet": 2, "mobile": 1 },
+    "gridGap": 16
+  },
+  "hierarchy": [
+    "white accordion sidebar and blue utility bar",
+    "personal welcome heading",
+    "dual search bars",
+    "six square POS action tiles",
+    "tabbed sales summary"
+  ],
+  "actionTile": {
+    "layout": "centered vertical icon and label",
+    "minimumHeight": 210,
+    "background": "#FFFFFF",
+    "iconSize": 40,
+    "iconPalette": ["emerald", "cyan", "blue", "violet", "teal", "amber"],
+    "interaction": "subtle lift and border accent"
+  },
+  "responsiveBehavior": {
+    "navigation": "collapsible 210px rail",
+    "tiles": "3 to 2 to 1 columns",
+    "status": "4 to 2 to 1 columns"
+  }
+}

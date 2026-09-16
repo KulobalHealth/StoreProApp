@@ -205,36 +205,34 @@ const Customers = () => {
     <div className="app-page">
       {/* Header */}
       <div className="app-page-header">
-        <div className="app-page-header-inner">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="app-page-title-wrap">
-              <div className="app-page-icon">
-                <HIcon icon={UserGroupIcon} size={20} strokeWidth={2.2}  />
-              </div>
-              <div>
-                <p className="app-page-kicker">CRM</p>
-                <h1 className="app-page-title">Customers</h1>
-                <p className="app-page-subtitle">Manage your customer database and track balances</p>
+        <div className="app-page-header-inner !block !px-4 !py-2 sm:!px-5 lg:!px-6">
+          <div className="flex w-full items-center justify-between gap-3">
+            <div className="app-page-title-wrap min-w-0 items-center">
+              <div className="min-w-0">
+                <h1 className="app-page-title !text-base !leading-tight">Customers</h1>
+                <p className="app-page-subtitle !mt-0 hidden truncate text-[11px] leading-tight sm:block">Manage your customer database and track balances</p>
               </div>
             </div>
-            <div className="app-page-actions">
+            <div className="app-page-actions shrink-0 !flex-nowrap !gap-1.5">
               <Tooltip text="Reload customer list">
                 <button
                   type="button"
                   onClick={fetchCustomers}
-                  className="app-btn-secondary px-3"
+                  aria-label="Reload customer list"
+                  className="app-btn-secondary !h-8 !w-8 !justify-center !p-0"
                 >
-                  <HIcon icon={RefreshIcon} size={16} className={loading ? 'animate-spin' : ''}  />
+                  <HIcon icon={RefreshIcon} size={15} className={loading ? 'animate-spin' : ''}  />
                 </button>
               </Tooltip>
               <Tooltip text="Add a new customer to your database">
                 <button
                   type="button"
                   onClick={openAdd}
-                  className="app-btn-primary px-5"
+                  className="app-btn-primary !h-8 !gap-1.5 !px-3 !py-0 !text-xs sm:!px-4"
                 >
-                  <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
-                  Add Customer
+                  <HIcon icon={Add01Icon} size={15} strokeWidth={2.5}  />
+                  <span className="hidden sm:inline">Add Customer</span>
+                  <span className="sm:hidden">Add</span>
                 </button>
               </Tooltip>
             </div>
@@ -242,59 +240,59 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="app-page-content space-y-5">
+      <div className="app-page-content !px-4 !py-2.5 space-y-2.5 sm:!px-5 lg:!px-6">
         {/* Stat Cards */}
-        <div className="app-stat-grid gap-3 sm:gap-4">
-          <div className="app-stat-card hover:shadow-panel transition-shadow">
-            <div className="flex items-center justify-between mb-3">
+        <div className="app-stat-grid gap-2">
+          <div className="app-stat-card !p-2.5 hover:shadow-panel transition-shadow">
+            <div className="flex items-center justify-between mb-1.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary-50">
                 <HIcon icon={UserGroupIcon} size={18} className="text-primary-500"  />
               </div>
               <span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-600">Total</span>
             </div>
-            <p className="app-stat-value mt-0">{list.length}</p>
+            <p className="app-stat-value !mt-0 !text-lg">{list.length}</p>
             <p className="app-stat-meta">Customers</p>
           </div>
 
-          <div className="app-stat-card hover:shadow-panel transition-shadow">
-            <div className="flex items-center justify-between mb-3">
+          <div className="app-stat-card !p-2.5 hover:shadow-panel transition-shadow">
+            <div className="flex items-center justify-between mb-1.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-control bg-success-50">
                 <HIcon icon={ArrowMoveUpRightIcon} size={18} className="text-success-600"  />
               </div>
               <span className="rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700">Revenue</span>
             </div>
-            <p className="app-stat-value mt-0">₵{formatMoney(totalSales)}</p>
+            <p className="app-stat-value !mt-0 !text-lg">₵{formatMoney(totalSales)}</p>
             <p className="app-stat-meta">Total Sales</p>
           </div>
 
-          <div className="app-stat-card hover:shadow-panel transition-shadow">
-            <div className="flex items-center justify-between mb-3">
+          <div className="app-stat-card !p-2.5 hover:shadow-panel transition-shadow">
+            <div className="flex items-center justify-between mb-1.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-control bg-warning-50">
                 <HIcon icon={CreditCardIcon} size={18} className="text-warning-600"  />
               </div>
               <span className="rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-warning-700">Credit</span>
             </div>
-            <p className="app-stat-value mt-0">₵{formatMoney(totalOwing)}</p>
+            <p className="app-stat-value !mt-0 !text-lg">₵{formatMoney(totalOwing)}</p>
             <p className="app-stat-meta">Total Owing</p>
           </div>
 
-          <div className="app-stat-card-accent relative overflow-hidden">
+          <div className="app-stat-card-accent !p-2.5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-6 translate-x-6" />
             <div className="relative">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-control bg-white/20">
                   <HIcon icon={Alert02Icon} size={18} className="text-white"  />
                 </div>
                 <span className="text-[10px] font-semibold text-white/90 bg-white/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Alert</span>
               </div>
-              <p className="app-stat-value mt-0 text-white">{customersOwing}</p>
+              <p className="app-stat-value !mt-0 !text-lg text-white">{customersOwing}</p>
               <p className="app-stat-meta text-white/80">Owing Customers</p>
             </div>
           </div>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="app-filter-bar flex flex-col items-stretch gap-3 p-3 sm:flex-row sm:items-center">
+        <div className="app-filter-bar flex flex-col items-stretch gap-2 !p-2.5 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16}  />
             <input
@@ -302,7 +300,7 @@ const Customers = () => {
               placeholder="Search by name, phone, email or address..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="app-input-muted pl-9 pr-9"
+              className="app-input-muted !rounded-[4px] !py-1.5 pl-9 pr-9 text-xs"
             />
             {searchTerm && (
               <button
@@ -316,7 +314,7 @@ const Customers = () => {
           <button
             type="button"
             onClick={() => setFilterOwing(!filterOwing)}
-            className={`inline-flex items-center gap-2 rounded-control border px-4 py-2.5 text-sm font-medium transition-all shrink-0 ${
+            className={`inline-flex items-center gap-2 rounded-[4px] border px-3 py-1.5 text-xs font-medium transition-all shrink-0 ${
               filterOwing
                 ? 'bg-danger-50 border-danger-100 text-danger-700 shadow-sm'
                 : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
@@ -346,7 +344,7 @@ const Customers = () => {
         {/* Customer Table */}
         <div className="app-table-shell">
           {loading ? (
-            <div className="py-20 text-center">
+            <div className="py-12 text-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-10 h-10 border-[3px] border-primary-500 border-t-transparent rounded-full animate-spin" />
                 <p className="text-sm text-gray-500 font-medium">Loading customers...</p>
@@ -354,8 +352,8 @@ const Customers = () => {
             </div>
           ) : filteredList.length > 0 ? (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <table className="w-full [&_th]:!px-3 [&_th]:!py-1.5 [&_th]:!text-[10px]">
                   <thead>
                     <tr className="app-table-head border-b border-gray-100">
                       <th className="app-table-head-cell">Customer</th>
@@ -376,21 +374,21 @@ const Customers = () => {
                           className="app-table-row group cursor-pointer border-b border-gray-50"
                           onClick={() => handleViewDetails(c)}
                         >
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
+                          <td className="py-1.5 px-3">
+                            <div className="flex items-center gap-2">
                               <Avatar name={c.name} size="sm" />
                               <div className="min-w-0">
-                                <p className="font-semibold text-gray-900 text-sm truncate group-hover:text-primary-600 transition-colors">{c.name}</p>
+                                <p className="font-semibold text-gray-900 text-xs truncate group-hover:text-primary-600 transition-colors">{c.name}</p>
                                 {c.created_at && (
                                   <p className="text-[11px] text-gray-400 mt-0.5">Since {new Date(c.created_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</p>
                                 )}
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <div className="space-y-1">
+                          <td className="py-1.5 px-3">
+                            <div className="space-y-0.5">
                               {c.phone && (
-                                <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                   <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                   <span className="truncate">{c.phone}</span>
                                 </div>
@@ -406,9 +404,9 @@ const Customers = () => {
                               )}
                             </div>
                           </td>
-                          <td className="py-3 px-4 hidden md:table-cell">
+                          <td className="py-1.5 px-3 hidden md:table-cell">
                             {c.address ? (
-                              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                 <HIcon icon={MapPinIcon} size={12} className="text-gray-400 shrink-0"  />
                                 <span className="truncate max-w-[180px]">{c.address}</span>
                               </div>
@@ -416,31 +414,31 @@ const Customers = () => {
                               <span className="text-sm text-gray-300">—</span>
                             )}
                           </td>
-                          <td className="py-3 px-4 text-right hidden sm:table-cell">
+                          <td className="py-1.5 px-3 text-right hidden sm:table-cell">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-md text-xs font-semibold text-gray-700">
                               <HIcon icon={HashtagIcon} size={10}  />
                               {c.sales_count ?? 0}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="text-sm font-semibold text-gray-900">₵{formatMoney(c.total_sales)}</span>
+                          <td className="py-1.5 px-3 text-right">
+                            <span className="text-xs font-semibold text-gray-900">₵{formatMoney(c.total_sales)}</span>
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-1.5 px-3 text-right">
                             {hasDebt ? (
                               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 border border-red-100">
-                                <span className="text-sm font-bold text-red-600">₵{formatMoney(c.owing_amount)}</span>
+                                <span className="text-xs font-bold text-red-600">₵{formatMoney(c.owing_amount)}</span>
                               </span>
                             ) : (
                               <span className="text-sm text-gray-300 font-medium">₵0.00</span>
                             )}
                           </td>
-                          <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                          <td className="py-1.5 px-3" onClick={(e) => e.stopPropagation()}>
                             <div className="flex justify-center gap-0.5">
                               <Tooltip text="View customer details & transaction history">
                                 <button
                                   type="button"
                                   onClick={() => handleViewDetails(c)}
-                                  className="p-2 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
+                                  className="p-1.5 rounded-lg text-gray-400 hover:bg-primary-50 hover:text-primary-500 transition-colors"
                                 >
                                   <HIcon icon={ViewIcon} size={15}  />
                                 </button>
@@ -449,7 +447,7 @@ const Customers = () => {
                                 <button
                                   type="button"
                                   onClick={() => openEdit(c)}
-                                  className="p-2 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
+                                  className="p-1.5 rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 transition-colors"
                                 >
                                   <HIcon icon={PencilEdit01Icon} size={15}  />
                                 </button>
@@ -458,7 +456,7 @@ const Customers = () => {
                                 <button
                                   type="button"
                                   onClick={() => handleDelete(c.uuid || c.id)}
-                                  className="p-2 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                                  className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
                                 >
                                   <HIcon icon={Delete01Icon} size={15}  />
                                 </button>
@@ -473,7 +471,7 @@ const Customers = () => {
               </div>
 
               {/* Footer */}
-              <div className="px-4 py-3 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-3 py-1.5 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
                 <span className="text-xs text-gray-500">
                   Showing <span className="font-semibold text-gray-700">{filteredList.length}</span> of <span className="font-semibold text-gray-700">{list.length}</span> customers
                   {filterOwing && <span className="ml-1 text-red-500">(owing filter active)</span>}
@@ -489,7 +487,7 @@ const Customers = () => {
               </div>
             </>
           ) : (
-            <div className="py-20 text-center">
+            <div className="py-12 text-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-1">
                   <HIcon icon={UserGroupIcon} size={28} className="text-gray-400"  />

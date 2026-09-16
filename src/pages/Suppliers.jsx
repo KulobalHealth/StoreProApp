@@ -158,22 +158,22 @@ const Suppliers = () => {
     <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <HIcon icon={Building01Icon} size={18} strokeWidth={2}  />
+        <div className="px-4 py-2 sm:px-5 lg:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-500 text-white">
+                <HIcon icon={Building01Icon} size={15} strokeWidth={2}  />
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Suppliers</h1>
-                <p className="text-gray-500 text-xs">Manage your suppliers and track debts</p>
+              <div className="min-w-0">
+                <h1 className="text-base font-bold tracking-tight text-gray-900">Suppliers</h1>
+                <p className="hidden truncate text-[11px] text-gray-500 sm:block">Manage your suppliers and track debts</p>
               </div>
             </div>
             <Tooltip text="Add a new supplier to your list">
               <button
                 type="button"
                 onClick={openAdd}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors shadow-sm"
+                className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-primary-500 px-3 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary-600 sm:px-4"
               >
                 <HIcon icon={Add01Icon} size={16} strokeWidth={2.5}  />
                 Add Supplier
@@ -183,57 +183,57 @@ const Suppliers = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="space-y-2.5 px-4 py-2.5 sm:px-5 lg:px-6">
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-2.5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Suppliers</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{list.length}</p>
+                <p className="mt-0.5 text-lg font-bold text-gray-900">{list.length}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <HIcon icon={UserGroupIcon} className="text-primary-500" size={20}  />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50">
+                <HIcon icon={UserGroupIcon} className="text-primary-500" size={17}  />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-2.5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Supplied</p>
-                <p className="text-2xl font-bold text-primary-500 mt-1">₵{formatMoney(totalSupplied)}</p>
+                <p className="mt-0.5 text-lg font-bold text-primary-500">₵{formatMoney(totalSupplied)}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <HIcon icon={ArrowMoveUpRightIcon} className="text-primary-500" size={20}  />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50">
+                <HIcon icon={ArrowMoveUpRightIcon} className="text-primary-500" size={17}  />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="rounded-lg border border-gray-200 bg-white p-2.5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">Total Debt</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">₵{formatMoney(totalDebt)}</p>
+                <p className="mt-0.5 text-lg font-bold text-gray-900">₵{formatMoney(totalDebt)}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center">
-                <HIcon icon={DollarCircleIcon} className="text-primary-500" size={20}  />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50">
+                <HIcon icon={DollarCircleIcon} className="text-primary-500" size={17}  />
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-gray-200 p-4 bg-primary-500">
+          <div className="rounded-lg border border-gray-200 bg-primary-500 p-2.5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/80 text-xs font-medium uppercase tracking-wide">Owing Debt</p>
-                <p className="text-2xl font-bold text-white mt-1">{suppliersWithDebt}</p>
+                <p className="mt-0.5 text-lg font-bold text-white">{suppliersWithDebt}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <HIcon icon={Alert02Icon} className="text-white" size={20}  />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+                <HIcon icon={Alert02Icon} className="text-white" size={17}  />
               </div>
             </div>
           </div>
         </div>
 
         {/* Search */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="rounded-lg border border-gray-200 bg-white p-2.5">
           <div className="relative">
             <HIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18}  />
             <input
@@ -241,7 +241,7 @@ const Suppliers = () => {
               placeholder="Search by name, phone, email or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 text-gray-900 placeholder-gray-400 text-sm"
+              className="w-full rounded-[4px] border border-gray-200 py-1.5 pl-10 pr-4 text-xs text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
             />
           </div>
         </div>
@@ -257,23 +257,23 @@ const Suppliers = () => {
         {/* Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
-            <div className="py-16 text-center">
+            <div className="py-10 text-center">
               <div className="flex flex-col items-center gap-3 text-gray-500">
                 <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-sm">Loading suppliers...</span>
               </div>
             </div>
           ) : filteredList.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-900 text-white">
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Supplier</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Contact</th>
-                    <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider">Location</th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Value Supplied</th>
-                    <th className="text-right py-3 px-4 text-xs font-semibold uppercase tracking-wider">Debt Owing</th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold uppercase tracking-wider">Actions</th>
+                    <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider">Supplier</th>
+                    <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider">Contact</th>
+                    <th className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider">Location</th>
+                    <th className="px-3 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider">Value Supplied</th>
+                    <th className="px-3 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider">Debt Owing</th>
+                    <th className="px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -281,59 +281,59 @@ const Suppliers = () => {
                     const hasDebt = Number(s.debt_owing) > 0
                     return (
                       <tr key={s.id || s.uuid || idx} className={`hover:bg-primary-50/40 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+                        <td className="px-3 py-1.5">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-50">
                               <HIcon icon={Building01Icon} size={14} className="text-primary-500"  />
                             </div>
                             <div className="min-w-0">
                               <button
                                 type="button"
                                 onClick={() => navigate(`/suppliers/${s.uuid || s.id}`)}
-                                className="font-medium text-gray-900 text-sm hover:text-primary-500 transition-colors truncate block"
+                                className="block truncate text-xs font-medium text-gray-900 transition-colors hover:text-primary-500"
                               >
                                 {s.name}
                               </button>
                               {s.email && (
-                                <p className="text-xs text-gray-500 truncate">{s.email}</p>
+                                <p className="truncate text-[10px] text-gray-500">{s.email}</p>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-3 py-1.5">
                           <div className="space-y-0.5">
                             {s.phone1 && (
-                              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                              <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                 <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                 {s.phone1}
                               </div>
                             )}
                             {s.phone2 && (
-                              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                              <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                 <HIcon icon={CallIcon} size={12} className="text-gray-400 shrink-0"  />
                                 {s.phone2}
                               </div>
                             )}
                             {!s.phone1 && !s.phone2 && (
-                              <span className="text-sm text-gray-300">—</span>
+                              <span className="text-xs text-gray-300">—</span>
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-3 py-1.5">
                           {s.location ? (
-                            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                            <div className="flex items-center gap-1.5 text-xs text-gray-600">
                               <HIcon icon={MapPinIcon} size={12} className="text-gray-400 shrink-0"  />
                               <span className="truncate max-w-[180px]">{s.location}</span>
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-300">—</span>
+                            <span className="text-xs text-gray-300">—</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className="font-medium text-gray-900 text-sm">₵{formatMoney(s.value_supplied)}</span>
+                        <td className="px-3 py-1.5 text-right">
+                          <span className="text-xs font-medium text-gray-900">₵{formatMoney(s.value_supplied)}</span>
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className={`text-sm font-semibold ${hasDebt ? 'text-red-600' : 'text-gray-400'}`}>
+                        <td className="px-3 py-1.5 text-right">
+                          <span className={`text-xs font-semibold ${hasDebt ? 'text-red-600' : 'text-gray-400'}`}>
                             ₵{formatMoney(s.debt_owing)}
                           </span>
                           {hasDebt && (
@@ -342,7 +342,7 @@ const Suppliers = () => {
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="px-3 py-1.5">
                           <div className="flex justify-center gap-1">
                             <Tooltip text="View supplier details & purchase history">
                               <button
@@ -380,7 +380,7 @@ const Suppliers = () => {
               </table>
             </div>
           ) : (
-            <div className="py-16 text-center">
+            <div className="py-10 text-center">
               <div className="flex flex-col items-center gap-3 text-gray-400">
                 <HIcon icon={Building01Icon} size={40}  />
                 <p className="text-sm font-medium text-gray-500">
@@ -404,8 +404,8 @@ const Suppliers = () => {
 
           {/* Footer count */}
           {filteredList.length > 0 && (
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-3 py-1.5">
+              <span className="text-xs text-gray-600">
                 Showing <span className="font-medium text-gray-900">{filteredList.length}</span> of <span className="font-medium text-gray-900">{list.length}</span> suppliers
               </span>
             </div>
