@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { HIcon } from './HIcon'
 import { useAuth } from '../contexts/AuthContext'
@@ -23,6 +23,7 @@ import {
 import sidebarIcon from '../ic.png'
 import { listProductsByBranch } from '../api/awoselDb'
 import { getSessionBranchId } from '../utils/branch'
+import PageLoadingFrame from './PageLoadingFrame'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -52,8 +53,9 @@ const Layout = () => {
     return () => document.removeEventListener('mousedown', close)
   }, [])
 
+  const branchId = getSessionBranchId()
+
   useEffect(() => {
-    const branchId = getSessionBranchId()
     if (!branchId || isSales) {
       setLowStockProducts([])
       return
@@ -68,7 +70,7 @@ const Layout = () => {
         }))
       })
       .catch(() => setLowStockProducts([]))
-  }, [location.pathname, isSales])
+  }, [branchId, isSales])
 
   const items = [
     { label: 'Dashboard', icon: DashboardSpeed02Icon, path: '/branch-dashboard', hide: isSales },
@@ -163,7 +165,9 @@ const Layout = () => {
         </header>
 
         <main className={`min-h-0 flex-1 overflow-auto bg-[#eaf0f7] ${location.pathname === '/branch-dashboard' ? 'pb-[84px]' : ''} ${location.pathname === '/sales' ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}>
-          <Outlet />
+          <Suspense fallback={<PageLoadingFrame />}>
+            <Outlet />
+          </Suspense>
         </main>
 
         {location.pathname === '/branch-dashboard' && (

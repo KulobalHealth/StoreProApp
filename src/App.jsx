@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Layout from './components/Layout'
+import PageLoadingFrame from './components/PageLoadingFrame'
 import { useAuth } from './contexts/AuthContext'
 
 /* ─── Lazy-loaded pages (code-split into separate chunks) ─── */
@@ -42,17 +43,6 @@ const PosSuccess = lazy(() => import('./pages/PosSuccess'))
 const Billing = lazy(() => import('./pages/Billing'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 
-/* ─── Loading fallback ─── */
-const PageLoader = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f9fafb' }}>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid #e2e8f0', borderTopColor: '#FF751F', borderRadius: '50%', animation: 'spin 0.6s linear infinite', margin: '0 auto 12px' }} />
-      <p style={{ color: '#5a6a7e', fontSize: '0.85rem', fontFamily: 'Manrope, sans-serif' }}>Loading…</p>
-    </div>
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </div>
-)
-
 // Role guard — blocks specific roles from accessing a route
 // Uses AuthContext so the role is always in sync and can't be spoofed via localStorage
 const RoleGuard = ({ blockedRoles = [], allowedRoles = [], children }) => {
@@ -88,7 +78,7 @@ function App() {
       <Router>
         <AuthProvider>
           <NavigationHistoryProvider>
-            <Suspense fallback={<PageLoader />}>
+            <Suspense fallback={<PageLoadingFrame fullScreen />}>
             <Routes>
               {/* Public Routes — Landing page is the home page */}
               <Route path="/" element={<LandingPage />} />
@@ -145,4 +135,3 @@ function App() {
 }
 
 export default App
-

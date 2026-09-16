@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { HIcon } from '../components/HIcon'
-import inventoryDashboardImage from '../Mockups/inventory-dashboard-transparent.png'
+import inventoryDashboardImage from '../Mockups/inventory-dashboard-transparent.webp'
 import posSessionDashboardImage from '../Mockups/pos-session-dashboard.jpg'
 import startSellingDashboardImage from '../Mockups/start-selling-dashboard.jpg'
 import customersDashboardImage from '../Mockups/customers-dashboard.png'
@@ -48,7 +48,7 @@ const BranchDashboard = () => {
         </section>
 
         <section className="mx-auto mb-8 grid w-full max-w-[1380px] grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {actions.map(action => <button key={action.label} onClick={() => navigate(action.path)} className="group flex min-h-[285px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white px-10 py-12 shadow-[0_5px_16px_rgba(44,65,94,0.11)] transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg"><span className={action.imageLarge ? 'grid h-32 w-40 place-items-center' : action.image ? 'grid h-28 w-28 place-items-center' : 'grid h-20 w-20 place-items-center'}>{action.image ? <img src={action.image} alt="" className={action.imageLarge ? 'h-32 w-40 object-contain transition-transform group-hover:scale-110' : 'h-28 w-28 object-contain transition-transform group-hover:scale-110'} /> : <HIcon icon={action.icon} size={48} className="text-orange-500 transition-transform group-hover:scale-110" />}</span><span className={action.imageLarge ? 'mt-3 text-lg font-semibold text-slate-700' : action.image ? 'mt-5 text-lg font-semibold text-slate-700' : 'mt-7 text-lg font-semibold text-slate-700'}>{action.label}</span></button>)}
+          {actions.map(action => <button key={action.label} onClick={() => navigate(action.path)} className="group flex min-h-[285px] flex-col items-center justify-center rounded-lg border border-slate-200 bg-white px-10 py-12 shadow-[0_5px_16px_rgba(44,65,94,0.11)] transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg"><span className={action.imageLarge ? 'grid h-32 w-40 place-items-center' : action.image ? 'grid h-28 w-28 place-items-center' : 'grid h-20 w-20 place-items-center'}>{action.image ? <img src={action.image} alt="" decoding="async" className={action.imageLarge ? 'h-32 w-40 object-contain transition-transform group-hover:scale-110' : 'h-28 w-28 object-contain transition-transform group-hover:scale-110'} /> : <HIcon icon={action.icon} size={48} className="text-orange-500 transition-transform group-hover:scale-110" />}</span><span className={action.imageLarge ? 'mt-3 text-lg font-semibold text-slate-700' : action.image ? 'mt-5 text-lg font-semibold text-slate-700' : 'mt-7 text-lg font-semibold text-slate-700'}>{action.label}</span></button>)}
         </section>
       </main>
 
