@@ -164,13 +164,12 @@ const Layout = () => {
           </div>
         </header>
 
-        <main className={`min-h-0 flex-1 overflow-auto bg-[#eaf0f7] ${location.pathname === '/branch-dashboard' ? 'pb-[84px]' : ''} ${location.pathname === '/sales' ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}>
+        <main className={`min-h-0 flex-1 overflow-x-hidden overflow-y-auto bg-[#eaf0f7] pb-[84px] ${location.pathname === '/sales' || location.pathname === '/inventory' ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}>
           <Suspense fallback={<PageLoadingFrame />}>
             <Outlet />
           </Suspense>
         </main>
 
-        {location.pathname === '/branch-dashboard' && (
           <footer className={`fixed bottom-0 right-0 z-40 border-t-4 border-orange-500 bg-white px-5 py-4 shadow-[0_-4px_18px_rgba(15,23,42,0.1)] transition-[left] duration-200 sm:px-7 ${sidebarOpen ? 'left-[230px]' : 'left-[72px]'}`}>
             <div className="mx-auto flex max-w-[1500px] flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
@@ -185,7 +184,6 @@ const Layout = () => {
               </div>
             </div>
           </footer>
-        )}
       </div>
     </div>
   )

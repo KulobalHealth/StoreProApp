@@ -33,6 +33,8 @@ function normalizeProductList(products) {
 
 export const PRODUCTS_UPDATED_EVENT = 'awosel:products-updated'
 const PRODUCTS_UPDATED_KEY = 'awosel_products_updated_at'
+const PRODUCTS_CACHE_PREFIX = 'awosel_products_cache:'
+const PRODUCTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 let cache = {
   branchId: null,
@@ -44,6 +46,40 @@ let cache = {
 /** After a local mutation, ignore network refreshes briefly so CDN/API lag can't snap UI back to old data */
 let mutationGuardUntil = 0
 const MUTATION_GUARD_MS = 30000
+
+function persistentCacheKey(branchId) {
+  return `${PRODUCTS_CACHE_PREFIX}${String(branchId)}`
+}
+
+function persistProducts(branchId, products) {
+  if (typeof localStorage === 'undefined' || !branchId) return
+  try {
+    localStorage.setItem(persistentCacheKey(branchId), JSON.stringify({
+      products,
+      updatedAt: Date.now(),
+    }))
+  } catch {
+    /* Storage may be unavailable or full; the in-memory cache still works. */
+  }
+}
+
+function readPersistedProducts(branchId) {
+  if (typeof localStorage === 'undefined' || !branchId) return null
+  try {
+    const saved = JSON.parse(localStorage.getItem(persistentCacheKey(branchId)) || 'null')
+    if (!saved || !Array.isArray(saved.products)) return null
+    if (Date.now() - Number(saved.updatedAt || 0) > PRODUCTS_CACHE_TTL_MS) {
+      localStorage.removeItem(persistentCacheKey(branchId))
+      return null
+    }
+    return {
+      products: normalizeProductList(saved.products),
+      updatedAt: Number(saved.updatedAt || Date.now()),
+    }
+  } catch {
+    return null
+  }
+}
 
 /**
  * Keep recently-created local rows when the API list is still lagging
@@ -119,7 +155,18 @@ export function getProductsSnapshot() {
 }
 
 export function getCachedProducts(branchId) {
-  if (!branchId || cache.branchId !== String(branchId)) return null
+  if (!branchId) return null
+  const id = String(branchId)
+  if (cache.branchId === id) return cache.products
+
+  const persisted = readPersistedProducts(id)
+  if (!persisted) return null
+  cache = {
+    branchId: id,
+    products: persisted.products,
+    version: cache.version + 1,
+    updatedAt: persisted.updatedAt,
+  }
   return cache.products
 }
 
@@ -138,6 +185,7 @@ export function setProductsForBranch(branchId, products, { broadcast = true, fro
     version: cache.version + 1,
     updatedAt: Date.now(),
   }
+  persistProducts(id, cache.products)
   if (fromMutation) mutationGuardUntil = Date.now() + MUTATION_GUARD_MS
   inflight.delete(id)
   emitLocal(fromMutation ? 'mutation' : 'set')
@@ -153,6 +201,7 @@ export function invalidateProductsCache(branchId) {
     if (cache.branchId === id) {
       cache = { branchId: null, products: [], version: cache.version + 1, updatedAt: Date.now() }
     }
+    try { localStorage.removeItem(persistentCacheKey(id)) } catch { /* ignore */ }
   } else {
     bumpSeq(cache.branchId || '')
     inflight.clear()
@@ -204,6 +253,7 @@ export async function loadProductsForBranch(branchId, { force = false } = {}) {
         version: cache.version + 1,
         updatedAt: Date.now(),
       }
+      persistProducts(id, cache.products)
       emitLocal('fetch')
       return list
     })

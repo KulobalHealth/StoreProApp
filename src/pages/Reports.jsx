@@ -178,7 +178,7 @@ const Reports = () => {
     totalCategories: new Set(inventoryData.map(item => item.category)).size
   }
 
-  const COLORS = ['#0ea5e9', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981']
+  const COLORS = ['#FF7521', '#334155', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0']
 
   // Export functions
   const handleExportCSV = () => {
@@ -252,26 +252,23 @@ const Reports = () => {
   }, [dateRange])
 
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="reports-compact min-h-full bg-gray-50">
       <div className="bg-white border-b border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="px-4 py-2 sm:px-5 lg:px-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-500 text-white">
-                <HIcon icon={Analytics02Icon} size={18} strokeWidth={2}  />
-              </div>
+            <div className="flex min-w-0 items-center gap-2">
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Reports & Analytics</h1>
-                <p className="text-gray-500 text-xs">Generate sales reports and access analytics data</p>
+                <h1 className="text-base font-bold tracking-tight text-gray-900">Reports & Tax Manager</h1>
+                <p className="hidden text-[11px] text-gray-500 sm:block">Generate sales reports and access analytics data</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center rounded-lg bg-gray-100 p-0.5">
                 <UiTooltip text="Simple list view">
                   <button
                     onClick={() => setViewMode('simple')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    className={`flex items-center rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       viewMode === 'simple'
                         ? 'bg-white text-primary-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
@@ -284,7 +281,7 @@ const Reports = () => {
                 <UiTooltip text="Visual charts view">
                   <button
                     onClick={() => setViewMode('charts')}
-                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center ${
+                    className={`flex items-center rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       viewMode === 'charts'
                         ? 'bg-white text-primary-600 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
@@ -298,7 +295,7 @@ const Reports = () => {
               <UiTooltip text="Export current report data as a CSV spreadsheet">
                 <button 
                   onClick={handleExportCSV}
-                  className="btn-secondary flex items-center"
+                  className="btn-secondary flex items-center !px-2.5 !py-1.5 !text-xs"
                 >
                   <HIcon icon={Download01Icon} size={18} className="mr-2"  />
                   Export CSV
@@ -307,7 +304,7 @@ const Reports = () => {
               <UiTooltip text="Print or save report as PDF using browser print">
                 <button 
                   onClick={handleExportPDF}
-                  className="btn-secondary flex items-center"
+                  className="btn-secondary flex items-center !px-2.5 !py-1.5 !text-xs"
                 >
                   <HIcon icon={FileValidationIcon} size={18} className="mr-2"  />
                   Export PDF
@@ -318,14 +315,14 @@ const Reports = () => {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <div className="space-y-2.5 px-4 py-2.5 sm:px-5 lg:px-6">
 
       {/* Report Type Tabs */}
-      <div className="mb-6">
+      <div className="mb-2.5">
         <div className="flex space-x-2 border-b">
           <button
             onClick={() => setReportType('sales')}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            className={`border-b-2 px-3 py-1.5 text-xs font-medium transition-colors ${
               reportType === 'sales'
                 ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -336,7 +333,7 @@ const Reports = () => {
           </button>
           <button
             onClick={() => setReportType('inventory')}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            className={`border-b-2 px-3 py-1.5 text-xs font-medium transition-colors ${
               reportType === 'inventory'
                 ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -347,7 +344,7 @@ const Reports = () => {
           </button>
           <button
             onClick={() => setReportType('profit')}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            className={`border-b-2 px-3 py-1.5 text-xs font-medium transition-colors ${
               reportType === 'profit'
                 ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -360,13 +357,13 @@ const Reports = () => {
       </div>
 
       {/* Date Range Filter */}
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-2.5 flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2">
           <HIcon icon={Calendar01Icon} size={18} className="text-gray-500"  />
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded border border-gray-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="today">Today</option>
             <option value="week">Last 7 Days</option>
@@ -381,14 +378,14 @@ const Reports = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="rounded border border-gray-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <span className="text-gray-500">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="rounded border border-gray-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         )}
@@ -502,8 +499,8 @@ const Reports = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="sales" fill="#0ea5e9" name="Sales (₵)" />
-                    <Bar dataKey="profit" fill="#10b981" name="Profit (₵)" />
+                    <Bar dataKey="sales" fill="#FF7521" name="Sales (₵)" />
+                    <Bar dataKey="profit" fill="#475569" name="Profit (₵)" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -520,7 +517,7 @@ const Reports = () => {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="#FF7521"
                       dataKey="value"
                     >
                       {paymentMethodData.map((entry, index) => (
@@ -744,7 +741,7 @@ const Reports = () => {
                       labelLine={false}
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
+                      fill="#FF7521"
                       dataKey="value"
                     >
                       {categoryData.map((entry, index) => (
@@ -765,7 +762,7 @@ const Reports = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="amount" fill="#0ea5e9" name="Revenue (₵)" />
+                    <Bar dataKey="amount" fill="#FF7521" name="Revenue (₵)" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -963,8 +960,8 @@ const Reports = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} name="Profit (₵)" />
-                  <Line type="monotone" dataKey="sales" stroke="#0ea5e9" strokeWidth={2} name="Sales (₵)" />
+                  <Line type="monotone" dataKey="profit" stroke="#475569" strokeWidth={2} name="Profit (₵)" />
+                  <Line type="monotone" dataKey="sales" stroke="#FF7521" strokeWidth={2} name="Sales (₵)" />
                 </LineChart>
               </ResponsiveContainer>
             </div>

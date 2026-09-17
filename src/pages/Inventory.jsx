@@ -189,7 +189,8 @@ const Inventory = () => {
   // Fetch all products via the shared store (race-safe, shared with POS)
   const fetchProducts = useCallback(async (page, { force = true } = {}) => {
     const pageToFetch = page !== undefined && page !== null ? page : currentPage
-    setProductsLoading(true)
+    const hasVisibleProducts = allProductsCache.current.length > 0
+    if (!hasVisibleProducts) setProductsLoading(true)
     setProductsError(null)
     try {
       const branchId = resolveBranchId()
@@ -208,9 +209,11 @@ const Inventory = () => {
       applyFilters(mapped)
     } catch (err) {
       setProductsError(err.message || 'Could not load products')
-      setProducts([])
-      setTotalProducts(0)
-      setTotalPages(1)
+      if (!allProductsCache.current.length) {
+        setProducts([])
+        setTotalProducts(0)
+        setTotalPages(1)
+      }
     } finally {
       setProductsLoading(false)
     }
@@ -1505,7 +1508,7 @@ const Inventory = () => {
   }
 
   return (
-    <div className="app-page">
+    <div className="app-page w-full max-w-full overflow-x-hidden">
       {/* Toast Notifications */}
       {alertQueue.length > 0 && (
         <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-3 max-w-md w-full pointer-events-none">
@@ -1643,7 +1646,7 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="app-page-content !px-4 !py-3 space-y-3 sm:!px-5 lg:!px-6">
+      <div className="app-page-content min-w-0 max-w-full !px-4 !py-3 space-y-3 sm:!px-5 lg:!px-6">
         {/* Summary Stats */}
         <div className="app-stat-grid gap-2.5">
           <div className="app-stat-card !p-3">
@@ -1813,8 +1816,8 @@ const Inventory = () => {
               {productsError}
             </div>
           )}
-          <div className="max-h-[56vh] overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <table className="w-full [&_th]:!px-3 [&_th]:!py-2 [&_th]:!text-[10px]">
+          <div className="max-h-[56vh] max-w-full overflow-x-hidden overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <table className="w-full table-fixed [&_th]:!px-2 [&_th]:!py-2 [&_th]:!text-[10px]">
               <thead>
                 <tr className="app-table-head-dark">
                   <th className="app-table-head-cell sticky top-0 z-10 bg-gray-900 rounded-tl-[2px]">Product</th>
